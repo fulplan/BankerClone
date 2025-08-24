@@ -12,7 +12,7 @@ export function getSession() {
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
+    createTableIfMissing: true,
     ttl: sessionTtl,
     tableName: "sessions",
   });
@@ -21,13 +21,14 @@ export function getSession() {
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    rolling: true, // Reset session expiry on activity
     cookie: {
       httpOnly: true,
       secure: false, // Disable for development
       maxAge: sessionTtl,
-      sameSite: 'lax', // More permissive for development
+      sameSite: 'lax',
     },
-    name: 'connect.sid', // Use default session name
+    name: 'connect.sid',
   });
 }
 
