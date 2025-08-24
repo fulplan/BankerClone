@@ -1102,8 +1102,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Raw profile data received:", JSON.stringify(profileData, null, 2));
       
       // Convert any timestamp fields from strings to Date objects
-      if (profileData.dateOfBirth && typeof profileData.dateOfBirth === 'string') {
-        profileData.dateOfBirth = new Date(profileData.dateOfBirth);
+      if (profileData.dateOfBirth) {
+        if (typeof profileData.dateOfBirth === 'string') {
+          // Only convert if it's a valid date string and not empty
+          if (profileData.dateOfBirth.trim() !== '') {
+            profileData.dateOfBirth = new Date(profileData.dateOfBirth);
+          } else {
+            profileData.dateOfBirth = null;
+          }
+        }
       }
       
       // Remove timestamp fields that shouldn't be updated by user
@@ -1121,7 +1128,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Skip empty values entirely to avoid database issues
           return;
         }
-        cleanedData[key] = value;
+        
+        // Special handling for dates - ensure they are proper Date objects
+        if (key === 'dateOfBirth' && value && typeof value === 'string') {
+          try {
+            cleanedData[key] = new Date(value);
+          } catch {
+            // Skip invalid dates
+            return;
+          }
+        } else {
+          cleanedData[key] = value;
+        }
       });
       
       console.log("Cleaned profile data being sent to DB:", JSON.stringify(cleanedData, null, 2));
