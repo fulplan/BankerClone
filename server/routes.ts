@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { emailService } from "./emailService";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { insertTransferSchema, insertAccountSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -13,8 +13,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const user = req.user;
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -30,7 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Account routes
   app.get('/api/accounts', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const accounts = await storage.getAccountsByUserId(userId);
       res.json(accounts);
     } catch (error) {
@@ -41,7 +40,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/accounts', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -80,7 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Transfer routes
   app.get('/api/transfers', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const accounts = await storage.getAccountsByUserId(userId);
       
       let allTransfers: any[] = [];
@@ -103,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/transfers', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -179,7 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Transaction routes
   app.get('/api/transactions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const accounts = await storage.getAccountsByUserId(userId);
       
       let allTransactions: any[] = [];
@@ -200,7 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin routes
   app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {
@@ -217,7 +216,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/accounts', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {
@@ -234,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/transfers/pending', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {
@@ -251,7 +250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/transfers/:id/approve', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {
@@ -346,7 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/transfers/:id/reject', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {
@@ -404,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/accounts/:id/credit', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {
@@ -445,7 +444,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/accounts/:id/debit', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {
@@ -486,7 +485,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/accounts/:id/status', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {
@@ -534,7 +533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/email', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {
@@ -581,7 +580,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/audit-logs', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {

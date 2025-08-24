@@ -56,10 +56,11 @@ export const auditActionEnum = pgEnum('audit_action', [
   'email_sent'
 ]);
 
-// User storage table - mandatory for Replit Auth
+// User storage table
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique(),
+  email: varchar("email").unique().notNull(),
+  password: varchar("password"), // For local authentication
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -185,6 +186,11 @@ export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Valid email required"),
+  password: z.string().min(1, "Password required"),
 });
 
 export const insertAccountSchema = createInsertSchema(accounts).omit({
