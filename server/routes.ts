@@ -17,7 +17,7 @@ function rateLimit(maxRequests: number, windowMs: number) {
     const now = Date.now();
     
     // Clean expired entries
-    for (const [k, v] of rateLimitStore.entries()) {
+    for (const [k, v] of Array.from(rateLimitStore.entries())) {
       if (v.resetTime < now) {
         rateLimitStore.delete(k);
       }
