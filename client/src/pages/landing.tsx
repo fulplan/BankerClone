@@ -3,8 +3,11 @@ import HeroSlider from "@/components/ui/hero-slider";
 import ServicesSection from "@/components/ui/services-section";
 import { Button } from "@/components/ui/button";
 import { Building, CreditCard, Smartphone, PiggyBank, FileText, TrendingUp, Users, ShoppingCart, Calendar, ArrowRight, Download, Award, DollarSign, Gift } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Landing() {
+  const [location, setLocation] = useLocation();
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar showLogin={true} />
@@ -19,31 +22,31 @@ export default function Landing() {
       <section className="py-16 bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
-            <div className="flex flex-col items-center group cursor-pointer">
+            <div className="flex flex-col items-center group cursor-pointer" onClick={() => setLocation("/products?category=accounts-deposits")}>
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
                 <Building className="w-8 h-8 text-finora-primary" />
               </div>
               <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Accounts & Deposits</span>
             </div>
-            <div className="flex flex-col items-center group cursor-pointer">
+            <div className="flex flex-col items-center group cursor-pointer" onClick={() => setLocation("/products?category=personal-loans")}>
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
                 <FileText className="w-8 h-8 text-finora-primary" />
               </div>
               <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Personal Loans</span>
             </div>
-            <div className="flex flex-col items-center group cursor-pointer">
+            <div className="flex flex-col items-center group cursor-pointer" onClick={() => setLocation("/investing")}>
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
                 <TrendingUp className="w-8 h-8 text-finora-primary" />
               </div>
               <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Wealth</span>
             </div>
-            <div className="flex flex-col items-center group cursor-pointer">
+            <div className="flex flex-col items-center group cursor-pointer" onClick={() => setLocation("/products?category=rewards")}>
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
                 <Award className="w-8 h-8 text-finora-primary" />
               </div>
               <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Rewards</span>
             </div>
-            <div className="flex flex-col items-center group cursor-pointer">
+            <div className="flex flex-col items-center group cursor-pointer" onClick={() => setLocation("/products?category=debit-cards")}>
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
                 <CreditCard className="w-8 h-8 text-finora-primary" />
               </div>
@@ -77,16 +80,22 @@ export default function Landing() {
               
               <div className="space-y-2">
                 <p className="font-semibold">Get started with mobile banking:</p>
-                <a href="#" className="block text-green-200 hover:text-white transition-colors">• Mobile Check Deposit</a>
-                <a href="#" className="block text-green-200 hover:text-white transition-colors">• Set up Alerts</a>
-                <a href="#" className="block text-green-200 hover:text-white transition-colors">• Manage Cards</a>
-                <a href="#" className="block text-green-200 hover:text-white transition-colors">• Transfer Money</a>
+                <button onClick={() => setLocation("/dashboard")} className="block text-green-200 hover:text-white transition-colors text-left">• Mobile Check Deposit</button>
+                <button onClick={() => setLocation("/dashboard")} className="block text-green-200 hover:text-white transition-colors text-left">• Set up Alerts</button>
+                <button onClick={() => setLocation("/dashboard")} className="block text-green-200 hover:text-white transition-colors text-left">• Manage Cards</button>
+                <button onClick={() => setLocation("/transfer")} className="block text-green-200 hover:text-white transition-colors text-left">• Transfer Money</button>
               </div>
             </div>
             <div className="text-center">
-              <div className="bg-white bg-opacity-10 rounded-lg p-8">
+              <div className="bg-white bg-opacity-10 rounded-lg p-8 cursor-pointer" onClick={() => window.open("https://apps.apple.com/app/finora-mobile", "_blank")}>
                 <Smartphone className="w-24 h-24 text-white mx-auto mb-4" />
-                <p className="text-white opacity-90">Mobile Banking App Preview</p>
+                <p className="text-white opacity-90 mb-4">Mobile Banking App Preview</p>
+                <div className="space-y-2 text-sm text-white opacity-80">
+                  <p>✓ Instant account access</p>
+                  <p>✓ Secure biometric login</p>
+                  <p>✓ Real-time notifications</p>
+                  <p>✓ Bill pay & transfers</p>
+                </div>
               </div>
             </div>
           </div>
@@ -98,10 +107,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Promotions</h2>
-            <a href="#" className="text-finora-primary hover:underline text-sm font-medium">View More</a>
+            <button onClick={() => setLocation("/promotions")} className="text-finora-primary hover:underline text-sm font-medium">View More</button>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/dashboard")}>
               <img 
                 src="https://images.unsplash.com/photo-1559526324-593bc054d924?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
                 alt="Digital banking promotion" 
@@ -113,7 +122,7 @@ export default function Landing() {
                 <p className="text-xs text-gray-500">Offer valid through Dec 31, 2025</p>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/products?category=credit-cards")}>
               <img 
                 src="https://images.unsplash.com/photo-1551836022-deb4988cc6c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
                 alt="Credit card promotion" 
@@ -125,7 +134,7 @@ export default function Landing() {
                 <p className="text-xs text-gray-500">Terms and conditions apply</p>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/business")}>
               <img 
                 src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
                 alt="Business banking promotion" 
@@ -155,7 +164,7 @@ export default function Landing() {
               <div className="p-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Personal Banking</h3>
                 <p className="text-gray-600 text-sm mb-4">Comprehensive personal banking solutions for all your financial needs.</p>
-                <a href="#" className="text-finora-primary text-sm font-medium hover:underline">Learn more</a>
+                <button onClick={() => setLocation("/personal")} className="text-finora-primary text-sm font-medium hover:underline">Learn more</button>
               </div>
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -167,7 +176,7 @@ export default function Landing() {
               <div className="p-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Digital Banking</h3>
                 <p className="text-gray-600 text-sm mb-4">Banking at your fingertips with our advanced digital platform.</p>
-                <a href="#" className="text-finora-primary text-sm font-medium hover:underline">Get started</a>
+                <button onClick={() => setLocation("/dashboard")} className="text-finora-primary text-sm font-medium hover:underline">Get started</button>
               </div>
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -179,7 +188,7 @@ export default function Landing() {
               <div className="p-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Islamic Banking</h3>
                 <p className="text-gray-600 text-sm mb-4">Sharia-compliant banking solutions designed for your values.</p>
-                <a href="#" className="text-finora-primary text-sm font-medium hover:underline">Explore</a>
+                <button onClick={() => setLocation("/products?category=islamic-banking")} className="text-finora-primary text-sm font-medium hover:underline">Explore</button>
               </div>
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -191,7 +200,7 @@ export default function Landing() {
               <div className="p-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Priority Banking</h3>
                 <p className="text-gray-600 text-sm mb-4">Exclusive banking services for our valued priority customers.</p>
-                <a href="#" className="text-finora-primary text-sm font-medium hover:underline">Learn more</a>
+                <button onClick={() => setLocation("/private-client")} className="text-finora-primary text-sm font-medium hover:underline">Learn more</button>
               </div>
             </div>
           </div>
@@ -212,7 +221,7 @@ export default function Landing() {
               <div className="p-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Business Banking</h3>
                 <p className="text-gray-600 text-sm mb-4">Streamlined banking solutions designed for small and medium enterprises.</p>
-                <a href="#" className="text-finora-primary text-sm font-medium hover:underline">Learn more</a>
+                <button onClick={() => setLocation("/business")} className="text-finora-primary text-sm font-medium hover:underline">Learn more</button>
               </div>
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -224,7 +233,7 @@ export default function Landing() {
               <div className="p-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Corporate Banking</h3>
                 <p className="text-gray-600 text-sm mb-4">Comprehensive corporate solutions for large enterprises and institutions.</p>
-                <a href="#" className="text-finora-primary text-sm font-medium hover:underline">Discover</a>
+                <button onClick={() => setLocation("/commercial")} className="text-finora-primary text-sm font-medium hover:underline">Discover</button>
               </div>
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -236,7 +245,7 @@ export default function Landing() {
               <div className="p-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Trade Finance</h3>
                 <p className="text-gray-600 text-sm mb-4">International trade finance solutions to support your global business.</p>
-                <a href="#" className="text-finora-primary text-sm font-medium hover:underline">Get started</a>
+                <button onClick={() => setLocation("/commercial")} className="text-finora-primary text-sm font-medium hover:underline">Get started</button>
               </div>
             </div>
           </div>
@@ -248,7 +257,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-12">What's New</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => window.open("https://apps.apple.com/app/finora-mobile", "_blank")}>
               <img 
                 src="https://images.unsplash.com/photo-1551836022-deb4988cc6c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200" 
                 alt="Bank branch expansion" 
@@ -258,7 +267,7 @@ export default function Landing() {
                 <p className="text-sm text-gray-600 mb-2">Stay in touch everywhere you are with our mobile app.</p>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/dashboard")}>
               <img 
                 src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200" 
                 alt="Digital innovation" 
@@ -268,7 +277,7 @@ export default function Landing() {
                 <p className="text-sm text-gray-600 mb-2">Learn more about our world-class internet banking platform and online tools.</p>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/investing")}>
               <img 
                 src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200" 
                 alt="Investment opportunities" 
@@ -278,7 +287,7 @@ export default function Landing() {
                 <p className="text-sm text-gray-600 mb-2">Explore the trading, budgeting and analytics tools available on our platform.</p>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/help")}>
               <img 
                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200" 
                 alt="Customer support" 
@@ -288,7 +297,7 @@ export default function Landing() {
                 <p className="text-sm text-gray-600 mb-2">Learn all about how to quickly and easily open your first account.</p>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/services")}>
               <img 
                 src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200" 
                 alt="Financial planning" 
@@ -318,6 +327,7 @@ export default function Landing() {
             What your business requires
           </h3>
           <Button 
+            onClick={() => setLocation("/business")}
             className="bg-white text-finora-primary hover:bg-gray-100 px-8 py-4 text-lg font-semibold rounded-md"
             data-testid="button-learn-more"
           >
@@ -342,6 +352,7 @@ export default function Landing() {
             Get amazing results you expected
           </h3>
           <Button 
+            onClick={() => setLocation("/investing")}
             className="bg-white text-green-700 hover:bg-gray-100 px-8 py-4 text-lg font-semibold rounded-md"
             data-testid="button-get-started"
           >
@@ -394,33 +405,33 @@ export default function Landing() {
             <div>
               <h3 className="font-semibold text-lg mb-4">ABOUT US</h3>
               <ul className="space-y-2 text-gray-300">
-                <li><a href="#" className="hover:text-white transition-colors duration-200">PROFILE</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">HISTORY</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">LEADERSHIP</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">COMMUNITY</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">SHAREHOLDER RELATIONS</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">SUSTAINABILITY</a></li>
+                <li><button onClick={() => setLocation("/services")} className="hover:text-white transition-colors duration-200 text-left">PROFILE</button></li>
+                <li><button onClick={() => setLocation("/services")} className="hover:text-white transition-colors duration-200 text-left">HISTORY</button></li>
+                <li><button onClick={() => setLocation("/services")} className="hover:text-white transition-colors duration-200 text-left">LEADERSHIP</button></li>
+                <li><button onClick={() => setLocation("/services")} className="hover:text-white transition-colors duration-200 text-left">COMMUNITY</button></li>
+                <li><button onClick={() => setLocation("/services")} className="hover:text-white transition-colors duration-200 text-left">SHAREHOLDER RELATIONS</button></li>
+                <li><button onClick={() => setLocation("/services")} className="hover:text-white transition-colors duration-200 text-left">SUSTAINABILITY</button></li>
               </ul>
             </div>
             
             <div>
               <h3 className="font-semibold text-lg mb-4">CAREERS</h3>
               <ul className="space-y-2 text-gray-300">
-                <li><a href="#" className="hover:text-white transition-colors duration-200">EXPLORE OPPORTUNITIES</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">STUDENT PROGRAMS</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">BENEFITS</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">DIVERSITY & INCLUSION</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">MILITARY HIRING</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">CAMPUS RECRUITING</a></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">EXPLORE OPPORTUNITIES</button></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">STUDENT PROGRAMS</button></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">BENEFITS</button></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">DIVERSITY & INCLUSION</button></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">MILITARY HIRING</button></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">CAMPUS RECRUITING</button></li>
               </ul>
             </div>
             
             <div>
               <h3 className="font-semibold text-lg mb-4">CUSTOMER SERVICE</h3>
               <ul className="space-y-2 text-gray-300">
-                <li><a href="#" className="hover:text-white transition-colors duration-200">CONTACT US</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">BRANCH LOCATOR</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">ATM LOCATOR</a></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">CONTACT US</button></li>
+                <li><button onClick={() => setLocation("/find-branch")} className="hover:text-white transition-colors duration-200 text-left">BRANCH LOCATOR</button></li>
+                <li><button onClick={() => setLocation("/find-branch")} className="hover:text-white transition-colors duration-200 text-left">ATM LOCATOR</button></li>
                 <li><a href="#" className="hover:text-white transition-colors duration-200">ORDER CHECKS</a></li>
                 <li><a href="#" className="hover:text-white transition-colors duration-200">ROUTING NUMBER</a></li>
                 <li><a href="#" className="hover:text-white transition-colors duration-200">CUSTOMER FEEDBACK</a></li>
@@ -430,12 +441,12 @@ export default function Landing() {
             <div>
               <h3 className="font-semibold text-lg mb-4">LEGAL</h3>
               <ul className="space-y-2 text-gray-300">
-                <li><a href="#" className="hover:text-white transition-colors duration-200">PRIVACY POLICY</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">TERMS OF USE</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">ACCESSIBILITY</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">SECURITY CENTER</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">SITE MAP</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-200">FRAUD PREVENTION</a></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">PRIVACY POLICY</button></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">TERMS OF USE</button></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">ACCESSIBILITY</button></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">SECURITY CENTER</button></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">SITE MAP</button></li>
+                <li><button onClick={() => setLocation("/help")} className="hover:text-white transition-colors duration-200 text-left">FRAUD PREVENTION</button></li>
               </ul>
             </div>
             

@@ -1,8 +1,11 @@
 import Navbar from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Building, PiggyBank, TrendingUp, Shield, Users } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Products() {
+  const [location, setLocation] = useLocation();
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar showLogin={true} />
@@ -30,7 +33,7 @@ export default function Products() {
                 <li>• Debit card included</li>
                 <li>• Online & mobile banking</li>
               </ul>
-              <Button className="w-full bg-finora-primary hover:bg-finora-dark">Learn More</Button>
+              <Button onClick={() => setLocation("/dashboard")} className="w-full bg-finora-primary hover:bg-finora-dark">Learn More</Button>
             </div>
             
             <div className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
@@ -43,7 +46,7 @@ export default function Products() {
                 <li>• Automatic savings programs</li>
                 <li>• FDIC insured</li>
               </ul>
-              <Button className="w-full bg-finora-secondary hover:bg-finora-dark">Open Account</Button>
+              <Button onClick={() => setLocation("/dashboard")} className="w-full bg-finora-secondary hover:bg-finora-dark">Open Account</Button>
             </div>
             
             <div className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
@@ -56,7 +59,7 @@ export default function Products() {
                 <li>• Travel rewards programs</li>
                 <li>• Fraud protection</li>
               </ul>
-              <Button className="w-full bg-finora-accent hover:bg-finora-dark">Apply Now</Button>
+              <Button onClick={() => setLocation("/dashboard")} className="w-full bg-finora-accent hover:bg-finora-dark">Apply Now</Button>
             </div>
           </div>
         </div>
@@ -71,14 +74,14 @@ export default function Products() {
               <Users className="w-12 h-12 text-finora-primary mb-4" />
               <h3 className="text-xl font-semibold mb-4">Business Checking</h3>
               <p className="text-gray-600 mb-6">Streamlined business checking accounts with advanced online banking features.</p>
-              <Button className="bg-finora-primary hover:bg-finora-dark">Learn More</Button>
+              <Button onClick={() => setLocation("/business")} className="bg-finora-primary hover:bg-finora-dark">Learn More</Button>
             </div>
             
             <div className="bg-white rounded-lg shadow-lg p-8">
               <TrendingUp className="w-12 h-12 text-finora-secondary mb-4" />
               <h3 className="text-xl font-semibold mb-4">Business Loans</h3>
               <p className="text-gray-600 mb-6">Flexible financing solutions to help your business grow and succeed.</p>
-              <Button className="bg-finora-secondary hover:bg-finora-dark">Apply Today</Button>
+              <Button onClick={() => setLocation("/business")} className="bg-finora-secondary hover:bg-finora-dark">Apply Today</Button>
             </div>
           </div>
         </div>
@@ -93,7 +96,7 @@ export default function Products() {
               <Shield className="w-12 h-12 text-finora-primary mb-4 mx-auto" />
               <h3 className="text-xl font-semibold mb-4">CDs & Money Market</h3>
               <p className="text-gray-600 mb-4">Secure your savings with competitive rates on certificates of deposit and money market accounts.</p>
-              <Button variant="outline" className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white">
+              <Button onClick={() => setLocation("/investing")} variant="outline" className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white">
                 View Rates
               </Button>
             </div>
@@ -102,7 +105,7 @@ export default function Products() {
               <TrendingUp className="w-12 h-12 text-finora-secondary mb-4 mx-auto" />
               <h3 className="text-xl font-semibold mb-4">Investment Services</h3>
               <p className="text-gray-600 mb-4">Professional investment management and financial planning services for your future.</p>
-              <Button variant="outline" className="border-finora-secondary text-finora-secondary hover:bg-finora-secondary hover:text-white">
+              <Button onClick={() => setLocation("/investing")} variant="outline" className="border-finora-secondary text-finora-secondary hover:bg-finora-secondary hover:text-white">
                 Get Started
               </Button>
             </div>
@@ -111,7 +114,7 @@ export default function Products() {
               <Building className="w-12 h-12 text-finora-accent mb-4 mx-auto" />
               <h3 className="text-xl font-semibold mb-4">Retirement Planning</h3>
               <p className="text-gray-600 mb-4">Plan for your retirement with IRAs, 401(k) rollovers, and retirement planning services.</p>
-              <Button variant="outline" className="border-finora-accent text-finora-accent hover:bg-finora-accent hover:text-white">
+              <Button onClick={() => setLocation("/investing")} variant="outline" className="border-finora-accent text-finora-accent hover:bg-finora-accent hover:text-white">
                 Plan Now
               </Button>
             </div>

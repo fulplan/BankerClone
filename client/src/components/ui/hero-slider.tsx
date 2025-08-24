@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 
 const heroSlides = [
   {
@@ -48,6 +49,7 @@ const heroSlides = [
 
 export default function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [location, setLocation] = useLocation();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -67,6 +69,35 @@ export default function HeroSlider() {
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
+  };
+
+  const handleCTAClick = () => {
+    const slide = heroSlides[currentSlide];
+    switch (slide.buttonText) {
+      case "KNOW MORE":
+        setLocation("/services");
+        break;
+      case "GET STARTED":
+        setLocation("/products");
+        break;
+      case "INVEST NOW":
+        setLocation("/investing");
+        break;
+      case "LEARN MORE":
+        setLocation("/business");
+        break;
+      case "PLAN TODAY":
+        setLocation("/personal");
+        break;
+      case "DOWNLOAD NOW":
+        window.open("https://apps.apple.com/app/finora-mobile", "_blank");
+        break;
+      case "CONTACT US":
+        setLocation("/help");
+        break;
+      default:
+        setLocation("/products");
+    }
   };
 
   return (
@@ -96,6 +127,7 @@ export default function HeroSlider() {
             {heroSlides[currentSlide].subtitle}
           </p>
           <Button 
+            onClick={handleCTAClick}
             className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-sm font-semibold rounded-md transition-all duration-200 transform hover:scale-105"
             data-testid="button-hero-cta"
           >

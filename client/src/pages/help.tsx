@@ -2,9 +2,11 @@ import Navbar from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { Search, HelpCircle, Book, Phone, MessageCircle, Mail, Download, Shield, CreditCard, Building } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
 
 export default function Help() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [location, setLocation] = useLocation();
 
   const faqData = [
     {
@@ -96,7 +98,7 @@ export default function Help() {
               <h3 className="text-lg font-semibold mb-2">Call Support</h3>
               <p className="text-gray-600 mb-4">Speak with a representative</p>
               <p className="font-semibold text-finora-primary mb-4">1-800-FINORA-1</p>
-              <Button className="bg-finora-primary hover:bg-finora-dark">Call Now</Button>
+              <Button onClick={() => window.open("tel:1-800-346-6721", "_self")} className="bg-finora-primary hover:bg-finora-dark">Call Now</Button>
             </div>
             
             <div className="text-center p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 border">
@@ -106,7 +108,7 @@ export default function Help() {
               <h3 className="text-lg font-semibold mb-2">Live Chat</h3>
               <p className="text-gray-600 mb-4">Chat with our support team</p>
               <p className="text-sm text-gray-500 mb-4">Available 24/7</p>
-              <Button className="bg-finora-secondary hover:bg-finora-dark">Start Chat</Button>
+              <Button onClick={() => alert("Live chat feature will be available soon. Please call 1-800-FINORA-1 for immediate assistance.")} className="bg-finora-secondary hover:bg-finora-dark">Start Chat</Button>
             </div>
             
             <div className="text-center p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 border">
@@ -116,7 +118,7 @@ export default function Help() {
               <h3 className="text-lg font-semibold mb-2">Email Support</h3>
               <p className="text-gray-600 mb-4">Send us a detailed message</p>
               <p className="text-sm text-gray-500 mb-4">24-48 hour response</p>
-              <Button className="bg-finora-accent hover:bg-finora-dark">Send Email</Button>
+              <Button onClick={() => window.open("mailto:support@finora.bank", "_self")} className="bg-finora-accent hover:bg-finora-dark">Send Email</Button>
             </div>
             
             <div className="text-center p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 border">
@@ -126,7 +128,7 @@ export default function Help() {
               <h3 className="text-lg font-semibold mb-2">Help Articles</h3>
               <p className="text-gray-600 mb-4">Browse our knowledge base</p>
               <p className="text-sm text-gray-500 mb-4">Step-by-step guides</p>
-              <Button className="bg-green-600 hover:bg-green-700">Browse Articles</Button>
+              <Button onClick={() => setLocation("/services")} className="bg-green-600 hover:bg-green-700">Browse Articles</Button>
             </div>
           </div>
         </div>

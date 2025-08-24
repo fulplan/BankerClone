@@ -1,8 +1,11 @@
 import Navbar from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { Phone, MessageCircle, MapPin, Clock, Shield, Headphones, CreditCard, Building, Users, Calculator } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Services() {
+  const [location, setLocation] = useLocation();
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar showLogin={true} />
@@ -27,7 +30,7 @@ export default function Services() {
               </div>
               <h3 className="text-lg font-semibold mb-2">24/7 Phone Support</h3>
               <p className="text-gray-600 mb-4">Call us anytime at 1-800-FINORA-1</p>
-              <Button className="bg-finora-primary hover:bg-finora-dark">Call Now</Button>
+              <Button onClick={() => window.open("tel:1-800-346-6721", "_self")} className="bg-finora-primary hover:bg-finora-dark">Call Now</Button>
             </div>
             
             <div className="text-center p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -36,7 +39,7 @@ export default function Services() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Live Chat</h3>
               <p className="text-gray-600 mb-4">Chat with our support team online</p>
-              <Button className="bg-finora-secondary hover:bg-finora-dark">Start Chat</Button>
+              <Button onClick={() => setLocation("/help")} className="bg-finora-secondary hover:bg-finora-dark">Start Chat</Button>
             </div>
             
             <div className="text-center p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -45,7 +48,7 @@ export default function Services() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Branch Locator</h3>
               <p className="text-gray-600 mb-4">Find the nearest Finora branch</p>
-              <Button className="bg-finora-accent hover:bg-finora-dark">Find Branch</Button>
+              <Button onClick={() => setLocation("/find-branch")} className="bg-finora-accent hover:bg-finora-dark">Find Branch</Button>
             </div>
             
             <div className="text-center p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -54,7 +57,7 @@ export default function Services() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Appointment Booking</h3>
               <p className="text-gray-600 mb-4">Schedule a meeting with our experts</p>
-              <Button className="bg-green-600 hover:bg-green-700">Book Now</Button>
+              <Button onClick={() => setLocation("/help")} className="bg-green-600 hover:bg-green-700">Book Now</Button>
             </div>
           </div>
         </div>

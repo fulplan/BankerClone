@@ -1,8 +1,11 @@
 import Navbar from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { Gift, Clock, Star, DollarSign } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Promotions() {
+  const [location, setLocation] = useLocation();
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar showLogin={true} />
@@ -31,7 +34,7 @@ export default function Promotions() {
                 <Clock className="w-5 h-5 mr-2" />
                 <span className="text-sm">Offer expires December 31, 2025</span>
               </div>
-              <Button className="bg-white text-finora-primary hover:bg-gray-100 font-semibold">
+              <Button onClick={() => setLocation("/dashboard")} className="bg-white text-finora-primary hover:bg-gray-100 font-semibold">
                 Open Account
               </Button>
             </div>
@@ -46,7 +49,7 @@ export default function Promotions() {
                 <Clock className="w-5 h-5 mr-2" />
                 <span className="text-sm">Rate guaranteed for first 12 months</span>
               </div>
-              <Button className="bg-white text-green-700 hover:bg-gray-100 font-semibold">
+              <Button onClick={() => setLocation("/dashboard")} className="bg-white text-green-700 hover:bg-gray-100 font-semibold">
                 Start Saving
               </Button>
             </div>
@@ -67,7 +70,7 @@ export default function Promotions() {
               </div>
               <p className="text-gray-600 mb-4">Get 5% cashback on all purchases for the first 3 months</p>
               <p className="text-sm text-gray-500 mb-4">Valid until: March 31, 2025</p>
-              <Button variant="outline" className="w-full border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white">
+              <Button onClick={() => setLocation("/dashboard")} variant="outline" className="w-full border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white">
                 Apply Now
               </Button>
             </div>
@@ -79,7 +82,7 @@ export default function Promotions() {
               </div>
               <p className="text-gray-600 mb-4">Free checking for students with no monthly fees or minimum balance</p>
               <p className="text-sm text-gray-500 mb-4">Valid with student ID</p>
-              <Button variant="outline" className="w-full border-finora-secondary text-finora-secondary hover:bg-finora-secondary hover:text-white">
+              <Button onClick={() => setLocation("/help")} variant="outline" className="w-full border-finora-secondary text-finora-secondary hover:bg-finora-secondary hover:text-white">
                 Learn More
               </Button>
             </div>
@@ -91,7 +94,7 @@ export default function Promotions() {
               </div>
               <p className="text-gray-600 mb-4">No monthly fees for 6 months on new business checking accounts</p>
               <p className="text-sm text-gray-500 mb-4">Valid until: June 30, 2025</p>
-              <Button variant="outline" className="w-full border-finora-accent text-finora-accent hover:bg-finora-accent hover:text-white">
+              <Button onClick={() => setLocation("/business")} variant="outline" className="w-full border-finora-accent text-finora-accent hover:bg-finora-accent hover:text-white">
                 Open Account
               </Button>
             </div>
@@ -103,7 +106,7 @@ export default function Promotions() {
               </div>
               <p className="text-gray-600 mb-4">Get 0.25% off your mortgage rate for first-time homebuyers</p>
               <p className="text-sm text-gray-500 mb-4">Subject to credit approval</p>
-              <Button variant="outline" className="w-full border-green-600 text-green-600 hover:bg-green-600 hover:text-white">
+              <Button onClick={() => setLocation("/help")} variant="outline" className="w-full border-green-600 text-green-600 hover:bg-green-600 hover:text-white">
                 Get Quote
               </Button>
             </div>
@@ -115,7 +118,7 @@ export default function Promotions() {
               </div>
               <p className="text-gray-600 mb-4">Earn $50 for each friend you refer who opens an account</p>
               <p className="text-sm text-gray-500 mb-4">No limit on referrals</p>
-              <Button variant="outline" className="w-full border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white">
+              <Button onClick={() => setLocation("/dashboard")} variant="outline" className="w-full border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white">
                 Refer Now
               </Button>
             </div>
@@ -127,7 +130,7 @@ export default function Promotions() {
               </div>
               <p className="text-gray-600 mb-4">Get $25 when you sign up for mobile banking and complete 5 transactions</p>
               <p className="text-sm text-gray-500 mb-4">New customers only</p>
-              <Button variant="outline" className="w-full border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white">
+              <Button onClick={() => setLocation("/dashboard")} variant="outline" className="w-full border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white">
                 Get Started
               </Button>
             </div>
