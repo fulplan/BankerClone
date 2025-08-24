@@ -90,7 +90,7 @@ export default function AccountOverview() {
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary mx-auto"></div>
         <p className="mt-2 text-gray-600">Loading your accounts...</p>
       </div>
     );
@@ -122,7 +122,7 @@ export default function AccountOverview() {
       )}
 
       {/* Total Balance Summary */}
-      <Card className="border-l-4 border-l-santander-red">
+      <Card className="border-l-4 border-l-finora-primary">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
@@ -133,7 +133,7 @@ export default function AccountOverview() {
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-600">Active Accounts</p>
-              <p className="text-xl font-semibold text-santander-red">
+              <p className="text-xl font-semibold text-finora-primary">
                 {accounts.filter((account: Account) => account.status === 'active').length}
               </p>
             </div>
@@ -162,7 +162,7 @@ export default function AccountOverview() {
           <Button
             onClick={handleCreateAccount}
             disabled={createAccountMutation.isPending}
-            className="w-full bg-santander-red hover:bg-santander-dark"
+            className="w-full bg-finora-primary hover:bg-finora-dark"
             data-testid="button-create-account"
           >
             {createAccountMutation.isPending ? "Creating..." : "Open Account"}
@@ -253,7 +253,7 @@ export default function AccountOverview() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <i className="fas fa-headset text-santander-red"></i>
+              <i className="fas fa-headset text-finora-primary"></i>
               <span>Customer Service</span>
             </CardTitle>
           </CardHeader>
@@ -268,7 +268,7 @@ export default function AccountOverview() {
                 <p className="text-sm text-gray-600 mb-2">
                   Need help with your account? Our customer service team is here to assist you.
                 </p>
-                <Button variant="outline" className="text-santander-red border-santander-red hover:bg-santander-red hover:text-white">
+                <Button variant="outline" className="text-finora-primary border-finora-primary hover:bg-finora-primary hover:text-white">
                   Contact Support
                 </Button>
               </div>
@@ -279,7 +279,7 @@ export default function AccountOverview() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <i className="fas fa-mobile-alt text-santander-red"></i>
+              <i className="fas fa-mobile-alt text-finora-primary"></i>
               <span>Mobile Banking</span>
             </CardTitle>
           </CardHeader>
@@ -294,7 +294,7 @@ export default function AccountOverview() {
                 <p className="text-sm text-gray-600 mb-2">
                   Bank on the go with our secure mobile app. Available 24/7 for your convenience.
                 </p>
-                <Button variant="outline" className="text-santander-red border-santander-red hover:bg-santander-red hover:text-white">
+                <Button variant="outline" className="text-finora-primary border-finora-primary hover:bg-finora-primary hover:text-white">
                   Download App
                 </Button>
               </div>

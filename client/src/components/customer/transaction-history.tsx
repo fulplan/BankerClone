@@ -79,7 +79,7 @@ export default function TransactionHistory() {
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary mx-auto"></div>
         <p className="mt-2 text-gray-600">Loading transaction history...</p>
       </div>
     );

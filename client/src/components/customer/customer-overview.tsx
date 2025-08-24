@@ -115,7 +115,7 @@ export default function CustomerOverview() {
   if (accountsLoading || transactionsLoading || cardsLoading || notificationsLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary"></div>
       </div>
     );
   }
@@ -190,7 +190,7 @@ export default function CustomerOverview() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <i className="fas fa-university text-santander-red"></i>
+              <i className="fas fa-university text-finora-primary"></i>
               Account Summary
             </CardTitle>
           </CardHeader>
@@ -223,7 +223,7 @@ export default function CustomerOverview() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <i className="fas fa-chart-line text-santander-red"></i>
+              <i className="fas fa-chart-line text-finora-primary"></i>
               Live Forex Rates
               <Badge variant="outline" className="ml-auto">
                 USD Base
@@ -233,7 +233,7 @@ export default function CustomerOverview() {
           <CardContent>
             {forexLoading ? (
               <div className="flex justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-santander-red"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-finora-primary"></div>
               </div>
             ) : forexData ? (
               <div className="space-y-2">
@@ -269,7 +269,7 @@ export default function CustomerOverview() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <i className="fas fa-exchange-alt text-santander-red"></i>
+              <i className="fas fa-exchange-alt text-finora-primary"></i>
               Recent Activity
             </CardTitle>
           </CardHeader>
@@ -318,7 +318,7 @@ export default function CustomerOverview() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <i className="fas fa-bell text-santander-red"></i>
+              <i className="fas fa-bell text-finora-primary"></i>
               Recent Notifications
               {customerStats.unreadNotifications > 0 && (
                 <Badge className="bg-red-500 text-white">
@@ -367,27 +367,27 @@ export default function CustomerOverview() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <Button variant="outline" className="h-20 flex-col gap-2">
-              <i className="fas fa-exchange-alt text-santander-red"></i>
+              <i className="fas fa-exchange-alt text-finora-primary"></i>
               <span className="text-sm">Transfer Money</span>
             </Button>
             <Button variant="outline" className="h-20 flex-col gap-2">
-              <i className="fas fa-file-invoice text-santander-red"></i>
+              <i className="fas fa-file-invoice text-finora-primary"></i>
               <span className="text-sm">Pay Bills</span>
             </Button>
             <Button variant="outline" className="h-20 flex-col gap-2">
-              <i className="fas fa-credit-card text-santander-red"></i>
+              <i className="fas fa-credit-card text-finora-primary"></i>
               <span className="text-sm">Manage Cards</span>
             </Button>
             <Button variant="outline" className="h-20 flex-col gap-2">
-              <i className="fas fa-chart-pie text-santander-red"></i>
+              <i className="fas fa-chart-pie text-finora-primary"></i>
               <span className="text-sm">Investments</span>
             </Button>
             <Button variant="outline" className="h-20 flex-col gap-2">
-              <i className="fas fa-user-cog text-santander-red"></i>
+              <i className="fas fa-user-cog text-finora-primary"></i>
               <span className="text-sm">Profile</span>
             </Button>
             <Button variant="outline" className="h-20 flex-col gap-2">
-              <i className="fas fa-headset text-santander-red"></i>
+              <i className="fas fa-headset text-finora-primary"></i>
               <span className="text-sm">Support</span>
             </Button>
           </div>

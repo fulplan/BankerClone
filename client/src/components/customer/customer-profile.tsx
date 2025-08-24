@@ -213,7 +213,7 @@ export default function CustomerProfile() {
   if (profileLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary"></div>
       </div>
     );
   }
@@ -228,7 +228,7 @@ export default function CustomerProfile() {
         <div className="flex gap-2">
           <Dialog open={isDocumentDialogOpen} onOpenChange={setIsDocumentDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="border-santander-red text-santander-red hover:bg-santander-red hover:text-white">
+              <Button variant="outline" className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white">
                 <i className="fas fa-upload mr-2"></i>
                 Upload Documents
               </Button>
@@ -275,7 +275,7 @@ export default function CustomerProfile() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-santander-red hover:bg-santander-red/90"
+                  className="w-full bg-finora-primary hover:bg-finora-primary/90"
                   disabled={uploadDocumentMutation.isPending}
                 >
                   {uploadDocumentMutation.isPending ? (
@@ -291,7 +291,7 @@ export default function CustomerProfile() {
 
           <Button 
             onClick={() => setIsEditingProfile(!isEditingProfile)}
-            className="bg-santander-red hover:bg-santander-red/90"
+            className="bg-finora-primary hover:bg-finora-primary/90"
           >
             <i className={`fas ${isEditingProfile ? 'fa-times' : 'fa-edit'} mr-2`}></i>
             {isEditingProfile ? 'Cancel' : 'Edit Profile'}
@@ -304,7 +304,7 @@ export default function CustomerProfile() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <i className="fas fa-shield-check text-santander-red"></i>
+              <i className="fas fa-shield-check text-finora-primary"></i>
               Verification Status
             </CardTitle>
           </CardHeader>
@@ -439,7 +439,7 @@ export default function CustomerProfile() {
                     <div className="flex gap-2 pt-4">
                       <Button 
                         onClick={handleUpdateProfile}
-                        className="bg-santander-red hover:bg-santander-red/90"
+                        className="bg-finora-primary hover:bg-finora-primary/90"
                         disabled={updateProfileMutation.isPending}
                       >
                         {updateProfileMutation.isPending ? (
@@ -543,7 +543,7 @@ export default function CustomerProfile() {
                     <div className="flex gap-2 pt-4">
                       <Button 
                         onClick={handleUpdateProfile}
-                        className="bg-santander-red hover:bg-santander-red/90"
+                        className="bg-finora-primary hover:bg-finora-primary/90"
                         disabled={updateProfileMutation.isPending}
                       >
                         {updateProfileMutation.isPending ? (
@@ -618,7 +618,7 @@ export default function CustomerProfile() {
                     <div className="flex gap-2 pt-4">
                       <Button 
                         onClick={handleUpdateProfile}
-                        className="bg-santander-red hover:bg-santander-red/90"
+                        className="bg-finora-primary hover:bg-finora-primary/90"
                         disabled={updateProfileMutation.isPending}
                       >
                         {updateProfileMutation.isPending ? (

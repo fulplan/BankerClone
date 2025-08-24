@@ -89,12 +89,12 @@ export default function UserManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Users className="h-6 w-6 text-santander-red" />
+          <Users className="h-6 w-6 text-finora-primary" />
           <h1 className="text-2xl font-bold" data-testid="text-user-management-title">User Management</h1>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-santander-red hover:bg-santander-dark" data-testid="button-add-user">
+            <Button className="bg-finora-primary hover:bg-finora-dark" data-testid="button-add-user">
               <Plus className="h-4 w-4 mr-2" />
               Add User
             </Button>
@@ -221,7 +221,7 @@ export default function UserManagement() {
                   </Button>
                   <Button
                     type="submit"
-                    className="flex-1 bg-santander-red hover:bg-santander-dark"
+                    className="flex-1 bg-finora-primary hover:bg-finora-dark"
                     disabled={createUserMutation.isPending}
                     data-testid="button-create-user"
                   >
@@ -464,7 +464,7 @@ function UserActionMenu({ user, onRefresh }: UserActionMenuProps) {
             <Button
               onClick={() => resetPasswordMutation.mutate(user.id)}
               disabled={resetPasswordMutation.isPending}
-              className="bg-santander-red hover:bg-santander-red/90"
+              className="bg-finora-primary hover:bg-finora-primary/90"
             >
               {resetPasswordMutation.isPending ? "Sending..." : "Send Reset Email"}
             </Button>
@@ -601,7 +601,7 @@ function EditUserDialog({ user, isOpen, onOpenChange, onSuccess }: EditUserDialo
               </Button>
               <Button
                 type="submit"
-                className="flex-1 bg-santander-red hover:bg-santander-red/90"
+                className="flex-1 bg-finora-primary hover:bg-finora-primary/90"
                 disabled={updateUserMutation.isPending}
               >
                 {updateUserMutation.isPending ? "Updating..." : "Update User"}

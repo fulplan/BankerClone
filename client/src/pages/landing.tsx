@@ -80,8 +80,8 @@ export default function Landing() {
               <p className="text-gray-600 mb-6">4.7 out of 5 Rating. Based on 379k ratings on the App Store as of 3/26/2025</p>
               
               <div className="flex space-x-4 mb-8">
-                <img src="https://www.santanderbank.com/documents/330001/14323886/27601_apple_btn+%281%29.jpg/bf7ba4f1-97b8-1d4e-28bc-ae5aa6ecbcb8" alt="Download on App Store" className="h-12" />
-                <img src="https://www.santanderbank.com/documents/330001/14323886/27601_google_btn+%281%29.jpg/dd96fe00-ed38-b079-1e46-319aa5d3776c" alt="Get it on Google Play" className="h-12" />
+                <img src="https://www.finorabank.com/documents/330001/14323886/27601_apple_btn+%281%29.jpg/bf7ba4f1-97b8-1d4e-28bc-ae5aa6ecbcb8" alt="Download on App Store" className="h-12" />
+                <img src="https://www.finorabank.com/documents/330001/14323886/27601_google_btn+%281%29.jpg/dd96fe00-ed38-b079-1e46-319aa5d3776c" alt="Get it on Google Play" className="h-12" />
               </div>
               
               <div className="space-y-2">

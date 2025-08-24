@@ -150,7 +150,7 @@ export default function TransferCenter() {
   if (accountsLoading || transfersLoading || standingOrdersLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary"></div>
       </div>
     );
   }
@@ -164,7 +164,7 @@ export default function TransferCenter() {
         </div>
         <Dialog open={isStandingOrderDialogOpen} onOpenChange={setIsStandingOrderDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-santander-red hover:bg-santander-red/90">
+            <Button className="bg-finora-primary hover:bg-finora-primary/90">
               <i className="fas fa-plus mr-2"></i>
               New Standing Order
             </Button>
@@ -273,7 +273,7 @@ export default function TransferCenter() {
 
               <Button 
                 onClick={handleCreateStandingOrder} 
-                className="w-full bg-santander-red hover:bg-santander-red/90"
+                className="w-full bg-finora-primary hover:bg-finora-primary/90"
                 disabled={createStandingOrderMutation.isPending}
               >
                 {createStandingOrderMutation.isPending ? (
@@ -364,7 +364,7 @@ export default function TransferCenter() {
                     <i className="fas fa-calendar-check text-gray-400 text-4xl mb-4"></i>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No Standing Orders</h3>
                     <p className="text-gray-600 mb-4">Set up recurring payments for bills and regular transfers</p>
-                    <Button onClick={() => setIsStandingOrderDialogOpen(true)} className="bg-santander-red hover:bg-santander-red/90">
+                    <Button onClick={() => setIsStandingOrderDialogOpen(true)} className="bg-finora-primary hover:bg-finora-primary/90">
                       Create First Standing Order
                     </Button>
                   </div>

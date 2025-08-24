@@ -118,7 +118,7 @@ export default function EnhancedCustomerManagement() {
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary mx-auto"></div>
         <p className="mt-2 text-gray-600">Loading customers...</p>
       </div>
     );
@@ -158,7 +158,7 @@ export default function EnhancedCustomerManagement() {
               <div
                 key={customer.id}
                 className={`p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
-                  selectedCustomer?.id === customer.id ? 'border-santander-red bg-red-50' : 'border-gray-200'
+                  selectedCustomer?.id === customer.id ? 'border-finora-primary bg-red-50' : 'border-gray-200'
                 }`}
                 onClick={() => setSelectedCustomer(customer)}
               >

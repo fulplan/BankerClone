@@ -10,7 +10,7 @@ export default function FindBranch() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Find a Branch or ATM</h1>
           <p className="text-gray-600 text-lg">
-            Locate the nearest Santander branch or ATM to you. Get directions, hours, and available services.
+            Locate the nearest Finora branch or ATM to you. Get directions, hours, and available services.
           </p>
         </div>
         
@@ -22,23 +22,23 @@ export default function FindBranch() {
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Banking Services</h3>
             <ul className="space-y-2 text-gray-600">
               <li className="flex items-center">
-                <i className="fas fa-check text-santander-red mr-3"></i>
+                <i className="fas fa-check text-finora-primary mr-3"></i>
                 Personal and business account opening
               </li>
               <li className="flex items-center">
-                <i className="fas fa-check text-santander-red mr-3"></i>
+                <i className="fas fa-check text-finora-primary mr-3"></i>
                 Loan consultations and applications
               </li>
               <li className="flex items-center">
-                <i className="fas fa-check text-santander-red mr-3"></i>
+                <i className="fas fa-check text-finora-primary mr-3"></i>
                 Investment and wealth management
               </li>
               <li className="flex items-center">
-                <i className="fas fa-check text-santander-red mr-3"></i>
+                <i className="fas fa-check text-finora-primary mr-3"></i>
                 Mortgage and home equity services
               </li>
               <li className="flex items-center">
-                <i className="fas fa-check text-santander-red mr-3"></i>
+                <i className="fas fa-check text-finora-primary mr-3"></i>
                 Safe deposit boxes
               </li>
             </ul>
@@ -48,23 +48,23 @@ export default function FindBranch() {
             <h3 className="text-xl font-semibold text-gray-900 mb-4">ATM Features</h3>
             <ul className="space-y-2 text-gray-600">
               <li className="flex items-center">
-                <i className="fas fa-check text-santander-red mr-3"></i>
+                <i className="fas fa-check text-finora-primary mr-3"></i>
                 24/7 access to your accounts
               </li>
               <li className="flex items-center">
-                <i className="fas fa-check text-santander-red mr-3"></i>
+                <i className="fas fa-check text-finora-primary mr-3"></i>
                 Cash withdrawals and deposits
               </li>
               <li className="flex items-center">
-                <i className="fas fa-check text-santander-red mr-3"></i>
+                <i className="fas fa-check text-finora-primary mr-3"></i>
                 Check deposits
               </li>
               <li className="flex items-center">
-                <i className="fas fa-check text-santander-red mr-3"></i>
+                <i className="fas fa-check text-finora-primary mr-3"></i>
                 Balance inquiries and transfers
               </li>
               <li className="flex items-center">
-                <i className="fas fa-check text-santander-red mr-3"></i>
+                <i className="fas fa-check text-finora-primary mr-3"></i>
                 Multilingual support
               </li>
             </ul>

@@ -72,11 +72,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-santander-red to-santander-dark flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-finora-primary to-finora-dark flex items-center justify-center p-4">
       <Card className="w-full max-w-md" data-testid="card-login">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center" data-testid="text-login-title">
-            Sign in to Santander
+            Sign in to Finora
           </CardTitle>
           <CardDescription className="text-center" data-testid="text-login-description">
             Enter your credentials to access your account
@@ -139,7 +139,7 @@ export default function Login() {
               />
               <Button
                 type="submit"
-                className="w-full bg-santander-red hover:bg-santander-dark"
+                className="w-full bg-finora-primary hover:bg-finora-dark"
                 disabled={loginMutation.isPending}
                 data-testid="button-login"
               >

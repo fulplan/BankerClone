@@ -181,7 +181,7 @@ export default function BillPayments() {
   if (accountsLoading || billPaymentsLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary"></div>
       </div>
     );
   }
@@ -200,7 +200,7 @@ export default function BillPayments() {
         </div>
         <Dialog open={isPayBillDialogOpen} onOpenChange={setIsPayBillDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-santander-red hover:bg-santander-red/90">
+            <Button className="bg-finora-primary hover:bg-finora-primary/90">
               <i className="fas fa-plus mr-2"></i>
               Pay Bill
             </Button>
@@ -219,8 +219,8 @@ export default function BillPayments() {
                       variant={selectedBillType === type.value ? "default" : "outline"}
                       className={`h-auto p-3 flex flex-col items-center gap-2 ${
                         selectedBillType === type.value 
-                          ? "bg-santander-red text-white" 
-                          : "hover:bg-santander-red/10"
+                          ? "bg-finora-primary text-white" 
+                          : "hover:bg-finora-primary/10"
                       }`}
                       onClick={() => {
                         setSelectedBillType(type.value);
@@ -328,7 +328,7 @@ export default function BillPayments() {
 
                   <Button 
                     onClick={handlePayBill} 
-                    className="w-full bg-santander-red hover:bg-santander-red/90"
+                    className="w-full bg-finora-primary hover:bg-finora-primary/90"
                     disabled={payBillMutation.isPending}
                   >
                     {payBillMutation.isPending ? (
@@ -533,7 +533,7 @@ export default function BillPayments() {
                     <i className="fas fa-sync text-gray-400 text-4xl mb-4"></i>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No Recurring Bills</h3>
                     <p className="text-gray-600 mb-4">Set up automatic bill payments to never miss a due date</p>
-                    <Button onClick={() => setIsPayBillDialogOpen(true)} className="bg-santander-red hover:bg-santander-red/90">
+                    <Button onClick={() => setIsPayBillDialogOpen(true)} className="bg-finora-primary hover:bg-finora-primary/90">
                       Set Up Recurring Payment
                     </Button>
                   </div>
@@ -597,7 +597,7 @@ export default function BillPayments() {
                     <i className="fas fa-file-invoice text-gray-400 text-6xl mb-4"></i>
                     <h3 className="text-xl font-medium text-gray-900 mb-2">No Bills Found</h3>
                     <p className="text-gray-600 mb-6">Start by paying your first bill to see your payment history here.</p>
-                    <Button onClick={() => setIsPayBillDialogOpen(true)} className="bg-santander-red hover:bg-santander-red/90">
+                    <Button onClick={() => setIsPayBillDialogOpen(true)} className="bg-finora-primary hover:bg-finora-primary/90">
                       Pay Your First Bill
                     </Button>
                   </div>

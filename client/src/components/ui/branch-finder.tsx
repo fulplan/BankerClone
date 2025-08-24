@@ -21,7 +21,7 @@ interface Branch {
 const sampleBranches: Branch[] = [
   {
     id: '1',
-    name: 'Santander Bank - Downtown',
+    name: 'Finora Bank - Downtown',
     address: '123 Main Street',
     city: 'Boston',
     state: 'MA',
@@ -53,7 +53,7 @@ const sampleBranches: Branch[] = [
   },
   {
     id: '3',
-    name: 'Santander Bank - Back Bay',
+    name: 'Finora Bank - Back Bay',
     address: '789 Boylston Street',
     city: 'Boston',
     state: 'MA',
@@ -115,7 +115,7 @@ export default function BranchFinder() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <i className="fas fa-map-marker-alt text-santander-red mr-2"></i>
+            <i className="fas fa-map-marker-alt text-finora-primary mr-2"></i>
             Find a Branch or ATM
           </CardTitle>
         </CardHeader>
@@ -131,26 +131,26 @@ export default function BranchFinder() {
               <Button 
                 variant={filterType === 'all' ? 'default' : 'outline'}
                 onClick={() => setFilterType('all')}
-                className={filterType === 'all' ? 'bg-santander-red hover:bg-santander-dark' : ''}
+                className={filterType === 'all' ? 'bg-finora-primary hover:bg-finora-dark' : ''}
               >
                 All
               </Button>
               <Button 
                 variant={filterType === 'branches' ? 'default' : 'outline'}
                 onClick={() => setFilterType('branches')}
-                className={filterType === 'branches' ? 'bg-santander-red hover:bg-santander-dark' : ''}
+                className={filterType === 'branches' ? 'bg-finora-primary hover:bg-finora-dark' : ''}
               >
                 Branches
               </Button>
               <Button 
                 variant={filterType === 'atms' ? 'default' : 'outline'}
                 onClick={() => setFilterType('atms')}
-                className={filterType === 'atms' ? 'bg-santander-red hover:bg-santander-dark' : ''}
+                className={filterType === 'atms' ? 'bg-finora-primary hover:bg-finora-dark' : ''}
               >
                 ATMs
               </Button>
             </div>
-            <Button onClick={handleSearch} className="bg-santander-red hover:bg-santander-dark">
+            <Button onClick={handleSearch} className="bg-finora-primary hover:bg-finora-dark">
               <i className="fas fa-search mr-2"></i>
               Search
             </Button>
@@ -181,14 +181,14 @@ export default function BranchFinder() {
                   
                   <div className="space-y-2 mb-4">
                     <p className="text-gray-600">
-                      <i className="fas fa-map-marker-alt mr-2 text-santander-red"></i>
+                      <i className="fas fa-map-marker-alt mr-2 text-finora-primary"></i>
                       {branch.address}<br />
                       <span className="ml-5">{branch.city}, {branch.state} {branch.zipCode}</span>
                     </p>
                     {branch.phone && (
                       <p className="text-gray-600">
-                        <i className="fas fa-phone mr-2 text-santander-red"></i>
-                        <a href={`tel:${branch.phone}`} className="hover:text-santander-red">
+                        <i className="fas fa-phone mr-2 text-finora-primary"></i>
+                        <a href={`tel:${branch.phone}`} className="hover:text-finora-primary">
                           {branch.phone}
                         </a>
                       </p>
@@ -223,7 +223,7 @@ export default function BranchFinder() {
                   <div className="space-y-2">
                     <Button 
                       onClick={() => getDirections(branch)}
-                      className="w-full bg-santander-red hover:bg-santander-dark"
+                      className="w-full bg-finora-primary hover:bg-finora-dark"
                     >
                       <i className="fas fa-directions mr-2"></i>
                       Get Directions

@@ -212,7 +212,7 @@ export default function CustomerSupport() {
   if (ticketsLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary"></div>
       </div>
     );
   }
@@ -229,7 +229,7 @@ export default function CustomerSupport() {
         </div>
         <Dialog open={isNewTicketDialogOpen} onOpenChange={setIsNewTicketDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-santander-red hover:bg-santander-red/90">
+            <Button className="bg-finora-primary hover:bg-finora-primary/90">
               <i className="fas fa-plus mr-2"></i>
               New Support Request
             </Button>
@@ -248,8 +248,8 @@ export default function CustomerSupport() {
                       variant={ticketForm.category === category.value ? "default" : "outline"}
                       className={`h-auto p-3 flex flex-col items-center gap-2 ${
                         ticketForm.category === category.value 
-                          ? "bg-santander-red text-white" 
-                          : "hover:bg-santander-red/10"
+                          ? "bg-finora-primary text-white" 
+                          : "hover:bg-finora-primary/10"
                       }`}
                       onClick={() => setTicketForm(prev => ({ ...prev, category: category.value }))}
                     >
@@ -307,7 +307,7 @@ export default function CustomerSupport() {
 
               <Button 
                 onClick={handleCreateTicket} 
-                className="w-full bg-santander-red hover:bg-santander-red/90"
+                className="w-full bg-finora-primary hover:bg-finora-primary/90"
                 disabled={createTicketMutation.isPending}
               >
                 {createTicketMutation.isPending ? (
@@ -343,7 +343,7 @@ export default function CustomerSupport() {
                     <i className="fas fa-headset text-gray-400 text-4xl mb-4"></i>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No Support Requests</h3>
                     <p className="text-gray-600 mb-4">You haven't submitted any support requests yet.</p>
-                    <Button onClick={() => setIsNewTicketDialogOpen(true)} className="bg-santander-red hover:bg-santander-red/90">
+                    <Button onClick={() => setIsNewTicketDialogOpen(true)} className="bg-finora-primary hover:bg-finora-primary/90">
                       Create First Request
                     </Button>
                   </div>
@@ -357,13 +357,13 @@ export default function CustomerSupport() {
                             <div 
                               key={ticket.id} 
                               className={`border rounded-lg p-3 cursor-pointer hover:bg-gray-50 ${
-                                selectedTicket?.id === ticket.id ? 'border-santander-red bg-santander-red/5' : ''
+                                selectedTicket?.id === ticket.id ? 'border-finora-primary bg-finora-primary/5' : ''
                               }`}
                               onClick={() => setSelectedTicket(ticket)}
                             >
                               <div className="flex justify-between items-start mb-2">
                                 <div className="flex items-center gap-2">
-                                  <i className={`${getCategoryIcon(ticket.category)} text-santander-red`}></i>
+                                  <i className={`${getCategoryIcon(ticket.category)} text-finora-primary`}></i>
                                   <span className="font-medium text-sm">{ticket.subject}</span>
                                 </div>
                                 <div className="flex gap-1">
@@ -395,7 +395,7 @@ export default function CustomerSupport() {
                             <div 
                               key={ticket.id} 
                               className={`border rounded-lg p-3 cursor-pointer hover:bg-gray-50 opacity-75 ${
-                                selectedTicket?.id === ticket.id ? 'border-santander-red bg-santander-red/5' : ''
+                                selectedTicket?.id === ticket.id ? 'border-finora-primary bg-finora-primary/5' : ''
                               }`}
                               onClick={() => setSelectedTicket(ticket)}
                             >
@@ -466,7 +466,7 @@ export default function CustomerSupport() {
                               <div className={`max-w-[80%] p-3 rounded-lg ${
                                 message.isFromAdmin 
                                   ? 'bg-gray-100 text-gray-900' 
-                                  : 'bg-santander-red text-white'
+                                  : 'bg-finora-primary text-white'
                               }`}>
                                 <p className="text-sm">{message.message}</p>
                                 <p className={`text-xs mt-1 ${
@@ -493,7 +493,7 @@ export default function CustomerSupport() {
                           <Button 
                             onClick={handleSendMessage}
                             disabled={!chatMessage.trim() || sendMessageMutation.isPending}
-                            className="bg-santander-red hover:bg-santander-red/90"
+                            className="bg-finora-primary hover:bg-finora-primary/90"
                           >
                             <i className="fas fa-paper-plane"></i>
                           </Button>
@@ -555,7 +555,7 @@ export default function CustomerSupport() {
                   </div>
                   <div>
                     <p className="font-medium">Email Support</p>
-                    <p className="text-sm text-gray-600">support@santander.com</p>
+                    <p className="text-sm text-gray-600">support@finora.com</p>
                     <p className="text-xs text-gray-500">Response within 24 hours</p>
                   </div>
                 </div>
@@ -578,7 +578,7 @@ export default function CustomerSupport() {
                   <div>
                     <p className="font-medium">Branch Locations</p>
                     <p className="text-sm text-gray-600">Find a branch near you</p>
-                    <Button variant="link" className="p-0 h-auto text-santander-red">
+                    <Button variant="link" className="p-0 h-auto text-finora-primary">
                       Branch Locator
                     </Button>
                   </div>
@@ -636,11 +636,11 @@ export default function CustomerSupport() {
                   Our live chat feature is currently in development. For immediate assistance, please create a support ticket or call us directly.
                 </p>
                 <div className="flex gap-4 justify-center">
-                  <Button onClick={() => setIsNewTicketDialogOpen(true)} className="bg-santander-red hover:bg-santander-red/90">
+                  <Button onClick={() => setIsNewTicketDialogOpen(true)} className="bg-finora-primary hover:bg-finora-primary/90">
                     <i className="fas fa-ticket-alt mr-2"></i>
                     Create Ticket
                   </Button>
-                  <Button variant="outline" className="border-santander-red text-santander-red hover:bg-santander-red hover:text-white">
+                  <Button variant="outline" className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white">
                     <i className="fas fa-phone mr-2"></i>
                     Call Support
                   </Button>

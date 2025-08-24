@@ -188,7 +188,7 @@ export default function CardManagement() {
   if (cardsLoading || accountsLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary"></div>
       </div>
     );
   }
@@ -202,7 +202,7 @@ export default function CardManagement() {
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-santander-red hover:bg-santander-red/90">
+            <Button className="bg-finora-primary hover:bg-finora-primary/90">
               <i className="fas fa-plus mr-2"></i>
               Request New Card
             </Button>
@@ -270,7 +270,7 @@ export default function CardManagement() {
 
               <Button 
                 onClick={handleCreateCard} 
-                className="w-full bg-santander-red hover:bg-santander-red/90"
+                className="w-full bg-finora-primary hover:bg-finora-primary/90"
                 disabled={createCardMutation.isPending}
               >
                 {createCardMutation.isPending ? (
@@ -293,7 +293,7 @@ export default function CardManagement() {
             <p className="text-gray-600 mb-6">You don't have any cards yet. Request your first card to get started.</p>
             <Button 
               onClick={() => setIsCreateDialogOpen(true)}
-              className="bg-santander-red hover:bg-santander-red/90"
+              className="bg-finora-primary hover:bg-finora-primary/90"
             >
               Request Your First Card
             </Button>
@@ -319,7 +319,7 @@ export default function CardManagement() {
                   }`}>
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="text-sm opacity-90">Santander Bank</p>
+                        <p className="text-sm opacity-90">Finora Bank</p>
                         <p className="text-lg font-mono">{maskCardNumber(card.cardNumber)}</p>
                       </div>
                       <div className="text-right">

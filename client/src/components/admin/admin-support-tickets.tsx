@@ -139,7 +139,7 @@ export default function AdminSupportTickets() {
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary mx-auto"></div>
         <p className="mt-2 text-gray-600">Loading support tickets...</p>
       </div>
     );
@@ -267,7 +267,7 @@ export default function AdminSupportTickets() {
                       <div
                         className={`max-w-xs px-3 py-2 rounded-lg ${
                           message.isFromAdmin
-                            ? 'bg-santander-red text-white'
+                            ? 'bg-finora-primary text-white'
                             : 'bg-gray-100 text-gray-900'
                         }`}
                       >
@@ -304,7 +304,7 @@ export default function AdminSupportTickets() {
                       }
                     }}
                     disabled={!replyMessage.trim() || sendReplyMutation.isPending}
-                    className="bg-santander-red hover:bg-santander-red/90"
+                    className="bg-finora-primary hover:bg-finora-primary/90"
                   >
                     <i className="fas fa-reply mr-2"></i>
                     Send Reply

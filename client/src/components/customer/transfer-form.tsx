@@ -231,7 +231,7 @@ export default function TransferForm() {
   if (accountsLoading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary mx-auto"></div>
         <p className="mt-2 text-gray-600">Loading your accounts...</p>
       </div>
     );
@@ -259,7 +259,7 @@ export default function TransferForm() {
     <div className="space-y-6">
       {/* Transfer Progress */}
       {currentTransfer && (
-        <Card className="border-l-4 border-l-santander-red">
+        <Card className="border-l-4 border-l-finora-primary">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Transfer Progress</span>
@@ -300,7 +300,7 @@ export default function TransferForm() {
             )}
 
             {(transferStatus?.status === 'completed' || transferStatus?.status === 'rejected') && (
-              <Button onClick={resetForm} className="w-full bg-santander-red hover:bg-santander-dark">
+              <Button onClick={resetForm} className="w-full bg-finora-primary hover:bg-finora-dark">
                 Make Another Transfer
               </Button>
             )}
@@ -476,7 +476,7 @@ export default function TransferForm() {
               <Button
                 type="submit"
                 disabled={transferMutation.isPending}
-                className="w-full bg-santander-red hover:bg-santander-dark"
+                className="w-full bg-finora-primary hover:bg-finora-dark"
                 data-testid="button-submit-transfer"
               >
                 {transferMutation.isPending ? "Processing..." : "Submit Transfer"}

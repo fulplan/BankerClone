@@ -207,7 +207,7 @@ export default function InvestmentDashboard() {
   if (accountsLoading || investmentsLoading || savingsGoalsLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary"></div>
       </div>
     );
   }
@@ -227,7 +227,7 @@ export default function InvestmentDashboard() {
         <div className="flex gap-2">
           <Dialog open={isSavingsGoalDialogOpen} onOpenChange={setIsSavingsGoalDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="border-santander-red text-santander-red hover:bg-santander-red hover:text-white">
+              <Button variant="outline" className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white">
                 <i className="fas fa-target mr-2"></i>
                 New Goal
               </Button>
@@ -289,7 +289,7 @@ export default function InvestmentDashboard() {
 
                 <Button 
                   onClick={handleCreateSavingsGoal} 
-                  className="w-full bg-santander-red hover:bg-santander-red/90"
+                  className="w-full bg-finora-primary hover:bg-finora-primary/90"
                   disabled={createSavingsGoalMutation.isPending}
                 >
                   {createSavingsGoalMutation.isPending ? (
@@ -305,7 +305,7 @@ export default function InvestmentDashboard() {
 
           <Dialog open={isInvestDialogOpen} onOpenChange={setIsInvestDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-santander-red hover:bg-santander-red/90">
+              <Button className="bg-finora-primary hover:bg-finora-primary/90">
                 <i className="fas fa-plus mr-2"></i>
                 New Investment
               </Button>
@@ -386,7 +386,7 @@ export default function InvestmentDashboard() {
 
                 <Button 
                   onClick={handleCreateInvestment} 
-                  className="w-full bg-santander-red hover:bg-santander-red/90"
+                  className="w-full bg-finora-primary hover:bg-finora-primary/90"
                   disabled={createInvestmentMutation.isPending}
                 >
                   {createInvestmentMutation.isPending ? (
@@ -472,7 +472,7 @@ export default function InvestmentDashboard() {
                     <i className="fas fa-chart-line text-gray-400 text-6xl mb-4"></i>
                     <h3 className="text-xl font-medium text-gray-900 mb-2">Start Your Investment Journey</h3>
                     <p className="text-gray-600 mb-6">Create your first investment to begin building wealth for your future.</p>
-                    <Button onClick={() => setIsInvestDialogOpen(true)} className="bg-santander-red hover:bg-santander-red/90">
+                    <Button onClick={() => setIsInvestDialogOpen(true)} className="bg-finora-primary hover:bg-finora-primary/90">
                       Make First Investment
                     </Button>
                   </div>
@@ -535,7 +535,7 @@ export default function InvestmentDashboard() {
                     <i className="fas fa-target text-gray-400 text-6xl mb-4"></i>
                     <h3 className="text-xl font-medium text-gray-900 mb-2">Set Your Financial Goals</h3>
                     <p className="text-gray-600 mb-6">Create savings goals to track your progress towards important milestones.</p>
-                    <Button onClick={() => setIsSavingsGoalDialogOpen(true)} className="bg-santander-red hover:bg-santander-red/90">
+                    <Button onClick={() => setIsSavingsGoalDialogOpen(true)} className="bg-finora-primary hover:bg-finora-primary/90">
                       Create First Goal
                     </Button>
                   </div>
@@ -640,7 +640,7 @@ export default function InvestmentDashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <i className="fas fa-exchange-alt text-santander-red"></i>
+                <i className="fas fa-exchange-alt text-finora-primary"></i>
                 Live Forex Rates
                 <Badge variant="outline" className="ml-auto">USD Base</Badge>
               </CardTitle>
@@ -648,7 +648,7 @@ export default function InvestmentDashboard() {
             <CardContent>
               {forexLoading ? (
                 <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary"></div>
                 </div>
               ) : forexData?.rates ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

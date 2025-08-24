@@ -230,7 +230,7 @@ export default function AccountManagement() {
   if (usersLoading || accountsLoading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary mx-auto"></div>
         <p className="mt-2 text-gray-600">Loading accounts...</p>
       </div>
     );
@@ -360,7 +360,7 @@ export default function AccountManagement() {
                 <Button
                   onClick={handleStatusUpdate}
                   disabled={statusMutation.isPending}
-                  className="w-full bg-santander-red hover:bg-santander-dark"
+                  className="w-full bg-finora-primary hover:bg-finora-dark"
                   data-testid="button-update-status"
                 >
                   {statusMutation.isPending ? "Updating..." : "Update Status"}
@@ -423,7 +423,7 @@ export default function AccountManagement() {
           <Button
             onClick={handleSendEmail}
             disabled={emailMutation.isPending}
-            className="w-full bg-santander-red hover:bg-santander-dark"
+            className="w-full bg-finora-primary hover:bg-finora-dark"
             data-testid="button-send-email"
           >
             {emailMutation.isPending ? "Sending..." : `Send Email to ${selectedUsers.length} users`}

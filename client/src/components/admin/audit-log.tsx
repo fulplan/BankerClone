@@ -60,7 +60,7 @@ export default function AuditLog() {
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-santander-red mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary mx-auto"></div>
         <p className="mt-2 text-gray-600">Loading audit logs...</p>
       </div>
     );
@@ -83,7 +83,7 @@ export default function AuditLog() {
           ) : (
             <div className="space-y-4">
               {auditLogs.map((log: AuditLog) => (
-                <Card key={log.id} className="border-l-4 border-l-santander-red">
+                <Card key={log.id} className="border-l-4 border-l-finora-primary">
                   <CardContent className="pt-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
