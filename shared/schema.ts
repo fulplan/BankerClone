@@ -141,11 +141,192 @@ export const emailNotifications = pgTable("email_notifications", {
   sentAt: timestamp("sent_at").defaultNow(),
 });
 
+// Card status
+export const cardStatusEnum = pgEnum('card_status', ['active', 'frozen', 'cancelled']);
+
+// Card types
+export const cardTypeEnum = pgEnum('card_type', ['debit', 'credit', 'virtual']);
+
+// Notification types
+export const notificationTypeEnum = pgEnum('notification_type', [
+  'transaction', 'security', 'account_update', 'transfer', 'bill_payment', 
+  'investment', 'fraud_alert', 'marketing', 'system'
+]);
+
+// Notification status
+export const notificationStatusEnum = pgEnum('notification_status', ['unread', 'read', 'archived']);
+
+// Bill payment status
+export const billStatusEnum = pgEnum('bill_status', ['pending', 'paid', 'failed', 'cancelled']);
+
+// Investment types
+export const investmentTypeEnum = pgEnum('investment_type', ['stocks', 'mutual_funds', 'savings_plan', 'forex']);
+
+// Support ticket status
+export const ticketStatusEnum = pgEnum('ticket_status', ['open', 'in_progress', 'resolved', 'closed']);
+
+// Support ticket priority
+export const ticketPriorityEnum = pgEnum('ticket_priority', ['low', 'medium', 'high', 'urgent']);
+
+// Cards table
+export const cards = pgTable("cards", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  accountId: uuid("account_id").references(() => accounts.id).notNull(),
+  cardNumber: varchar("card_number").unique().notNull(),
+  cardHolderName: varchar("card_holder_name").notNull(),
+  expiryDate: varchar("expiry_date").notNull(),
+  cvv: varchar("cvv").notNull(),
+  type: cardTypeEnum("type").default('debit').notNull(),
+  status: cardStatusEnum("status").default('active').notNull(),
+  spendingLimit: decimal("spending_limit", { precision: 15, scale: 2 }).default('5000.00'),
+  dailyLimit: decimal("daily_limit", { precision: 15, scale: 2 }).default('1000.00'),
+  isVirtual: boolean("is_virtual").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Notifications table
+export const notifications = pgTable("notifications", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  type: notificationTypeEnum("type").notNull(),
+  title: varchar("title").notNull(),
+  message: text("message").notNull(),
+  status: notificationStatusEnum("status").default('unread').notNull(),
+  metadata: jsonb("metadata"), // Additional data like transaction ID, etc.
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Bill payments table
+export const billPayments = pgTable("bill_payments", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  accountId: uuid("account_id").references(() => accounts.id).notNull(),
+  billType: varchar("bill_type").notNull(), // utilities, tv, internet, school, etc.
+  billerName: varchar("biller_name").notNull(),
+  billerAccountNumber: varchar("biller_account_number").notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  dueDate: timestamp("due_date"),
+  isRecurring: boolean("is_recurring").default(false),
+  recurringFrequency: varchar("recurring_frequency"), // monthly, weekly, etc.
+  status: billStatusEnum("status").default('pending').notNull(),
+  reference: varchar("reference"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Investments table
+export const investments = pgTable("investments", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  accountId: uuid("account_id").references(() => accounts.id).notNull(),
+  type: investmentTypeEnum("type").notNull(),
+  instrumentName: varchar("instrument_name").notNull(), // stock symbol, fund name, etc.
+  quantity: decimal("quantity", { precision: 15, scale: 6 }).notNull(),
+  purchasePrice: decimal("purchase_price", { precision: 15, scale: 4 }).notNull(),
+  currentPrice: decimal("current_price", { precision: 15, scale: 4 }).notNull(),
+  totalValue: decimal("total_value", { precision: 15, scale: 2 }).notNull(),
+  profitLoss: decimal("profit_loss", { precision: 15, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Savings goals table
+export const savingsGoals = pgTable("savings_goals", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  accountId: uuid("account_id").references(() => accounts.id).notNull(),
+  name: varchar("name").notNull(),
+  targetAmount: decimal("target_amount", { precision: 15, scale: 2 }).notNull(),
+  currentAmount: decimal("current_amount", { precision: 15, scale: 2 }).default('0.00'),
+  targetDate: timestamp("target_date"),
+  autoDeposit: boolean("auto_deposit").default(false),
+  depositAmount: decimal("deposit_amount", { precision: 15, scale: 2 }),
+  depositFrequency: varchar("deposit_frequency"), // weekly, monthly
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Support tickets table
+export const supportTickets = pgTable("support_tickets", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  subject: varchar("subject").notNull(),
+  description: text("description").notNull(),
+  category: varchar("category").notNull(), // account, transfer, card, investment, etc.
+  priority: ticketPriorityEnum("priority").default('medium').notNull(),
+  status: ticketStatusEnum("status").default('open').notNull(),
+  assignedTo: varchar("assigned_to").references(() => users.id),
+  resolution: text("resolution"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Chat messages for live support
+export const chatMessages = pgTable("chat_messages", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  ticketId: uuid("ticket_id").references(() => supportTickets.id).notNull(),
+  senderId: varchar("sender_id").references(() => users.id).notNull(),
+  message: text("message").notNull(),
+  isFromAdmin: boolean("is_from_admin").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Standing orders / scheduled payments
+export const standingOrders = pgTable("standing_orders", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  fromAccountId: uuid("from_account_id").references(() => accounts.id).notNull(),
+  toAccountNumber: varchar("to_account_number").notNull(),
+  toAccountHolderName: varchar("to_account_holder_name").notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  frequency: varchar("frequency").notNull(), // weekly, monthly, quarterly
+  nextPaymentDate: timestamp("next_payment_date").notNull(),
+  endDate: timestamp("end_date"),
+  description: varchar("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Customer profile KYC data
+export const customerProfiles = pgTable("customer_profiles", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).unique().notNull(),
+  dateOfBirth: timestamp("date_of_birth"),
+  phoneNumber: varchar("phone_number"),
+  address: text("address"),
+  city: varchar("city"),
+  state: varchar("state"),
+  zipCode: varchar("zip_code"),
+  country: varchar("country").default('United States'),
+  ssn: varchar("ssn"),
+  employmentStatus: varchar("employment_status"),
+  annualIncome: decimal("annual_income", { precision: 15, scale: 2 }),
+  idVerificationStatus: varchar("id_verification_status").default('pending'), // pending, verified, rejected
+  kycStatus: varchar("kyc_status").default('pending'), // pending, completed, rejected
+  idDocumentUrl: varchar("id_document_url"),
+  proofOfAddressUrl: varchar("proof_of_address_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
   accounts: many(accounts),
   auditLogs: many(auditLogs),
   emailNotifications: many(emailNotifications),
+  cards: many(cards),
+  notifications: many(notifications),
+  billPayments: many(billPayments),
+  investments: many(investments),
+  savingsGoals: many(savingsGoals),
+  supportTickets: many(supportTickets),
+  chatMessages: many(chatMessages),
+  standingOrders: many(standingOrders),
+  customerProfile: one(customerProfiles),
 }));
 
 export const accountsRelations = relations(accounts, ({ one, many }) => ({
@@ -153,6 +334,11 @@ export const accountsRelations = relations(accounts, ({ one, many }) => ({
   transfersFrom: many(transfers, { relationName: "fromAccount" }),
   transfersTo: many(transfers, { relationName: "toAccount" }),
   transactions: many(transactions),
+  cards: many(cards),
+  billPayments: many(billPayments),
+  investments: many(investments),
+  savingsGoals: many(savingsGoals),
+  standingOrders: many(standingOrders),
 }));
 
 export const transfersRelations = relations(transfers, ({ one, many }) => ({
@@ -182,6 +368,51 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
 
 export const emailNotificationsRelations = relations(emailNotifications, ({ one }) => ({
   user: one(users, { fields: [emailNotifications.userId], references: [users.id] }),
+}));
+
+// New relations for extended tables
+export const cardsRelations = relations(cards, ({ one }) => ({
+  user: one(users, { fields: [cards.userId], references: [users.id] }),
+  account: one(accounts, { fields: [cards.accountId], references: [accounts.id] }),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, { fields: [notifications.userId], references: [users.id] }),
+}));
+
+export const billPaymentsRelations = relations(billPayments, ({ one }) => ({
+  user: one(users, { fields: [billPayments.userId], references: [users.id] }),
+  account: one(accounts, { fields: [billPayments.accountId], references: [accounts.id] }),
+}));
+
+export const investmentsRelations = relations(investments, ({ one }) => ({
+  user: one(users, { fields: [investments.userId], references: [users.id] }),
+  account: one(accounts, { fields: [investments.accountId], references: [accounts.id] }),
+}));
+
+export const savingsGoalsRelations = relations(savingsGoals, ({ one }) => ({
+  user: one(users, { fields: [savingsGoals.userId], references: [users.id] }),
+  account: one(accounts, { fields: [savingsGoals.accountId], references: [accounts.id] }),
+}));
+
+export const supportTicketsRelations = relations(supportTickets, ({ one, many }) => ({
+  user: one(users, { fields: [supportTickets.userId], references: [users.id] }),
+  assignedAdmin: one(users, { fields: [supportTickets.assignedTo], references: [users.id] }),
+  chatMessages: many(chatMessages),
+}));
+
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+  ticket: one(supportTickets, { fields: [chatMessages.ticketId], references: [supportTickets.id] }),
+  sender: one(users, { fields: [chatMessages.senderId], references: [users.id] }),
+}));
+
+export const standingOrdersRelations = relations(standingOrders, ({ one }) => ({
+  user: one(users, { fields: [standingOrders.userId], references: [users.id] }),
+  account: one(accounts, { fields: [standingOrders.fromAccountId], references: [accounts.id] }),
+}));
+
+export const customerProfilesRelations = relations(customerProfiles, ({ one }) => ({
+  user: one(users, { fields: [customerProfiles.userId], references: [users.id] }),
 }));
 
 // Zod schemas
@@ -242,8 +473,36 @@ export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
 export type EmailNotification = typeof emailNotifications.$inferSelect;
 export type InsertEmailNotification = z.infer<typeof insertEmailNotificationSchema>;
 
+// New types for extended tables
+export type Card = typeof cards.$inferSelect;
+export type InsertCard = typeof cards.$inferInsert;
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
+export type BillPayment = typeof billPayments.$inferSelect;
+export type InsertBillPayment = typeof billPayments.$inferInsert;
+export type Investment = typeof investments.$inferSelect;
+export type InsertInvestment = typeof investments.$inferInsert;
+export type SavingsGoal = typeof savingsGoals.$inferSelect;
+export type InsertSavingsGoal = typeof savingsGoals.$inferInsert;
+export type SupportTicket = typeof supportTickets.$inferSelect;
+export type InsertSupportTicket = typeof supportTickets.$inferInsert;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = typeof chatMessages.$inferInsert;
+export type StandingOrder = typeof standingOrders.$inferSelect;
+export type InsertStandingOrder = typeof standingOrders.$inferInsert;
+export type CustomerProfile = typeof customerProfiles.$inferSelect;
+export type InsertCustomerProfile = typeof customerProfiles.$inferInsert;
+
 // Enums for TypeScript
 export type UserRole = 'admin' | 'customer';
 export type AccountStatus = 'active' | 'frozen' | 'closed';
 export type TransferStatus = 'pending' | 'processing' | 'verification_required' | 'approved' | 'completed' | 'rejected' | 'failed';
 export type AuditAction = 'account_created' | 'account_frozen' | 'account_unfrozen' | 'account_closed' | 'balance_credited' | 'balance_debited' | 'transfer_approved' | 'transfer_rejected' | 'email_sent';
+export type CardType = 'debit' | 'credit' | 'virtual';
+export type CardStatus = 'active' | 'frozen' | 'cancelled';
+export type NotificationType = 'transaction' | 'security' | 'account_update' | 'transfer' | 'bill_payment' | 'investment' | 'fraud_alert' | 'marketing' | 'system';
+export type NotificationStatus = 'unread' | 'read' | 'archived';
+export type BillStatus = 'pending' | 'paid' | 'failed' | 'cancelled';
+export type InvestmentType = 'stocks' | 'mutual_funds' | 'savings_plan' | 'forex';
+export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';

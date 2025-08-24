@@ -3,9 +3,14 @@ import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/ui/navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CustomerOverview from "@/components/customer/customer-overview";
 import AccountOverview from "@/components/customer/account-overview";
-import TransactionHistory from "@/components/customer/transaction-history";
-import TransferForm from "@/components/customer/transfer-form";
+import CardManagement from "@/components/customer/card-management";
+import TransferCenter from "@/components/customer/transfer-center";
+import BillPayments from "@/components/customer/bill-payments";
+import InvestmentDashboard from "@/components/customer/investment-dashboard";
+import CustomerProfile from "@/components/customer/customer-profile";
+import CustomerSupport from "@/components/customer/customer-support";
 import { isUnauthorizedError } from "@/lib/authUtils";
 
 export default function CustomerDashboard() {
@@ -59,22 +64,47 @@ export default function CustomerDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview" data-testid="tab-overview">Account Overview</TabsTrigger>
-            <TabsTrigger value="transactions" data-testid="tab-transactions">Transaction History</TabsTrigger>
-            <TabsTrigger value="transfer" data-testid="tab-transfer">Transfer Money</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-8">
+            <TabsTrigger value="overview" data-testid="tab-overview">Overview</TabsTrigger>
+            <TabsTrigger value="accounts" data-testid="tab-accounts">Accounts</TabsTrigger>
+            <TabsTrigger value="cards" data-testid="tab-cards">Cards</TabsTrigger>
+            <TabsTrigger value="transfers" data-testid="tab-transfers">Transfers</TabsTrigger>
+            <TabsTrigger value="bills" data-testid="tab-bills">Bill Pay</TabsTrigger>
+            <TabsTrigger value="investments" data-testid="tab-investments">Investments</TabsTrigger>
+            <TabsTrigger value="profile" data-testid="tab-profile">Profile</TabsTrigger>
+            <TabsTrigger value="support" data-testid="tab-support">Support</TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview">
+            <CustomerOverview />
+          </TabsContent>
+          
+          <TabsContent value="accounts">
             <AccountOverview />
           </TabsContent>
           
-          <TabsContent value="transactions">
-            <TransactionHistory />
+          <TabsContent value="cards">
+            <CardManagement />
           </TabsContent>
           
-          <TabsContent value="transfer">
-            <TransferForm />
+          <TabsContent value="transfers">
+            <TransferCenter />
+          </TabsContent>
+          
+          <TabsContent value="bills">
+            <BillPayments />
+          </TabsContent>
+          
+          <TabsContent value="investments">
+            <InvestmentDashboard />
+          </TabsContent>
+          
+          <TabsContent value="profile">
+            <CustomerProfile />
+          </TabsContent>
+          
+          <TabsContent value="support">
+            <CustomerSupport />
           </TabsContent>
         </Tabs>
       </div>

@@ -771,6 +771,412 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Cards API endpoints
+  app.get('/api/cards', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const cards = await storage.getCardsByUserId(userId);
+      res.json(cards);
+    } catch (error) {
+      console.error("Error fetching cards:", error);
+      res.status(500).json({ message: "Failed to fetch cards" });
+    }
+  });
+
+  app.post('/api/cards', isAuthenticated, rateLimit(5, 60000), async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { accountId, cardType, spendingLimit, dailyLimit } = req.body;
+
+      // Validate account belongs to user
+      const account = await storage.getAccountById(accountId);
+      if (!account || account.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to account" });
+      }
+
+      // Generate card details
+      const cardNumber = Math.floor(Math.random() * 9000000000000000 + 1000000000000000).toString();
+      const expiryDate = new Date();
+      expiryDate.setFullYear(expiryDate.getFullYear() + 4);
+      const cvv = Math.floor(Math.random() * 900 + 100).toString();
+
+      const cardData = {
+        userId,
+        accountId,
+        cardNumber,
+        cardHolderName: `${req.user.firstName} ${req.user.lastName}`.toUpperCase(),
+        expiryDate: `${(expiryDate.getMonth() + 1).toString().padStart(2, '0')}/${expiryDate.getFullYear().toString().slice(-2)}`,
+        cvv,
+        type: cardType || 'debit',
+        spendingLimit: spendingLimit || '5000.00',
+        dailyLimit: dailyLimit || '1000.00',
+        isVirtual: cardType === 'virtual',
+      };
+
+      const card = await storage.createCard(cardData);
+      res.json(card);
+    } catch (error) {
+      console.error("Error creating card:", error);
+      res.status(500).json({ message: "Failed to create card" });
+    }
+  });
+
+  app.patch('/api/cards/:id/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const cardId = req.params.id;
+      const { status } = req.body;
+
+      // Validate card belongs to user
+      const card = await storage.getCardById(cardId);
+      if (!card || card.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to card" });
+      }
+
+      await storage.updateCardStatus(cardId, status);
+      res.json({ message: "Card status updated successfully" });
+    } catch (error) {
+      console.error("Error updating card status:", error);
+      res.status(500).json({ message: "Failed to update card status" });
+    }
+  });
+
+  app.patch('/api/cards/:id/limits', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const cardId = req.params.id;
+      const { spendingLimit, dailyLimit } = req.body;
+
+      // Validate card belongs to user
+      const card = await storage.getCardById(cardId);
+      if (!card || card.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to card" });
+      }
+
+      await storage.updateCardLimits(cardId, spendingLimit, dailyLimit);
+      res.json({ message: "Card limits updated successfully" });
+    } catch (error) {
+      console.error("Error updating card limits:", error);
+      res.status(500).json({ message: "Failed to update card limits" });
+    }
+  });
+
+  // Notifications API endpoints
+  app.get('/api/notifications', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const notifications = await storage.getNotificationsByUserId(userId);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.patch('/api/notifications/:id/read', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const notificationId = req.params.id;
+
+      await storage.markNotificationAsRead(notificationId, userId);
+      res.json({ message: "Notification marked as read" });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  // Bill payments API endpoints
+  app.get('/api/bill-payments', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const billPayments = await storage.getBillPaymentsByUserId(userId);
+      res.json(billPayments);
+    } catch (error) {
+      console.error("Error fetching bill payments:", error);
+      res.status(500).json({ message: "Failed to fetch bill payments" });
+    }
+  });
+
+  app.post('/api/bill-payments', isAuthenticated, rateLimit(10, 60000), async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const billData = { ...req.body, userId };
+
+      // Validate account belongs to user
+      const account = await storage.getAccountById(billData.accountId);
+      if (!account || account.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to account" });
+      }
+
+      // Check sufficient funds
+      if (parseFloat(account.balance) < parseFloat(billData.amount)) {
+        return res.status(400).json({ message: "Insufficient funds" });
+      }
+
+      const billPayment = await storage.createBillPayment(billData);
+      res.json(billPayment);
+    } catch (error) {
+      console.error("Error creating bill payment:", error);
+      res.status(500).json({ message: "Failed to create bill payment" });
+    }
+  });
+
+  app.delete('/api/bill-payments/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const billId = req.params.id;
+
+      const billPayment = await storage.getBillPaymentById(billId);
+      if (!billPayment || billPayment.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to bill payment" });
+      }
+
+      await storage.cancelBillPayment(billId);
+      res.json({ message: "Bill payment cancelled successfully" });
+    } catch (error) {
+      console.error("Error cancelling bill payment:", error);
+      res.status(500).json({ message: "Failed to cancel bill payment" });
+    }
+  });
+
+  // Investments API endpoints
+  app.get('/api/investments', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const investments = await storage.getInvestmentsByUserId(userId);
+      res.json(investments);
+    } catch (error) {
+      console.error("Error fetching investments:", error);
+      res.status(500).json({ message: "Failed to fetch investments" });
+    }
+  });
+
+  app.post('/api/investments', isAuthenticated, rateLimit(10, 60000), async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { accountId, type, instrumentName, amount } = req.body;
+
+      // Validate account belongs to user
+      const account = await storage.getAccountById(accountId);
+      if (!account || account.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to account" });
+      }
+
+      // Check sufficient funds
+      const investmentAmount = parseFloat(amount);
+      if (parseFloat(account.balance) < investmentAmount) {
+        return res.status(400).json({ message: "Insufficient funds" });
+      }
+
+      // Mock pricing data
+      const prices = {
+        'AAPL': 175.43, 'GOOGL': 2734.56, 'MSFT': 334.89, 'AMZN': 3342.88, 'TSLA': 792.12,
+        'Vanguard S&P 500': 412.78, 'Growth Fund': 58.34, 'Contrafund': 18.45
+      };
+      const currentPrice = prices[instrumentName as keyof typeof prices] || 100.00;
+      const quantity = investmentAmount / currentPrice;
+
+      const investmentData = {
+        userId,
+        accountId,
+        type,
+        instrumentName,
+        quantity: quantity.toString(),
+        purchasePrice: currentPrice.toString(),
+        currentPrice: currentPrice.toString(),
+        totalValue: investmentAmount.toString(),
+        profitLoss: '0.00',
+      };
+
+      const investment = await storage.createInvestment(investmentData);
+      
+      // Deduct amount from account
+      const newBalance = (parseFloat(account.balance) - investmentAmount).toFixed(2);
+      await storage.updateAccountBalance(accountId, newBalance);
+
+      res.json(investment);
+    } catch (error) {
+      console.error("Error creating investment:", error);
+      res.status(500).json({ message: "Failed to create investment" });
+    }
+  });
+
+  // Savings goals API endpoints
+  app.get('/api/savings-goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const savingsGoals = await storage.getSavingsGoalsByUserId(userId);
+      res.json(savingsGoals);
+    } catch (error) {
+      console.error("Error fetching savings goals:", error);
+      res.status(500).json({ message: "Failed to fetch savings goals" });
+    }
+  });
+
+  app.post('/api/savings-goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const goalData = { ...req.body, userId };
+
+      // Validate account belongs to user
+      const account = await storage.getAccountById(goalData.accountId);
+      if (!account || account.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to account" });
+      }
+
+      const savingsGoal = await storage.createSavingsGoal(goalData);
+      res.json(savingsGoal);
+    } catch (error) {
+      console.error("Error creating savings goal:", error);
+      res.status(500).json({ message: "Failed to create savings goal" });
+    }
+  });
+
+  // Standing orders API endpoints
+  app.get('/api/standing-orders', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const standingOrders = await storage.getStandingOrdersByUserId(userId);
+      res.json(standingOrders);
+    } catch (error) {
+      console.error("Error fetching standing orders:", error);
+      res.status(500).json({ message: "Failed to fetch standing orders" });
+    }
+  });
+
+  app.post('/api/standing-orders', isAuthenticated, rateLimit(5, 60000), async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const orderData = { ...req.body, userId };
+
+      // Validate account belongs to user
+      const account = await storage.getAccountById(orderData.fromAccountId);
+      if (!account || account.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to account" });
+      }
+
+      const standingOrder = await storage.createStandingOrder(orderData);
+      res.json(standingOrder);
+    } catch (error) {
+      console.error("Error creating standing order:", error);
+      res.status(500).json({ message: "Failed to create standing order" });
+    }
+  });
+
+  app.delete('/api/standing-orders/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const orderId = req.params.id;
+
+      const standingOrder = await storage.getStandingOrderById(orderId);
+      if (!standingOrder || standingOrder.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to standing order" });
+      }
+
+      await storage.cancelStandingOrder(orderId);
+      res.json({ message: "Standing order cancelled successfully" });
+    } catch (error) {
+      console.error("Error cancelling standing order:", error);
+      res.status(500).json({ message: "Failed to cancel standing order" });
+    }
+  });
+
+  // Customer profile API endpoints
+  app.get('/api/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const profile = await storage.getCustomerProfile(userId);
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  app.put('/api/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const profileData = { ...req.body, userId };
+
+      const profile = await storage.updateCustomerProfile(userId, profileData);
+      res.json(profile);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // Support tickets API endpoints
+  app.get('/api/support/tickets', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const tickets = await storage.getSupportTicketsByUserId(userId);
+      res.json(tickets);
+    } catch (error) {
+      console.error("Error fetching support tickets:", error);
+      res.status(500).json({ message: "Failed to fetch support tickets" });
+    }
+  });
+
+  app.post('/api/support/tickets', isAuthenticated, rateLimit(5, 60000), async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const ticketData = { ...req.body, userId };
+
+      const ticket = await storage.createSupportTicket(ticketData);
+      res.json(ticket);
+    } catch (error) {
+      console.error("Error creating support ticket:", error);
+      res.status(500).json({ message: "Failed to create support ticket" });
+    }
+  });
+
+  app.get('/api/support/tickets/:id/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const ticketId = req.params.id;
+
+      // Validate ticket belongs to user
+      const ticket = await storage.getSupportTicketById(ticketId);
+      if (!ticket || ticket.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to ticket" });
+      }
+
+      const messages = await storage.getChatMessagesByTicketId(ticketId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ message: "Failed to fetch chat messages" });
+    }
+  });
+
+  app.post('/api/support/tickets/:id/messages', isAuthenticated, rateLimit(20, 60000), async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const ticketId = req.params.id;
+      const { message } = req.body;
+
+      // Validate ticket belongs to user
+      const ticket = await storage.getSupportTicketById(ticketId);
+      if (!ticket || ticket.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to ticket" });
+      }
+
+      const chatMessage = await storage.createChatMessage({
+        ticketId,
+        senderId: userId,
+        message,
+        isFromAdmin: false,
+      });
+
+      res.json(chatMessage);
+    } catch (error) {
+      console.error("Error creating chat message:", error);
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

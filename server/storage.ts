@@ -485,6 +485,147 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  // Cards methods
+  async getCardsByUserId(userId: number): Promise<BankCard[]> {
+    return await db.select().from(bankCards).where(eq(bankCards.userId, userId));
+  }
+
+  async createCard(cardData: any): Promise<BankCard> {
+    const result = await db.insert(bankCards).values(cardData).returning();
+    return result[0];
+  }
+
+  async getCardById(cardId: string): Promise<BankCard | null> {
+    const result = await db.select().from(bankCards).where(eq(bankCards.id, cardId)).limit(1);
+    return result[0] || null;
+  }
+
+  async updateCardStatus(cardId: string, status: string): Promise<void> {
+    await db.update(bankCards).set({ status }).where(eq(bankCards.id, cardId));
+  }
+
+  async updateCardLimits(cardId: string, spendingLimit: string, dailyLimit: string): Promise<void> {
+    await db.update(bankCards).set({ spendingLimit, dailyLimit }).where(eq(bankCards.id, cardId));
+  }
+
+  // Notifications methods
+  async getNotificationsByUserId(userId: number): Promise<Notification[]> {
+    return await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
+  }
+
+  async markNotificationAsRead(notificationId: string, userId: number): Promise<void> {
+    await db.update(notifications).set({ status: 'read' }).where(and(eq(notifications.id, notificationId), eq(notifications.userId, userId)));
+  }
+
+  // Bill payments methods
+  async getBillPaymentsByUserId(userId: number): Promise<BillPayment[]> {
+    return await db.select().from(billPayments).where(eq(billPayments.userId, userId)).orderBy(desc(billPayments.createdAt));
+  }
+
+  async createBillPayment(billData: any): Promise<BillPayment> {
+    const result = await db.insert(billPayments).values(billData).returning();
+    return result[0];
+  }
+
+  async getBillPaymentById(billId: string): Promise<BillPayment | null> {
+    const result = await db.select().from(billPayments).where(eq(billPayments.id, billId)).limit(1);
+    return result[0] || null;
+  }
+
+  async cancelBillPayment(billId: string): Promise<void> {
+    await db.update(billPayments).set({ status: 'cancelled' }).where(eq(billPayments.id, billId));
+  }
+
+  // Investments methods
+  async getInvestmentsByUserId(userId: number): Promise<Investment[]> {
+    return await db.select().from(investments).where(eq(investments.userId, userId)).orderBy(desc(investments.createdAt));
+  }
+
+  async createInvestment(investmentData: any): Promise<Investment> {
+    const result = await db.insert(investments).values(investmentData).returning();
+    return result[0];
+  }
+
+  // Savings goals methods
+  async getSavingsGoalsByUserId(userId: number): Promise<SavingsGoal[]> {
+    return await db.select().from(savingsGoals).where(eq(savingsGoals.userId, userId)).orderBy(desc(savingsGoals.createdAt));
+  }
+
+  async createSavingsGoal(goalData: any): Promise<SavingsGoal> {
+    const result = await db.insert(savingsGoals).values(goalData).returning();
+    return result[0];
+  }
+
+  // Standing orders methods
+  async getStandingOrdersByUserId(userId: number): Promise<StandingOrder[]> {
+    return await db.select().from(standingOrders).where(eq(standingOrders.userId, userId)).orderBy(desc(standingOrders.createdAt));
+  }
+
+  async createStandingOrder(orderData: any): Promise<StandingOrder> {
+    const result = await db.insert(standingOrders).values(orderData).returning();
+    return result[0];
+  }
+
+  async getStandingOrderById(orderId: string): Promise<StandingOrder | null> {
+    const result = await db.select().from(standingOrders).where(eq(standingOrders.id, orderId)).limit(1);
+    return result[0] || null;
+  }
+
+  async cancelStandingOrder(orderId: string): Promise<void> {
+    await db.update(standingOrders).set({ status: 'cancelled' }).where(eq(standingOrders.id, orderId));
+  }
+
+  // Customer profile methods
+  async getCustomerProfile(userId: number): Promise<CustomerProfile | null> {
+    const result = await db.select().from(customerProfiles).where(eq(customerProfiles.userId, userId)).limit(1);
+    return result[0] || null;
+  }
+
+  async updateCustomerProfile(userId: number, profileData: any): Promise<CustomerProfile> {
+    const existing = await this.getCustomerProfile(userId);
+    if (existing) {
+      const result = await db.update(customerProfiles).set(profileData).where(eq(customerProfiles.userId, userId)).returning();
+      return result[0];
+    } else {
+      const result = await db.insert(customerProfiles).values({ ...profileData, userId }).returning();
+      return result[0];
+    }
+  }
+
+  // Support tickets methods
+  async getSupportTicketsByUserId(userId: number): Promise<SupportTicket[]> {
+    return await db.select().from(supportTickets).where(eq(supportTickets.userId, userId)).orderBy(desc(supportTickets.createdAt));
+  }
+
+  async createSupportTicket(ticketData: any): Promise<SupportTicket> {
+    const result = await db.insert(supportTickets).values(ticketData).returning();
+    return result[0];
+  }
+
+  async getSupportTicketById(ticketId: string): Promise<SupportTicket | null> {
+    const result = await db.select().from(supportTickets).where(eq(supportTickets.id, ticketId)).limit(1);
+    return result[0] || null;
+  }
+
+  async getChatMessagesByTicketId(ticketId: string): Promise<ChatMessage[]> {
+    return await db.select().from(chatMessages).where(eq(chatMessages.ticketId, ticketId)).orderBy(chatMessages.createdAt);
+  }
+
+  async createChatMessage(messageData: any): Promise<ChatMessage> {
+    const result = await db.insert(chatMessages).values(messageData).returning();
+    return result[0];
+  }
+
+  // Additional account methods
+  async getAccountById(accountId: string): Promise<Account | null> {
+    const result = await db.select().from(accounts).where(eq(accounts.id, accountId)).limit(1);
+    return result[0] || null;
+  }
+
+  async updateAccountBalance(accountId: string, newBalance: string): Promise<void> {
+    await db.update(accounts).set({ balance: newBalance }).where(eq(accounts.id, accountId));
+  }
 }
 
 export const storage = new DatabaseStorage();
