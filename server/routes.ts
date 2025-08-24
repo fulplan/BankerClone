@@ -1097,13 +1097,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/profile', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const profileData = { ...req.body, userId };
-
-      const profile = await storage.updateCustomerProfile(userId, profileData);
+      const profileData = { ...req.body };
+      
+      // Convert any timestamp fields from strings to Date objects
+      if (profileData.dateOfBirth && typeof profileData.dateOfBirth === 'string') {
+        profileData.dateOfBirth = new Date(profileData.dateOfBirth);
+      }
+      
+      // Remove timestamp fields that shouldn't be updated by user
+      delete profileData.createdAt;
+      delete profileData.updatedAt;
+      
+      // Remove fields that belong to users table, not customer_profiles table
+      const { firstName, lastName, email, ...customerProfileData } = profileData;
+      
+      // Update user info separately if provided
+      if (firstName || lastName || email) {
+        await storage.updateUser(userId, { firstName, lastName, email });
+      }
+      
+      // Update customer profile
+      const profile = await storage.updateCustomerProfile(userId, customerProfileData);
       res.json(profile);
     } catch (error) {
       console.error("Error updating profile:", error);
       res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // Document upload for customer profiles
+  app.post('/api/profile/documents', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { documentType } = req.body;
+      
+      // For this demo, we'll simulate document storage
+      // In production, you'd use actual file upload (multer) and cloud storage
+      const documentUrl = `https://documents.finora.com/${userId}/${documentType}-${Date.now()}.pdf`;
+      
+      // Update the customer profile with the document URL
+      const updateData: any = {};
+      if (documentType === 'identity') {
+        updateData.idDocumentUrl = documentUrl;
+        updateData.idVerificationStatus = 'pending';
+      } else if (documentType === 'address') {
+        updateData.proofOfAddressUrl = documentUrl;
+      }
+      
+      if (Object.keys(updateData).length > 0) {
+        await storage.updateCustomerProfile(userId, updateData);
+      }
+      
+      res.json({ 
+        message: "Document uploaded successfully",
+        documentUrl,
+        documentType
+      });
+    } catch (error) {
+      console.error("Error uploading document:", error);
+      res.status(500).json({ message: "Failed to upload document" });
     }
   });
 

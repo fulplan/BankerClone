@@ -374,6 +374,24 @@ npm run test
 
 This project is licensed under the MIT License. See LICENSE file for details.
 
+## 🔧 Recent Fixes & Updates
+
+### Latest Improvements ✅
+- **Authentication System**: Fixed session persistence and automatic logout issues 
+- **Customer Dashboard**: Resolved redirect loops causing endless login attempts
+- **Profile Updates**: Fixed timestamp conversion errors for date fields (dateOfBirth)
+- **Document Upload**: Added missing `/api/profile/documents` endpoint for KYC documents
+- **Database Schema**: Proper handling of date/timestamp fields in customer profiles
+- **Redirect Issues**: Fixed wrong redirect URLs from `/api/login` to `/login`
+
+### Known Working Features
+- ✅ Admin login (admin@admin.com / admin123)
+- ✅ Customer registration and login
+- ✅ Profile information updates
+- ✅ Document upload for verification
+- ✅ Session persistence across page refreshes
+- ✅ Role-based dashboard access
+
 ## 📞 Support
 
 ### Getting Help
