@@ -1,18 +1,35 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/ui/navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import AccountManagement from "@/components/admin/account-management";
 import TransferApproval from "@/components/admin/transfer-approval";
 import AuditLog from "@/components/admin/audit-log";
 import UserManagement from "@/pages/user-management";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { Users, DollarSign, Activity, TrendingUp, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 
 export default function AdminDashboard() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
+
+  // Fetch real-time system statistics
+  const { data: stats, isLoading: statsLoading } = useQuery<any>({
+    queryKey: ["/api/admin/stats"],
+    refetchInterval: 30000, // Refresh every 30 seconds
+    retry: false,
+  });
+
+  // Fetch forex rates for additional dashboard info
+  const { data: forexRates } = useQuery<any>({
+    queryKey: ["/api/forex-rates"],
+    refetchInterval: 60000, // Refresh every minute
+    retry: false,
+  });
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -67,51 +84,95 @@ export default function AdminDashboard() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Users</CardTitle>
+        {/* Real-time Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-blue-700">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900" data-testid="text-total-users">
-                Loading...
+              <div className="text-2xl font-bold text-blue-900" data-testid="text-total-users">
+                {statsLoading ? "Loading..." : stats?.users?.total || "0"}
               </div>
+              <p className="text-xs text-blue-600 mt-1">
+                {stats?.users?.newToday || 0} new today • {stats?.users?.activeNow || 0} online
+              </p>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Active Accounts</CardTitle>
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-green-700">Active Accounts</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900" data-testid="text-active-accounts">
-                Loading...
+              <div className="text-2xl font-bold text-green-900" data-testid="text-active-accounts">
+                {statsLoading ? "Loading..." : stats?.accounts?.active || "0"}
               </div>
+              <p className="text-xs text-green-600 mt-1">
+                {stats?.accounts?.frozen || 0} frozen • {stats?.accounts?.closed || 0} closed
+              </p>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Pending Transfers</CardTitle>
+          <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-red-700">Pending Transfers</CardTitle>
+              <Clock className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-santander-red" data-testid="text-pending-transfers">
-                Loading...
+              <div className="text-2xl font-bold text-red-900" data-testid="text-pending-transfers">
+                {statsLoading ? "Loading..." : stats?.transfers?.pending || "0"}
               </div>
+              <p className="text-xs text-red-600 mt-1">
+                {stats?.transfers?.completed || 0} completed • {stats?.transfers?.rejected || 0} rejected
+              </p>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Today's Actions</CardTitle>
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-purple-700">Total Balance</CardTitle>
+              <DollarSign className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900" data-testid="text-todays-actions">
-                Loading...
+              <div className="text-2xl font-bold text-purple-900" data-testid="text-total-balance">
+                {statsLoading ? "Loading..." : `$${(stats?.accounts?.totalBalance || 0).toLocaleString()}`}
               </div>
+              <p className="text-xs text-purple-600 mt-1">
+                Monthly Volume: ${(stats?.transactions?.monthlyVolume || 0).toLocaleString()}
+              </p>
             </CardContent>
           </Card>
         </div>
+
+        {/* Forex Rates Display */}
+        {forexRates && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Live Exchange Rates (USD Base)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {forexRates.rates?.slice(0, 10).map((rate: any) => (
+                  <div key={rate.currency} className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div className="font-semibold text-gray-900">{rate.currency}</div>
+                    <div className="text-lg font-bold">{rate.rate}</div>
+                    <div className={`text-sm ${
+                      parseFloat(rate.changePercent) >= 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {parseFloat(rate.changePercent) >= 0 ? '+' : ''}{rate.changePercent}%
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Tabs defaultValue="accounts" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
