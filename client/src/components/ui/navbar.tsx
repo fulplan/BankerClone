@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { Home, Search } from "lucide-react";
 
 interface NavbarProps {
   showLogin: boolean;
@@ -24,41 +25,44 @@ export default function Navbar({ showLogin }: NavbarProps) {
   };
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          <div className="flex items-center">
-            <Link href="/">
-              <img 
-                src="/@assets/generated_images/Finora_banking_logo_bd4863b1.png" 
-                alt="Finora Bank Logo" 
-                className="h-8 cursor-pointer" 
-                data-testid="img-logo"
-              />
+        <div className="flex justify-between items-center py-3">
+          <div className="flex items-center space-x-6">
+            <Link href="/" className="flex items-center text-gray-600 hover:text-finora-primary transition-colors duration-200">
+              <Home className="w-5 h-5" />
             </Link>
+            <span className="text-gray-600 text-sm">You're in <strong>Ghana</strong></span>
           </div>
           
-          <nav className="hidden md:flex space-x-8">
-            <Link href="/personal" className="text-gray-700 hover:text-finora-primary transition-colors duration-200">Personal</Link>
-            <Link href="/business" className="text-gray-700 hover:text-finora-primary transition-colors duration-200">Business</Link>
-            <Link href="/commercial" className="text-gray-700 hover:text-finora-primary transition-colors duration-200">Commercial</Link>
-            <Link href="/private-client" className="text-gray-700 hover:text-finora-primary transition-colors duration-200">Private Client</Link>
-            <Link href="/investing" className="text-gray-700 hover:text-finora-primary transition-colors duration-200">Investing</Link>
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link href="/products" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium">Products</Link>
+            <Link href="/promotions" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium">Promotions</Link>
+            <Link href="/services" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium">Services</Link>
+            <Link href="/help" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium">Help</Link>
+            <button className="text-gray-600 hover:text-finora-primary transition-colors duration-200">
+              <Search className="w-5 h-5" />
+            </button>
           </nav>
           
-          <div className="flex items-center space-x-4">
-            <Link href="/find-branch" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm">
-              Find a Branch/ATM
-            </Link>
-            
+          <div className="flex items-center space-x-3">
             {showLogin && !isAuthenticated && (
-              <Button 
-                onClick={handleLogin}
-                className="bg-finora-primary text-white hover:bg-finora-dark"
-                data-testid="button-login"
-              >
-                Login
-              </Button>
+              <>
+                <Button 
+                  variant="outline"
+                  className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white text-xs font-medium px-4 py-2"
+                  data-testid="button-open-account"
+                >
+                  OPEN AN ACCOUNT
+                </Button>
+                <Button 
+                  onClick={handleLogin}
+                  className="bg-green-700 text-white hover:bg-green-800 text-xs font-medium px-6 py-2"
+                  data-testid="button-login"
+                >
+                  LOGIN
+                </Button>
+              </>
             )}
             
             {isAuthenticated && user && (
@@ -76,6 +80,15 @@ export default function Navbar({ showLogin }: NavbarProps) {
                 </Button>
               </div>
             )}
+            
+            <Link href="/">
+              <img 
+                src="/@assets/generated_images/Finora_banking_logo_bd4863b1.png" 
+                alt="Finora Bank Logo" 
+                className="h-8 cursor-pointer ml-4" 
+                data-testid="img-logo"
+              />
+            </Link>
           </div>
         </div>
       </div>

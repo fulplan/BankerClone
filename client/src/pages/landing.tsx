@@ -1,6 +1,6 @@
 import Navbar from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
-import { Building, CreditCard, Smartphone, PiggyBank, FileText, TrendingUp, Users, ShoppingCart, Calendar, ArrowRight, Download } from "lucide-react";
+import { Building, CreditCard, Smartphone, PiggyBank, FileText, TrendingUp, Users, ShoppingCart, Calendar, ArrowRight, Download, Award, DollarSign, Gift } from "lucide-react";
 
 export default function Landing() {
   return (
@@ -8,57 +8,72 @@ export default function Landing() {
       <Navbar showLogin={true} />
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-gray-50 to-gray-100 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                Finora Deposit Protection
-              </h1>
-              <p className="text-lg text-gray-600 mb-8">
-                Your deposits are protected with comprehensive insurance coverage, giving you peace of mind with every transaction.
-              </p>
-              <Button 
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg font-semibold rounded-md"
-                data-testid="button-know-more"
-              >
-                KNOW MORE
-              </Button>
-            </div>
-            <div className="relative">
-              <img 
-                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" 
-                alt="Business professionals discussing banking" 
-                className="rounded-lg shadow-lg w-full h-auto"
-              />
-            </div>
+      <section 
+        className="relative h-96 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: "url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=800')"
+        }}
+      >
+        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+          <div className="max-w-2xl">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Ghana Deposit Protection
+            </h1>
+            <Button 
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-sm font-semibold rounded-md"
+              data-testid="button-know-more"
+            >
+              KNOW MORE
+            </Button>
           </div>
+        </div>
+        
+        {/* Carousel Dots */}
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          <div className="w-3 h-3 rounded-full bg-white opacity-100"></div>
+          <div className="w-3 h-3 rounded-full bg-white opacity-50"></div>
+          <div className="w-3 h-3 rounded-full bg-white opacity-50"></div>
+          <div className="w-3 h-3 rounded-full bg-white opacity-50"></div>
+          <div className="w-3 h-3 rounded-full bg-white opacity-50"></div>
+          <div className="w-3 h-3 rounded-full bg-white opacity-50"></div>
+          <div className="w-3 h-3 rounded-full bg-white opacity-50"></div>
         </div>
       </section>
 
       {/* Service Icons Section */}
-      <section className="py-12 bg-white border-b">
+      <section className="py-16 bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
-            <div className="flex flex-col items-center">
-              <Building className="w-12 h-12 text-finora-primary mb-3" />
-              <span className="text-sm font-medium text-gray-700">Accounts & Deposits</span>
+            <div className="flex flex-col items-center group cursor-pointer">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
+                <Building className="w-8 h-8 text-finora-primary" />
+              </div>
+              <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Accounts & Deposits</span>
             </div>
-            <div className="flex flex-col items-center">
-              <FileText className="w-12 h-12 text-finora-primary mb-3" />
-              <span className="text-sm font-medium text-gray-700">Personal Loans</span>
+            <div className="flex flex-col items-center group cursor-pointer">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
+                <FileText className="w-8 h-8 text-finora-primary" />
+              </div>
+              <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Personal Loans</span>
             </div>
-            <div className="flex flex-col items-center">
-              <Smartphone className="w-12 h-12 text-finora-primary mb-3" />
-              <span className="text-sm font-medium text-gray-700">eWallet</span>
+            <div className="flex flex-col items-center group cursor-pointer">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
+                <TrendingUp className="w-8 h-8 text-finora-primary" />
+              </div>
+              <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Wealth</span>
             </div>
-            <div className="flex flex-col items-center">
-              <TrendingUp className="w-12 h-12 text-finora-primary mb-3" />
-              <span className="text-sm font-medium text-gray-700">Financing</span>
+            <div className="flex flex-col items-center group cursor-pointer">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
+                <Award className="w-8 h-8 text-finora-primary" />
+              </div>
+              <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Rewards</span>
             </div>
-            <div className="flex flex-col items-center">
-              <CreditCard className="w-12 h-12 text-finora-primary mb-3" />
-              <span className="text-sm font-medium text-gray-700">Debit Cards</span>
+            <div className="flex flex-col items-center group cursor-pointer">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
+                <CreditCard className="w-8 h-8 text-finora-primary" />
+              </div>
+              <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Debit Cards</span>
             </div>
           </div>
         </div>
