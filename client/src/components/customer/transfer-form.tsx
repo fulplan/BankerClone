@@ -20,6 +20,9 @@ interface TransferFormData {
   toRoutingNumber: string;
   toBankName: string;
   toAccountHolderName: string;
+  recipientEmail: string;
+  recipientPhone: string;
+  recipientSSN: string;
   amount: string;
   description: string;
 }
@@ -33,6 +36,9 @@ export default function TransferForm() {
     toRoutingNumber: "",
     toBankName: "",
     toAccountHolderName: "",
+    recipientEmail: "",
+    recipientPhone: "",
+    recipientSSN: "",
     amount: "",
     description: "",
   });
@@ -151,10 +157,32 @@ export default function TransferForm() {
     e.preventDefault();
     
     // Validation
-    if (!formData.fromAccountId || !formData.toAccountHolderName || !formData.amount) {
+    if (!formData.fromAccountId || !formData.toAccountHolderName || !formData.amount || !formData.recipientEmail || !formData.recipientPhone) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.recipientEmail)) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Phone validation
+    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    if (!phoneRegex.test(formData.recipientPhone.replace(/[^\d\+]/g, ''))) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter a valid phone number",
         variant: "destructive",
       });
       return;
@@ -189,6 +217,9 @@ export default function TransferForm() {
       toRoutingNumber: "",
       toBankName: "",
       toAccountHolderName: "",
+      recipientEmail: "",
+      recipientPhone: "",
+      recipientSSN: "",
       amount: "",
       description: "",
     });
@@ -316,6 +347,46 @@ export default function TransferForm() {
                 </div>
                 
                 <div>
+                  <Label htmlFor="recipient-email">Recipient Email *</Label>
+                  <Input
+                    id="recipient-email"
+                    type="email"
+                    value={formData.recipientEmail}
+                    onChange={(e) => handleInputChange('recipientEmail', e.target.value)}
+                    placeholder="recipient@email.com"
+                    data-testid="input-recipient-email"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="recipient-phone">Recipient Phone *</Label>
+                  <Input
+                    id="recipient-phone"
+                    type="tel"
+                    value={formData.recipientPhone}
+                    onChange={(e) => handleInputChange('recipientPhone', e.target.value)}
+                    placeholder="+1 (555) 123-4567"
+                    data-testid="input-recipient-phone"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="recipient-ssn">Last 4 digits of SSN (Optional)</Label>
+                  <Input
+                    id="recipient-ssn"
+                    value={formData.recipientSSN}
+                    onChange={(e) => handleInputChange('recipientSSN', e.target.value)}
+                    placeholder="****"
+                    maxLength={4}
+                    data-testid="input-recipient-ssn"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
                   <Label htmlFor="account-number">Account Number</Label>
                   <Input
                     id="account-number"
@@ -325,9 +396,7 @@ export default function TransferForm() {
                     data-testid="input-account-number"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
                 <div>
                   <Label htmlFor="routing-number">Routing Number</Label>
                   <Input
@@ -338,17 +407,17 @@ export default function TransferForm() {
                     data-testid="input-routing-number"
                   />
                 </div>
-                
-                <div>
-                  <Label htmlFor="bank-name">Bank Name</Label>
-                  <Input
-                    id="bank-name"
-                    value={formData.toBankName}
-                    onChange={(e) => handleInputChange('toBankName', e.target.value)}
-                    placeholder="Recipient's bank name"
-                    data-testid="input-bank-name"
-                  />
-                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="bank-name">Bank Name</Label>
+                <Input
+                  id="bank-name"
+                  value={formData.toBankName}
+                  onChange={(e) => handleInputChange('toBankName', e.target.value)}
+                  placeholder="Recipient's bank name"
+                  data-testid="input-bank-name"
+                />
               </div>
 
               {/* Transfer Details */}

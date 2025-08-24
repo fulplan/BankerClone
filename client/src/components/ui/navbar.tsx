@@ -47,9 +47,9 @@ export default function Navbar({ showLogin }: NavbarProps) {
           </nav>
           
           <div className="flex items-center space-x-4">
-            <a href="#" className="text-gray-700 hover:text-santander-red transition-colors duration-200 text-sm">
+            <Link href="/find-branch" className="text-gray-700 hover:text-santander-red transition-colors duration-200 text-sm">
               Find a Branch/ATM
-            </a>
+            </Link>
             
             {showLogin && !isAuthenticated && (
               <Button 

@@ -11,6 +11,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import CustomerDashboard from "@/pages/customer-dashboard";
 import Transfer from "@/pages/transfer";
 import UserManagement from "@/pages/user-management";
+import FindBranch from "@/pages/find-branch";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/admin/users" component={UserManagement} />
       <Route path="/dashboard" component={CustomerDashboard} />
       <Route path="/transfer" component={Transfer} />
+      <Route path="/find-branch" component={FindBranch} />
       <Route path="/home" component={Home} />
       <Route component={NotFound} />
     </Switch>
