@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AccountManagement from "@/components/admin/account-management";
 import TransferApproval from "@/components/admin/transfer-approval";
 import AuditLog from "@/components/admin/audit-log";
+import UserManagement from "@/pages/user-management";
 import { isUnauthorizedError } from "@/lib/authUtils";
 
 export default function AdminDashboard() {
@@ -21,7 +22,7 @@ export default function AdminDashboard() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/login";
       }, 500);
       return;
     }
@@ -113,9 +114,10 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="accounts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="accounts" data-testid="tab-accounts">Account Management</TabsTrigger>
             <TabsTrigger value="transfers" data-testid="tab-transfers">Transfer Approval</TabsTrigger>
+            <TabsTrigger value="users" data-testid="tab-users">User Management</TabsTrigger>
             <TabsTrigger value="audit" data-testid="tab-audit">Audit Log</TabsTrigger>
           </TabsList>
           
@@ -125,6 +127,10 @@ export default function AdminDashboard() {
           
           <TabsContent value="transfers">
             <TransferApproval />
+          </TabsContent>
+          
+          <TabsContent value="users">
+            <UserManagement />
           </TabsContent>
           
           <TabsContent value="audit">

@@ -5,18 +5,21 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing";
+import Login from "@/pages/login";
 import Home from "@/pages/home";
 import AdminDashboard from "@/pages/admin-dashboard";
 import CustomerDashboard from "@/pages/customer-dashboard";
 import Transfer from "@/pages/transfer";
+import UserManagement from "@/pages/user-management";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  // Start with landing page, let user initiate login flow
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/login" component={Login} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/users" component={UserManagement} />
       <Route path="/dashboard" component={CustomerDashboard} />
       <Route path="/transfer" component={Transfer} />
       <Route path="/home" component={Home} />

@@ -3,8 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { emailService } from "./emailService";
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertTransferSchema, insertAccountSchema } from "@shared/schema";
+import { insertTransferSchema, insertAccountSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
+import { hashPassword } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -592,6 +593,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching audit logs:", error);
       res.status(500).json({ message: "Failed to fetch audit logs" });
+    }
+  });
+
+  // Create new user route (admin only)
+  app.post('/api/admin/users', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const createUserSchema = insertUserSchema.extend({
+        password: z.string().min(6, "Password must be at least 6 characters"),
+      });
+
+      const userData = createUserSchema.parse(req.body);
+      
+      // Check if email already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already exists" });
+      }
+
+      // Hash the password
+      const hashedPassword = await hashPassword(userData.password);
+      
+      // Create user with hashed password
+      const newUser = await storage.upsertUser({
+        ...userData,
+        password: hashedPassword,
+      });
+
+      // Create audit log
+      await storage.createAuditLog({
+        adminId: userId,
+        targetUserId: newUser.id,
+        action: 'account_created',
+        details: {
+          email: newUser.email,
+          role: newUser.role,
+        },
+      });
+
+      // Remove password from response
+      const { password: _, ...userResponse } = newUser;
+      res.json(userResponse);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid input data" });
+      }
+      res.status(500).json({ message: "Failed to create user" });
     }
   });
 
