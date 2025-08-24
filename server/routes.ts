@@ -1099,14 +1099,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const profileData = { ...req.body };
       
+      console.log("Raw profile data received:", JSON.stringify(profileData, null, 2));
+      
       // Convert any timestamp fields from strings to Date objects
       if (profileData.dateOfBirth && typeof profileData.dateOfBirth === 'string') {
         profileData.dateOfBirth = new Date(profileData.dateOfBirth);
-      }
-      
-      // Sanitize numeric fields - convert empty strings to null
-      if (profileData.annualIncome === '' || profileData.annualIncome === undefined) {
-        profileData.annualIncome = null;
       }
       
       // Remove timestamp fields that shouldn't be updated by user
@@ -1116,20 +1113,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Remove fields that belong to users table, not customer_profiles table
       const { firstName, lastName, email, ...customerProfileData } = profileData;
       
-      // Clean up any remaining empty string numeric values
+      // Comprehensive cleanup of empty values for database
+      const cleanedData: any = {};
       Object.keys(customerProfileData).forEach(key => {
-        if (customerProfileData[key] === '') {
-          customerProfileData[key] = null;
+        const value = customerProfileData[key];
+        if (value === '' || value === undefined || value === null) {
+          // Skip empty values entirely to avoid database issues
+          return;
         }
+        cleanedData[key] = value;
       });
+      
+      console.log("Cleaned profile data being sent to DB:", JSON.stringify(cleanedData, null, 2));
       
       // Update user info separately if provided
       if (firstName || lastName || email) {
-        await storage.updateUser(userId, { firstName, lastName, email });
+        const userUpdateData: any = {};
+        if (firstName) userUpdateData.firstName = firstName;
+        if (lastName) userUpdateData.lastName = lastName; 
+        if (email) userUpdateData.email = email;
+        await storage.updateUser(userId, userUpdateData);
       }
       
-      // Update customer profile
-      const profile = await storage.updateCustomerProfile(userId, customerProfileData);
+      // Update customer profile only with non-empty values
+      const profile = await storage.updateCustomerProfile(userId, cleanedData);
       res.json(profile);
     } catch (error) {
       console.error("Error updating profile:", error);
