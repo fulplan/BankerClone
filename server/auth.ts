@@ -23,9 +23,11 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: false, // Set to false for development
+      secure: process.env.NODE_ENV === 'production', // Enable in production
       maxAge: sessionTtl,
+      sameSite: 'strict', // CSRF protection
     },
+    name: 'sessionId', // Hide default session name
   });
 }
 

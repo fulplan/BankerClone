@@ -41,22 +41,9 @@ export default function TransferForm() {
   const [transferProgress, setTransferProgress] = useState(0);
   const [transferStep, setTransferStep] = useState<string>("");
 
-  const { data: accounts, isLoading: accountsLoading } = useQuery({
+  const { data: accounts = [], isLoading: accountsLoading } = useQuery<Account[]>({
     queryKey: ["/api/accounts"],
     retry: false,
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-    },
   });
 
   const transferMutation = useMutation({
@@ -93,7 +80,7 @@ export default function TransferForm() {
   });
 
   // Poll transfer status
-  const { data: transferStatus } = useQuery({
+  const { data: transferStatus } = useQuery<{status: string; rejectionReason?: string}>({
     queryKey: ["/api/transfers", currentTransfer?.id, "status"],
     enabled: !!currentTransfer,
     refetchInterval: 2000,
@@ -116,7 +103,7 @@ export default function TransferForm() {
   };
 
   useEffect(() => {
-    if (transferStatus) {
+    if (transferStatus?.status) {
       switch (transferStatus.status) {
         case 'approved':
           setTransferProgress(90);
@@ -182,7 +169,7 @@ export default function TransferForm() {
       return;
     }
 
-    const selectedAccount = accounts?.find((acc: Account) => acc.id === formData.fromAccountId);
+    const selectedAccount = accounts.find((acc: Account) => acc.id === formData.fromAccountId);
     if (selectedAccount && parseFloat(selectedAccount.balance) < parseFloat(total)) {
       toast({
         title: "Insufficient Funds",
@@ -219,7 +206,7 @@ export default function TransferForm() {
     );
   }
 
-  const activeAccounts = accounts?.filter((account: Account) => account.status === 'active') || [];
+  const activeAccounts = accounts.filter((account: Account) => account.status === 'active');
 
   if (activeAccounts.length === 0) {
     return (

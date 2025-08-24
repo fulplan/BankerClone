@@ -5,32 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import type { Account } from "@shared/schema";
+import bankingCustomerService from "@assets/generated_images/banking_customer_service_representative_75a1a79a.png";
+import mobileBankingApp from "@assets/generated_images/mobile_banking_app_smartphone_aacbdc6b.png";
 
 export default function AccountOverview() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [newAccountType, setNewAccountType] = useState("");
 
-  const { data: accounts, isLoading } = useQuery({
+  const { data: accounts = [], isLoading } = useQuery<Account[]>({
     queryKey: ["/api/accounts"],
     retry: false,
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-    },
   });
 
   const createAccountMutation = useMutation({
@@ -45,7 +35,7 @@ export default function AccountOverview() {
       queryClient.invalidateQueries({ queryKey: ["/api/accounts"] });
       setNewAccountType("");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
@@ -91,7 +81,6 @@ export default function AccountOverview() {
   };
 
   const calculateTotalBalance = () => {
-    if (!accounts) return "0.00";
     return accounts
       .filter((account: Account) => account.status === 'active')
       .reduce((total: number, account: Account) => total + parseFloat(account.balance), 0)
@@ -107,8 +96,31 @@ export default function AccountOverview() {
     );
   }
 
+  // Check for account status warnings
+  const frozenAccounts = accounts.filter((account: Account) => account.status === 'frozen');
+  const closedAccounts = accounts.filter((account: Account) => account.status === 'closed');
+
   return (
     <div className="space-y-6">
+      {/* Account Status Warnings */}
+      {frozenAccounts.length > 0 && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            <strong>Account Alert:</strong> You have {frozenAccounts.length} frozen account(s). 
+            Please contact customer service to resolve any issues.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {closedAccounts.length > 0 && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            <strong>Account Notice:</strong> You have {closedAccounts.length} closed account(s). 
+            These accounts are no longer active and cannot be used for transactions.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Total Balance Summary */}
       <Card className="border-l-4 border-l-santander-red">
         <CardContent className="pt-6">
@@ -122,7 +134,7 @@ export default function AccountOverview() {
             <div className="text-right">
               <p className="text-sm text-gray-600">Active Accounts</p>
               <p className="text-xl font-semibold text-santander-red">
-                {accounts?.filter((account: Account) => account.status === 'active').length || 0}
+                {accounts.filter((account: Account) => account.status === 'active').length}
               </p>
             </div>
           </div>
@@ -162,10 +174,10 @@ export default function AccountOverview() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">Your Accounts</h3>
-          <Badge variant="outline">{accounts?.length || 0} accounts</Badge>
+          <Badge variant="outline">{accounts.length} accounts</Badge>
         </div>
         
-        {!accounts || accounts.length === 0 ? (
+        {accounts.length === 0 ? (
           <Card>
             <CardContent className="pt-6">
               <div className="text-center py-8 text-gray-500">
@@ -234,6 +246,61 @@ export default function AccountOverview() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Customer Service & Mobile Banking Section */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <i className="fas fa-headset text-santander-red"></i>
+              <span>Customer Service</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-4">
+              <img 
+                src={bankingCustomerService} 
+                alt="Customer Service Representative" 
+                className="w-20 h-20 rounded-lg object-cover"
+              />
+              <div>
+                <p className="text-sm text-gray-600 mb-2">
+                  Need help with your account? Our customer service team is here to assist you.
+                </p>
+                <Button variant="outline" className="text-santander-red border-santander-red hover:bg-santander-red hover:text-white">
+                  Contact Support
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <i className="fas fa-mobile-alt text-santander-red"></i>
+              <span>Mobile Banking</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-4">
+              <img 
+                src={mobileBankingApp} 
+                alt="Mobile Banking App" 
+                className="w-20 h-20 rounded-lg object-cover"
+              />
+              <div>
+                <p className="text-sm text-gray-600 mb-2">
+                  Bank on the go with our secure mobile app. Available 24/7 for your convenience.
+                </p>
+                <Button variant="outline" className="text-santander-red border-santander-red hover:bg-santander-red hover:text-white">
+                  Download App
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

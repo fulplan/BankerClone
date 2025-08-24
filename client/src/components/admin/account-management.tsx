@@ -26,12 +26,12 @@ export default function AccountManagement() {
   const [emailMessage, setEmailMessage] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
-  const { data: users, isLoading: usersLoading } = useQuery({
+  const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
     retry: false,
   });
 
-  const { data: accounts, isLoading: accountsLoading } = useQuery({
+  const { data: accounts = [], isLoading: accountsLoading } = useQuery<Account[]>({
     queryKey: ["/api/admin/accounts"],
     retry: false,
   });
@@ -249,7 +249,7 @@ export default function AccountManagement() {
               <Label htmlFor="account-select">Select Account</Label>
               <Select 
                 onValueChange={(value) => {
-                  const account = accounts?.find((acc: Account) => acc.id === value);
+                  const account = accounts.find((acc: Account) => acc.id === value);
                   setSelectedAccount(account || null);
                 }}
               >
@@ -257,7 +257,7 @@ export default function AccountManagement() {
                   <SelectValue placeholder="Choose an account" />
                 </SelectTrigger>
                 <SelectContent>
-                  {accounts?.map((account: Account) => (
+                  {accounts.map((account: Account) => (
                     <SelectItem key={account.id} value={account.id}>
                       {account.accountNumber} - ${account.balance}
                     </SelectItem>
@@ -403,7 +403,7 @@ export default function AccountManagement() {
           <div>
             <Label>Select Recipients</Label>
             <div className="mt-2 space-y-2 max-h-48 overflow-y-auto border rounded-md p-2">
-              {users?.map((user: User) => (
+              {users.map((user: User) => (
                 <label key={user.id} className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -449,8 +449,8 @@ export default function AccountManagement() {
                 </tr>
               </thead>
               <tbody>
-                {accounts?.map((account: Account) => {
-                  const owner = users?.find((user: User) => user.id === account.userId);
+                {accounts.map((account: Account) => {
+                  const owner = users.find((user: User) => user.id === account.userId);
                   return (
                     <tr key={account.id} className="hover:bg-gray-50">
                       <td className="border border-gray-200 px-4 py-2" data-testid={`text-account-number-${account.id}`}>
@@ -468,7 +468,7 @@ export default function AccountManagement() {
                         </Badge>
                       </td>
                       <td className="border border-gray-200 px-4 py-2">
-                        {new Date(account.createdAt).toLocaleDateString()}
+                        {account.createdAt ? new Date(account.createdAt).toLocaleDateString() : 'N/A'}
                       </td>
                     </tr>
                   );

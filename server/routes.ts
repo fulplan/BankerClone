@@ -7,6 +7,89 @@ import { insertTransferSchema, insertAccountSchema, insertUserSchema } from "@sh
 import { z } from "zod";
 import { hashPassword } from "./auth";
 
+// Rate limiting store
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+// Rate limiting middleware
+function rateLimit(maxRequests: number, windowMs: number) {
+  return (req: any, res: any, next: any) => {
+    const key = `${req.ip}-${req.route.path}`;
+    const now = Date.now();
+    
+    // Clean expired entries
+    for (const [k, v] of rateLimitStore.entries()) {
+      if (v.resetTime < now) {
+        rateLimitStore.delete(k);
+      }
+    }
+    
+    const record = rateLimitStore.get(key);
+    
+    if (!record) {
+      rateLimitStore.set(key, { count: 1, resetTime: now + windowMs });
+      return next();
+    }
+    
+    if (record.count >= maxRequests) {
+      return res.status(429).json({ 
+        message: "Too many requests. Please try again later.",
+        retryAfter: Math.ceil((record.resetTime - now) / 1000)
+      });
+    }
+    
+    record.count++;
+    next();
+  };
+}
+
+// Input sanitization
+function sanitizeInput(obj: any): any {
+  if (typeof obj === 'string') {
+    return obj.trim().replace(/[<>]/g, '');
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(sanitizeInput);
+  }
+  if (obj && typeof obj === 'object') {
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      sanitized[key] = sanitizeInput(value);
+    }
+    return sanitized;
+  }
+  return obj;
+}
+
+// Validation middleware
+function validateRequest(schema: z.ZodSchema) {
+  return (req: any, res: any, next: any) => {
+    try {
+      req.body = sanitizeInput(req.body);
+      req.body = schema.parse(req.body);
+      next();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation failed", 
+          errors: error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        });
+      }
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  };
+}
+
+// Admin role check
+function requireAdmin(req: any, res: any, next: any) {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Admin access required" });
+  }
+  next();
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
@@ -39,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/accounts', isAuthenticated, async (req: any, res) => {
+  app.post('/api/accounts', isAuthenticated, rateLimit(5, 60000), validateRequest(insertAccountSchema.omit({ userId: true, accountNumber: true, balance: true })), async (req: any, res) => {
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
@@ -49,7 +132,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Generate unique account number
-      const accountNumber = Date.now().toString().slice(-10);
+      // Generate more secure account number
+      const accountNumber = Math.floor(Math.random() * 9000000000 + 1000000000).toString();
       
       const accountData = insertAccountSchema.parse({
         userId,
@@ -101,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/transfers', isAuthenticated, async (req: any, res) => {
+  app.post('/api/transfers', isAuthenticated, rateLimit(10, 60000), validateRequest(insertTransferSchema.omit({ status: true, fee: true, tax: true })), async (req: any, res) => {
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
@@ -198,15 +282,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
-  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
       const users = await storage.getAllUsers();
       res.json(users);
     } catch (error) {
@@ -215,15 +292,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/accounts', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/accounts', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
       const accounts = await storage.getAllAccounts();
       res.json(accounts);
     } catch (error) {
@@ -232,15 +302,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/transfers/pending', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/transfers/pending', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
       const transfers = await storage.getPendingTransfers();
       res.json(transfers);
     } catch (error) {
@@ -249,14 +312,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/transfers/:id/approve', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/transfers/:id/approve', isAuthenticated, requireAdmin, rateLimit(20, 60000), async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ message: "Access denied" });
-      }
 
       const transferId = req.params.id;
       const transfer = await storage.getTransferById(transferId);
@@ -344,14 +402,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/transfers/:id/reject', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/transfers/:id/reject', isAuthenticated, requireAdmin, rateLimit(20, 60000), validateRequest(z.object({ reason: z.string().min(1).max(500) })), async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ message: "Access denied" });
-      }
 
       const transferId = req.params.id;
       const { reason } = req.body;
@@ -402,22 +455,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/accounts/:id/credit', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/accounts/:id/credit', isAuthenticated, requireAdmin, rateLimit(10, 60000), validateRequest(z.object({ amount: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount format"), description: z.string().min(1).max(200) })), async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ message: "Access denied" });
-      }
 
       const accountId = req.params.id;
       const { amount, description } = req.body;
 
-      const amountSchema = z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount format");
-      const parsedAmount = amountSchema.parse(amount);
-
-      await storage.creditAccount(accountId, parsedAmount, description, userId);
+      // Amount already validated by middleware
+      await storage.creditAccount(accountId, amount, description, userId);
 
       // Send notification email
       const account = await storage.getAccountById(accountId);
@@ -429,7 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             account.userId,
             account.accountNumber,
             'credit',
-            parsedAmount,
+            amount,
             account.balance,
             description
           );
@@ -443,22 +489,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/accounts/:id/debit', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/accounts/:id/debit', isAuthenticated, requireAdmin, rateLimit(10, 60000), validateRequest(z.object({ amount: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount format"), description: z.string().min(1).max(200) })), async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ message: "Access denied" });
-      }
 
       const accountId = req.params.id;
       const { amount, description } = req.body;
 
-      const amountSchema = z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount format");
-      const parsedAmount = amountSchema.parse(amount);
-
-      await storage.debitAccount(accountId, parsedAmount, description, userId);
+      // Amount already validated by middleware
+      await storage.debitAccount(accountId, amount, description, userId);
 
       // Send notification email
       const account = await storage.getAccountById(accountId);
@@ -470,7 +509,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             account.userId,
             account.accountNumber,
             'debit',
-            parsedAmount,
+            amount,
             account.balance,
             description
           );
@@ -484,14 +523,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/accounts/:id/status', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/accounts/:id/status', isAuthenticated, requireAdmin, rateLimit(20, 60000), validateRequest(z.object({ status: z.enum(['active', 'frozen', 'closed']), reason: z.string().min(1).max(500) })), async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ message: "Access denied" });
-      }
 
       const accountId = req.params.id;
       const { status, reason } = req.body;
@@ -532,14 +566,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/email', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/email', isAuthenticated, requireAdmin, rateLimit(5, 60000), validateRequest(z.object({ userIds: z.array(z.string()).min(1), subject: z.string().min(1).max(200), message: z.string().min(1).max(2000) })), async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ message: "Access denied" });
-      }
 
       const { userIds, subject, message } = req.body;
 
@@ -579,15 +608,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/audit-logs', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/audit-logs', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
       const auditLogs = await storage.getAuditLogs();
       res.json(auditLogs);
     } catch (error) {

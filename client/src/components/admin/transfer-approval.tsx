@@ -17,7 +17,7 @@ export default function TransferApproval() {
   const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
-  const { data: pendingTransfers, isLoading } = useQuery({
+  const { data: pendingTransfers = [], isLoading } = useQuery<Transfer[]>({
     queryKey: ["/api/admin/transfers/pending"],
     refetchInterval: 5000, // Refresh every 5 seconds
     retry: false,
@@ -119,11 +119,11 @@ export default function TransferApproval() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Pending Transfer Approvals</span>
-            <Badge variant="destructive">{pendingTransfers?.length || 0} pending</Badge>
+            <Badge variant="destructive">{pendingTransfers.length} pending</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {!pendingTransfers || pendingTransfers.length === 0 ? (
+          {pendingTransfers.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               No pending transfers requiring approval
             </div>
@@ -179,7 +179,7 @@ export default function TransferApproval() {
                         
                         <div className="mt-4 space-y-2">
                           <p className="text-xs text-gray-500">
-                            Submitted: {new Date(transfer.createdAt).toLocaleString()}
+                            Submitted: {transfer.createdAt ? new Date(transfer.createdAt).toLocaleString() : 'N/A'}
                           </p>
                           <div className="flex space-x-2">
                             <Button
