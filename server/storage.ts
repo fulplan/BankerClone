@@ -293,13 +293,6 @@ export class DatabaseStorage implements IStorage {
     return transaction;
   }
 
-  async getTransactionsByAccountId(accountId: string): Promise<Transaction[]> {
-    return await db
-      .select()
-      .from(transactions)
-      .where(eq(transactions.accountId, accountId))
-      .orderBy(desc(transactions.createdAt));
-  }
 
   // Audit log operations
   async createAuditLog(auditLogData: InsertAuditLog): Promise<AuditLog> {
@@ -642,42 +635,7 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async updateCustomerProfile(userId: number, profileData: any): Promise<CustomerProfile> {
-    const existing = await this.getCustomerProfile(userId);
-    if (existing) {
-      const result = await db.update(customerProfiles).set(profileData).where(eq(customerProfiles.userId, userId)).returning();
-      return result[0];
-    } else {
-      const result = await db.insert(customerProfiles).values({ ...profileData, userId }).returning();
-      return result[0];
-    }
-  }
-
   // Support tickets methods
-  async getSupportTicketsByUserId(userId: number): Promise<SupportTicket[]> {
-    return await db.select().from(supportTickets).where(eq(supportTickets.userId, userId)).orderBy(desc(supportTickets.createdAt));
-  }
-
-  async createSupportTicket(ticketData: any): Promise<SupportTicket> {
-    const result = await db.insert(supportTickets).values(ticketData).returning();
-    return result[0];
-  }
-
-  async getSupportTicketById(ticketId: string): Promise<SupportTicket | null> {
-    const result = await db.select().from(supportTickets).where(eq(supportTickets.id, ticketId)).limit(1);
-    return result[0] || null;
-  }
-
-  async getChatMessagesByTicketId(ticketId: string): Promise<ChatMessage[]> {
-    return await db.select().from(chatMessages).where(eq(chatMessages.ticketId, ticketId)).orderBy(chatMessages.createdAt);
-  }
-
-  async createChatMessage(messageData: any): Promise<ChatMessage> {
-    const result = await db.insert(chatMessages).values(messageData).returning();
-    return result[0];
-  }
-
-  // Support tickets methods (fixed types)
   async getSupportTicketsByUserId(userId: string): Promise<SupportTicket[]> {
     return await db.select().from(supportTickets).where(eq(supportTickets.userId, userId)).orderBy(desc(supportTickets.createdAt));
   }
@@ -728,18 +686,23 @@ export class DatabaseStorage implements IStorage {
 
   // Enhanced transaction method with date filtering
   async getTransactionsByAccountId(accountId: string, startDate?: string, endDate?: string): Promise<Transaction[]> {
-    let query = db.select().from(transactions).where(eq(transactions.accountId, accountId));
-    
     if (startDate && endDate) {
-      query = query.where(
-        and(
-          sql`${transactions.createdAt} >= ${startDate}`,
-          sql`${transactions.createdAt} <= ${endDate}`
+      return await db.select()
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.accountId, accountId),
+            sql`${transactions.createdAt} >= ${startDate}`,
+            sql`${transactions.createdAt} <= ${endDate}`
+          )
         )
-      );
+        .orderBy(desc(transactions.createdAt));
     }
     
-    return await query.orderBy(desc(transactions.createdAt));
+    return await db.select()
+      .from(transactions)
+      .where(eq(transactions.accountId, accountId))
+      .orderBy(desc(transactions.createdAt));
   }
 
   // Loan management methods

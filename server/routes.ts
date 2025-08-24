@@ -1269,7 +1269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cvv,
         type: type || 'debit',
         isVirtual: isVirtual || false,
-        status: 'active'
+        status: 'active' as const
       };
 
       const card = await storage.createCard(cardData);
@@ -1379,7 +1379,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         purpose,
         status: 'pending',
         interestRate: '5.5', // Default rate
-        termMonths: 60 // Default term
+        termMonths: '60' // Default term
       });
 
       res.json(loanApplication);
