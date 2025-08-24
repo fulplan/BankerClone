@@ -24,7 +24,7 @@ export default function Home() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-santander-red mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-finora-primary mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
@@ -38,7 +38,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Welcome to Santander Bank
+            Welcome to Finora Bank
           </h1>
           <p className="text-lg text-gray-600 mb-8">
             Redirecting you to your dashboard...
@@ -54,7 +54,7 @@ export default function Home() {
                   <p className="text-gray-600">You have admin access.</p>
                   <Button 
                     onClick={() => setLocation('/admin')}
-                    className="w-full bg-santander-red hover:bg-santander-dark"
+                    className="w-full bg-finora-primary hover:bg-finora-dark"
                     data-testid="button-admin-dashboard"
                   >
                     Go to Admin Dashboard
@@ -65,7 +65,7 @@ export default function Home() {
                   <p className="text-gray-600">Welcome to your banking portal.</p>
                   <Button 
                     onClick={() => setLocation('/dashboard')}
-                    className="w-full bg-santander-red hover:bg-santander-dark"
+                    className="w-full bg-finora-primary hover:bg-finora-dark"
                     data-testid="button-customer-dashboard"
                   >
                     Go to Dashboard

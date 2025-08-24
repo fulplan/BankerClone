@@ -22,7 +22,7 @@ const heroSlides = [
   }
 ];
 
-export default function HeroSection() {
+export default function EnhancedHeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -85,6 +85,22 @@ export default function HeroSection() {
           />
         ))}
       </div>
+
+      {/* Video Background Alternative (commented for now) */}
+      {/* 
+      <div className="absolute inset-0 z-0">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover"
+        >
+          <source src="/videos/banking-hero.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+      </div>
+      */}
 
       {/* Floating Elements */}
       <div className="absolute top-1/4 left-1/4 w-20 h-20 bg-finora-accent rounded-full opacity-20 animate-pulse-slow hidden lg:block"></div>

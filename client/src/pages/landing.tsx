@@ -27,9 +27,9 @@ export default function Landing() {
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Invest with confidence</h2>
               <p className="text-lg text-gray-600 mb-8">
-                Santander Investment Services* offers a wide range of solutions that provide the guidance you need to set investment goals and the tools you need to achieve them. Start working with a Financial Advisor today.
+                Finora Investment Services offers a wide range of solutions that provide the guidance you need to set investment goals and the tools you need to achieve them. Start working with a Financial Advisor today.
               </p>
-              <button className="bg-santander-red text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-santander-dark transition-colors duration-200">
+              <button className="bg-finora-primary text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-finora-dark transition-colors duration-200">
                 Start investing →
               </button>
             </div>
@@ -45,10 +45,10 @@ export default function Landing() {
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">Let's meet <strong>in person</strong></h2>
                 <div className="flex items-center mb-6">
-                  <i className="fas fa-calendar-alt text-santander-red text-2xl mr-4"></i>
+                  <i className="fas fa-calendar-alt text-finora-primary text-2xl mr-4"></i>
                   <p className="text-lg text-gray-600">Schedule one-on-one time with a banker.</p>
                 </div>
-                <button className="bg-santander-red text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-santander-dark transition-colors duration-200">
+                <button className="bg-finora-primary text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-finora-dark transition-colors duration-200">
                   Book now
                 </button>
               </div>
@@ -68,9 +68,9 @@ export default function Landing() {
       <section className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Santander mobile banking for anywhere convenience</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Finora mobile banking for anywhere convenience</h2>
             <p className="text-lg text-gray-600">
-              Make Mobile Check Deposits, set up Alerts, manage cards, and more, all from the Santander Mobile Banking App. It's the simplest, most secure way to manage your money on the go.
+              Make Mobile Check Deposits, set up Alerts, manage cards, and more, all from the Finora Mobile Banking App. It's the simplest, most secure way to manage your money on the go.
             </p>
           </div>
           
@@ -86,9 +86,9 @@ export default function Landing() {
               
               <div className="space-y-2">
                 <p className="font-semibold text-gray-900">Get started with one of our mobile app tutorials:</p>
-                <a href="#" className="block text-santander-red hover:underline">Mobile Check Deposit</a>
-                <a href="#" className="block text-santander-red hover:underline">Set up Alerts</a>
-                <a href="#" className="block text-santander-red hover:underline">Manage cards</a>
+                <a href="#" className="block text-finora-primary hover:underline">Mobile Check Deposit</a>
+                <a href="#" className="block text-finora-primary hover:underline">Set up Alerts</a>
+                <a href="#" className="block text-finora-primary hover:underline">Manage cards</a>
               </div>
             </div>
             <div className="text-center">
@@ -107,7 +107,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-semibold text-lg mb-4">Santander Bank</h3>
+              <h3 className="font-semibold text-lg mb-4">Finora Bank</h3>
               <ul className="space-y-2 text-gray-300">
                 <li><a href="#" className="hover:text-white transition-colors duration-200">Personal Banking</a></li>
                 <li><a href="#" className="hover:text-white transition-colors duration-200">Investing</a></li>
@@ -173,7 +173,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="text-xs text-gray-400 mt-4 text-center md:text-left">
-              © 2025 Santander Bank, N.A. Equal Housing Lender - Member FDIC
+              © 2025 Finora Bank, N.A. Equal Housing Lender - Member FDIC
             </div>
           </div>
         </div>

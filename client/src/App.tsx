@@ -12,6 +12,11 @@ import CustomerDashboard from "@/pages/customer-dashboard";
 import Transfer from "@/pages/transfer";
 import UserManagement from "@/pages/user-management";
 import FindBranch from "@/pages/find-branch";
+import Personal from "@/pages/personal";
+import Business from "@/pages/business";
+import Commercial from "@/pages/commercial";
+import PrivateClient from "@/pages/private-client";
+import Investing from "@/pages/investing";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -24,6 +29,11 @@ function Router() {
       <Route path="/dashboard" component={CustomerDashboard} />
       <Route path="/transfer" component={Transfer} />
       <Route path="/find-branch" component={FindBranch} />
+      <Route path="/personal" component={Personal} />
+      <Route path="/business" component={Business} />
+      <Route path="/commercial" component={Commercial} />
+      <Route path="/private-client" component={PrivateClient} />
+      <Route path="/investing" component={Investing} />
       <Route path="/home" component={Home} />
       <Route component={NotFound} />
     </Switch>

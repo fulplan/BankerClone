@@ -51,10 +51,12 @@ export default {
           "4": "var(--chart-4)",
           "5": "var(--chart-5)",
         },
-        // Santander brand colors
-        "santander-red": "#EC0000",
-        "santander-dark": "#B91C1C",
-        "santander-light": "#FEF2F2",
+        // Finora brand colors
+        "finora-primary": "#1E3A8A",
+        "finora-secondary": "#0F766E",
+        "finora-accent": "#0EA5E9",
+        "finora-light": "#EFF6FF",
+        "finora-dark": "#1E293B",
         // Additional semantic colors
         "gray-50": "#F8F9FA",
         "gray-900": "#111827",
@@ -158,7 +160,7 @@ export default {
   plugins: [
     require("tailwindcss-animate"), 
     require("@tailwindcss/typography"),
-    // Custom plugin for Santander-specific utilities
+    // Custom plugin for Finora-specific utilities
     function({ addUtilities }: { addUtilities: any }) {
       const newUtilities = {
         '.text-balance': {
@@ -174,11 +176,11 @@ export default {
           'backdrop-filter': 'blur(10px)',
           'border': '1px solid rgba(0, 0, 0, 0.2)',
         },
-        '.santander-gradient': {
-          'background': 'linear-gradient(135deg, #EC0000 0%, #B91C1C 100%)',
+        '.finora-gradient': {
+          'background': 'linear-gradient(135deg, #1E3A8A 0%, #0F766E 100%)',
         },
-        '.santander-shadow': {
-          'box-shadow': '0 4px 14px 0 rgba(236, 0, 0, 0.15)',
+        '.finora-shadow': {
+          'box-shadow': '0 4px 14px 0 rgba(30, 58, 138, 0.15)',
         },
       }
       addUtilities(newUtilities)
