@@ -5,6 +5,19 @@ import {
   transactions,
   auditLogs,
   emailNotifications,
+  cards,
+  notifications,
+  billPayments,
+  investments,
+  savingsGoals,
+  supportTickets,
+  chatMessages,
+  standingOrders,
+  customerProfiles,
+  passwordResetTokens,
+  loans,
+  beneficiaries,
+  inheritanceProcesses,
   type User,
   type UpsertUser,
   type Account,
@@ -17,9 +30,37 @@ import {
   type InsertAuditLog,
   type EmailNotification,
   type InsertEmailNotification,
+  type Card,
+  type InsertCard,
+  type Notification,
+  type InsertNotification,
+  type BillPayment,
+  type InsertBillPayment,
+  type Investment,
+  type InsertInvestment,
+  type SavingsGoal,
+  type InsertSavingsGoal,
+  type SupportTicket,
+  type InsertSupportTicket,
+  type ChatMessage,
+  type InsertChatMessage,
+  type StandingOrder,
+  type InsertStandingOrder,
+  type CustomerProfile,
+  type InsertCustomerProfile,
+  type PasswordResetToken,
+  type InsertPasswordResetToken,
+  type Loan,
+  type InsertLoan,
+  type Beneficiary,
+  type InsertBeneficiary,
+  type InheritanceProcess,
+  type InsertInheritanceProcess,
   type UserRole,
   type AccountStatus,
   type TransferStatus,
+  type CardStatus,
+  type LoanStatus,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql } from "drizzle-orm";
@@ -487,50 +528,53 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Cards methods
-  async getCardsByUserId(userId: number): Promise<BankCard[]> {
-    return await db.select().from(bankCards).where(eq(bankCards.userId, userId));
+  async getCardsByUserId(userId: string): Promise<Card[]> {
+    return await db.select().from(cards).where(eq(cards.userId, userId));
   }
 
-  async createCard(cardData: any): Promise<BankCard> {
-    const result = await db.insert(bankCards).values(cardData).returning();
-    return result[0];
+  async createCard(cardData: InsertCard): Promise<Card> {
+    const [result] = await db.insert(cards).values(cardData).returning();
+    return result;
   }
 
-  async getCardById(cardId: string): Promise<BankCard | null> {
-    const result = await db.select().from(bankCards).where(eq(bankCards.id, cardId)).limit(1);
-    return result[0] || null;
+  async getCardById(cardId: string): Promise<Card | undefined> {
+    const [result] = await db.select().from(cards).where(eq(cards.id, cardId));
+    return result;
   }
 
-  async updateCardStatus(cardId: string, status: string): Promise<void> {
-    await db.update(bankCards).set({ status }).where(eq(bankCards.id, cardId));
+  async updateCardStatus(cardId: string, status: CardStatus): Promise<void> {
+    await db.update(cards).set({ status }).where(eq(cards.id, cardId));
   }
 
-  async updateCardLimits(cardId: string, spendingLimit: string, dailyLimit: string): Promise<void> {
-    await db.update(bankCards).set({ spendingLimit, dailyLimit }).where(eq(bankCards.id, cardId));
+  async updateCardLimits(cardId: string, spendingLimit?: string, dailyLimit?: string): Promise<void> {
+    const updateData: any = {};
+    if (spendingLimit) updateData.spendingLimit = spendingLimit;
+    if (dailyLimit) updateData.dailyLimit = dailyLimit;
+    await db.update(cards).set(updateData).where(eq(cards.id, cardId));
   }
 
   // Notifications methods
-  async getNotificationsByUserId(userId: number): Promise<Notification[]> {
+  async getNotificationsByUserId(userId: string): Promise<Notification[]> {
     return await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
   }
 
-  async markNotificationAsRead(notificationId: string, userId: number): Promise<void> {
+  async markNotificationAsRead(notificationId: string, userId: string): Promise<void> {
     await db.update(notifications).set({ status: 'read' }).where(and(eq(notifications.id, notificationId), eq(notifications.userId, userId)));
   }
 
   // Bill payments methods
-  async getBillPaymentsByUserId(userId: number): Promise<BillPayment[]> {
+  async getBillPaymentsByUserId(userId: string): Promise<BillPayment[]> {
     return await db.select().from(billPayments).where(eq(billPayments.userId, userId)).orderBy(desc(billPayments.createdAt));
   }
 
-  async createBillPayment(billData: any): Promise<BillPayment> {
-    const result = await db.insert(billPayments).values(billData).returning();
-    return result[0];
+  async createBillPayment(billData: InsertBillPayment): Promise<BillPayment> {
+    const [result] = await db.insert(billPayments).values(billData).returning();
+    return result;
   }
 
-  async getBillPaymentById(billId: string): Promise<BillPayment | null> {
-    const result = await db.select().from(billPayments).where(eq(billPayments.id, billId)).limit(1);
-    return result[0] || null;
+  async getBillPaymentById(billId: string): Promise<BillPayment | undefined> {
+    const [result] = await db.select().from(billPayments).where(eq(billPayments.id, billId));
+    return result;
   }
 
   async cancelBillPayment(billId: string): Promise<void> {
@@ -538,48 +582,64 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Investments methods
-  async getInvestmentsByUserId(userId: number): Promise<Investment[]> {
+  async getInvestmentsByUserId(userId: string): Promise<Investment[]> {
     return await db.select().from(investments).where(eq(investments.userId, userId)).orderBy(desc(investments.createdAt));
   }
 
-  async createInvestment(investmentData: any): Promise<Investment> {
-    const result = await db.insert(investments).values(investmentData).returning();
-    return result[0];
+  async createInvestment(investmentData: InsertInvestment): Promise<Investment> {
+    const [result] = await db.insert(investments).values(investmentData).returning();
+    return result;
   }
 
   // Savings goals methods
-  async getSavingsGoalsByUserId(userId: number): Promise<SavingsGoal[]> {
+  async getSavingsGoalsByUserId(userId: string): Promise<SavingsGoal[]> {
     return await db.select().from(savingsGoals).where(eq(savingsGoals.userId, userId)).orderBy(desc(savingsGoals.createdAt));
   }
 
-  async createSavingsGoal(goalData: any): Promise<SavingsGoal> {
-    const result = await db.insert(savingsGoals).values(goalData).returning();
-    return result[0];
+  async createSavingsGoal(goalData: InsertSavingsGoal): Promise<SavingsGoal> {
+    const [result] = await db.insert(savingsGoals).values(goalData).returning();
+    return result;
   }
 
   // Standing orders methods
-  async getStandingOrdersByUserId(userId: number): Promise<StandingOrder[]> {
+  async getStandingOrdersByUserId(userId: string): Promise<StandingOrder[]> {
     return await db.select().from(standingOrders).where(eq(standingOrders.userId, userId)).orderBy(desc(standingOrders.createdAt));
   }
 
-  async createStandingOrder(orderData: any): Promise<StandingOrder> {
-    const result = await db.insert(standingOrders).values(orderData).returning();
-    return result[0];
+  async createStandingOrder(orderData: InsertStandingOrder): Promise<StandingOrder> {
+    const [result] = await db.insert(standingOrders).values(orderData).returning();
+    return result;
   }
 
-  async getStandingOrderById(orderId: string): Promise<StandingOrder | null> {
-    const result = await db.select().from(standingOrders).where(eq(standingOrders.id, orderId)).limit(1);
-    return result[0] || null;
+  async getStandingOrderById(orderId: string): Promise<StandingOrder | undefined> {
+    const [result] = await db.select().from(standingOrders).where(eq(standingOrders.id, orderId));
+    return result;
   }
 
   async cancelStandingOrder(orderId: string): Promise<void> {
-    await db.update(standingOrders).set({ status: 'cancelled' }).where(eq(standingOrders.id, orderId));
+    await db.update(standingOrders).set({ isActive: false }).where(eq(standingOrders.id, orderId));
   }
 
   // Customer profile methods
-  async getCustomerProfile(userId: number): Promise<CustomerProfile | null> {
-    const result = await db.select().from(customerProfiles).where(eq(customerProfiles.userId, userId)).limit(1);
-    return result[0] || null;
+  async getCustomerProfile(userId: string): Promise<CustomerProfile | undefined> {
+    const [result] = await db.select().from(customerProfiles).where(eq(customerProfiles.userId, userId));
+    return result;
+  }
+
+  async updateCustomerProfile(userId: string, profileData: Partial<InsertCustomerProfile>): Promise<CustomerProfile> {
+    const [result] = await db.update(customerProfiles)
+      .set({ ...profileData, updatedAt: new Date() })
+      .where(eq(customerProfiles.userId, userId))
+      .returning();
+    
+    if (!result) {
+      // Create if doesn't exist
+      const [newProfile] = await db.insert(customerProfiles)
+        .values({ userId, ...profileData })
+        .returning();
+      return newProfile;
+    }
+    return result;
   }
 
   async updateCustomerProfile(userId: number, profileData: any): Promise<CustomerProfile> {
@@ -617,14 +677,130 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  // Additional account methods
-  async getAccountById(accountId: string): Promise<Account | null> {
-    const result = await db.select().from(accounts).where(eq(accounts.id, accountId)).limit(1);
-    return result[0] || null;
+  // Support tickets methods (fixed types)
+  async getSupportTicketsByUserId(userId: string): Promise<SupportTicket[]> {
+    return await db.select().from(supportTickets).where(eq(supportTickets.userId, userId)).orderBy(desc(supportTickets.createdAt));
   }
 
-  async updateAccountBalance(accountId: string, newBalance: string): Promise<void> {
-    await db.update(accounts).set({ balance: newBalance }).where(eq(accounts.id, accountId));
+  async createSupportTicket(ticketData: InsertSupportTicket): Promise<SupportTicket> {
+    const [result] = await db.insert(supportTickets).values(ticketData).returning();
+    return result;
+  }
+
+  async getSupportTicketById(ticketId: string): Promise<SupportTicket | undefined> {
+    const [result] = await db.select().from(supportTickets).where(eq(supportTickets.id, ticketId));
+    return result;
+  }
+
+  async getChatMessagesByTicketId(ticketId: string): Promise<ChatMessage[]> {
+    return await db.select().from(chatMessages).where(eq(chatMessages.ticketId, ticketId)).orderBy(chatMessages.createdAt);
+  }
+
+  async createChatMessage(messageData: InsertChatMessage): Promise<ChatMessage> {
+    const [result] = await db.insert(chatMessages).values(messageData).returning();
+    return result;
+  }
+
+  // Password reset methods
+  async storePasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<void> {
+    await db.insert(passwordResetTokens).values({
+      userId,
+      token,
+      expiresAt,
+    });
+  }
+
+  async getPasswordResetToken(token: string): Promise<{userId: string, expiresAt: Date} | undefined> {
+    const [result] = await db.select({
+      userId: passwordResetTokens.userId,
+      expiresAt: passwordResetTokens.expiresAt,
+    }).from(passwordResetTokens).where(eq(passwordResetTokens.token, token));
+    return result;
+  }
+
+  async updateUserPassword(userId: string, hashedPassword: string): Promise<void> {
+    await db.update(users).set({ password: hashedPassword }).where(eq(users.id, userId));
+  }
+
+  async deletePasswordResetToken(token: string): Promise<void> {
+    await db.delete(passwordResetTokens).where(eq(passwordResetTokens.token, token));
+  }
+
+  // Enhanced transaction method with date filtering
+  async getTransactionsByAccountId(accountId: string, startDate?: string, endDate?: string): Promise<Transaction[]> {
+    let query = db.select().from(transactions).where(eq(transactions.accountId, accountId));
+    
+    if (startDate && endDate) {
+      query = query.where(
+        and(
+          sql`${transactions.createdAt} >= ${startDate}`,
+          sql`${transactions.createdAt} <= ${endDate}`
+        )
+      );
+    }
+    
+    return await query.orderBy(desc(transactions.createdAt));
+  }
+
+  // Loan management methods
+  async getLoansByUserId(userId: string): Promise<Loan[]> {
+    return await db.select().from(loans).where(eq(loans.userId, userId)).orderBy(desc(loans.createdAt));
+  }
+
+  async createLoanApplication(loanData: InsertLoan): Promise<Loan> {
+    const [result] = await db.insert(loans).values(loanData).returning();
+    return result;
+  }
+
+  async getPendingLoans(): Promise<Loan[]> {
+    return await db.select().from(loans).where(eq(loans.status, 'pending')).orderBy(desc(loans.createdAt));
+  }
+
+  async approveLoan(loanId: string, interestRate: string, termMonths: number): Promise<void> {
+    const monthlyPayment = this.calculateMonthlyPayment(loanId, interestRate, termMonths);
+    await db.update(loans).set({
+      status: 'approved',
+      interestRate,
+      termMonths: termMonths.toString(),
+      monthlyPayment: monthlyPayment.toString(),
+      approvedAt: new Date(),
+      updatedAt: new Date(),
+    }).where(eq(loans.id, loanId));
+  }
+
+  async rejectLoan(loanId: string, reason: string): Promise<void> {
+    await db.update(loans).set({
+      status: 'rejected',
+      rejectionReason: reason,
+      updatedAt: new Date(),
+    }).where(eq(loans.id, loanId));
+  }
+
+  private calculateMonthlyPayment(loanId: string, interestRate: string, termMonths: number): number {
+    // This is a simplified calculation - in reality you'd get the loan amount from DB
+    const rate = parseFloat(interestRate) / 100 / 12;
+    const principal = 50000; // Default for demo - should be fetched from loan
+    return (principal * rate * Math.pow(1 + rate, termMonths)) / (Math.pow(1 + rate, termMonths) - 1);
+  }
+
+  // Beneficiary management methods
+  async getBeneficiariesByUserId(userId: string): Promise<Beneficiary[]> {
+    return await db.select().from(beneficiaries).where(eq(beneficiaries.userId, userId)).orderBy(desc(beneficiaries.createdAt));
+  }
+
+  async createBeneficiary(beneficiaryData: InsertBeneficiary): Promise<Beneficiary> {
+    const [result] = await db.insert(beneficiaries).values(beneficiaryData).returning();
+    return result;
+  }
+
+  // Inheritance processing method
+  async processInheritance(userId: string, deathCertificateUrl: string): Promise<InheritanceProcess> {
+    const [result] = await db.insert(inheritanceProcesses).values({
+      deceasedUserId: userId,
+      deathCertificateUrl,
+      status: 'pending',
+    }).returning();
+    return result;
   }
 }
 

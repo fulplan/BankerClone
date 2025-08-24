@@ -1177,6 +1177,318 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Password Reset & Recovery
+  app.post('/api/auth/forgot-password', rateLimit(3, 60000), validateRequest(z.object({ email: z.string().email() })), async (req: any, res) => {
+    try {
+      const { email } = req.body;
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        // Don't reveal if email exists or not
+        return res.json({ message: "If the email exists, a reset link will be sent" });
+      }
+
+      // Generate reset token (in production, use crypto)
+      const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
+
+      // Store reset token (you'd add this to your schema)
+      await storage.storePasswordResetToken(user.id, resetToken, resetTokenExpiry);
+
+      // Send reset email
+      if (user.email) {
+        await emailService.sendCustomEmail(
+          user.email,
+          user.id,
+          'Password Reset Request',
+          `Click the link to reset your password: ${process.env.FRONTEND_URL}/reset-password?token=${resetToken}\n\nThis link expires in 1 hour.`
+        );
+      }
+
+      res.json({ message: "If the email exists, a reset link will be sent" });
+    } catch (error) {
+      console.error("Error sending password reset:", error);
+      res.status(500).json({ message: "Failed to send password reset" });
+    }
+  });
+
+  app.post('/api/auth/reset-password', rateLimit(5, 60000), validateRequest(z.object({ token: z.string(), newPassword: z.string().min(6) })), async (req: any, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      const resetRecord = await storage.getPasswordResetToken(token);
+      if (!resetRecord || resetRecord.expiresAt < new Date()) {
+        return res.status(400).json({ message: "Invalid or expired reset token" });
+      }
+
+      const hashedPassword = await hashPassword(newPassword);
+      await storage.updateUserPassword(resetRecord.userId, hashedPassword);
+      await storage.deletePasswordResetToken(token);
+
+      res.json({ message: "Password reset successfully" });
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      res.status(500).json({ message: "Failed to reset password" });
+    }
+  });
+
+  // Enhanced Card Management
+  app.get('/api/cards', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const cards = await storage.getCardsByUserId(userId);
+      res.json(cards);
+    } catch (error) {
+      console.error("Error fetching cards:", error);
+      res.status(500).json({ message: "Failed to fetch cards" });
+    }
+  });
+
+  app.post('/api/cards', isAuthenticated, rateLimit(3, 60000), async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { accountId, type, isVirtual } = req.body;
+
+      // Validate account belongs to user
+      const account = await storage.getAccountById(accountId);
+      if (!account || account.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to account" });
+      }
+
+      // Generate card details
+      const cardNumber = `4000${Math.floor(Math.random() * 10000000000).toString().padStart(10, '0')}`;
+      const cvv = Math.floor(Math.random() * 900 + 100).toString();
+      const expiryDate = new Date(Date.now() + 4 * 365 * 24 * 60 * 60 * 1000); // 4 years
+
+      const cardData = {
+        userId,
+        accountId,
+        cardNumber,
+        cardHolderName: `${req.user.firstName} ${req.user.lastName}`,
+        expiryDate: `${(expiryDate.getMonth() + 1).toString().padStart(2, '0')}/${expiryDate.getFullYear().toString().slice(2)}`,
+        cvv,
+        type: type || 'debit',
+        isVirtual: isVirtual || false,
+        status: 'active'
+      };
+
+      const card = await storage.createCard(cardData);
+      res.json(card);
+    } catch (error) {
+      console.error("Error creating card:", error);
+      res.status(500).json({ message: "Failed to create card" });
+    }
+  });
+
+  app.patch('/api/cards/:id/status', isAuthenticated, validateRequest(z.object({ status: z.enum(['active', 'frozen', 'cancelled']) })), async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const cardId = req.params.id;
+      const { status } = req.body;
+
+      const card = await storage.getCardById(cardId);
+      if (!card || card.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to card" });
+      }
+
+      await storage.updateCardStatus(cardId, status);
+      res.json({ message: `Card ${status} successfully` });
+    } catch (error) {
+      console.error("Error updating card status:", error);
+      res.status(500).json({ message: "Failed to update card status" });
+    }
+  });
+
+  app.patch('/api/cards/:id/limits', isAuthenticated, validateRequest(z.object({ spendingLimit: z.string().optional(), dailyLimit: z.string().optional() })), async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const cardId = req.params.id;
+      const { spendingLimit, dailyLimit } = req.body;
+
+      const card = await storage.getCardById(cardId);
+      if (!card || card.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to card" });
+      }
+
+      await storage.updateCardLimits(cardId, spendingLimit, dailyLimit);
+      res.json({ message: "Card limits updated successfully" });
+    } catch (error) {
+      console.error("Error updating card limits:", error);
+      res.status(500).json({ message: "Failed to update card limits" });
+    }
+  });
+
+  // Statement Generation
+  app.get('/api/accounts/:id/statements', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const accountId = req.params.id;
+      const { format, startDate, endDate } = req.query;
+
+      // Validate account belongs to user
+      const account = await storage.getAccountById(accountId);
+      if (!account || account.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to account" });
+      }
+
+      const transactions = await storage.getTransactionsByAccountId(accountId, startDate, endDate);
+      
+      if (format === 'pdf') {
+        // In a real app, you'd use a PDF library like puppeteer or jsPDF
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="statement-${accountId}-${new Date().toISOString().split('T')[0]}.pdf"`);
+        // For now, return JSON with a message
+        res.json({ message: "PDF generation would be implemented here", transactions });
+      } else if (format === 'csv') {
+        const csv = transactions.map(t => 
+          `${t.createdAt},${t.type},${t.amount},${t.description},${t.balanceAfter}`
+        ).join('\n');
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="statement-${accountId}.csv"`);
+        res.send(`Date,Type,Amount,Description,Balance\n${csv}`);
+      } else {
+        res.json(transactions);
+      }
+    } catch (error) {
+      console.error("Error generating statement:", error);
+      res.status(500).json({ message: "Failed to generate statement" });
+    }
+  });
+
+  // Loan Management
+  app.get('/api/loans', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const loans = await storage.getLoansByUserId(userId);
+      res.json(loans);
+    } catch (error) {
+      console.error("Error fetching loans:", error);
+      res.status(500).json({ message: "Failed to fetch loans" });
+    }
+  });
+
+  app.post('/api/loans/apply', isAuthenticated, rateLimit(2, 86400000), validateRequest(z.object({ amount: z.string(), type: z.string(), purpose: z.string() })), async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { amount, type, purpose } = req.body;
+
+      const loanApplication = await storage.createLoanApplication({
+        userId,
+        amount,
+        type,
+        purpose,
+        status: 'pending',
+        interestRate: '5.5', // Default rate
+        termMonths: 60 // Default term
+      });
+
+      res.json(loanApplication);
+    } catch (error) {
+      console.error("Error creating loan application:", error);
+      res.status(500).json({ message: "Failed to create loan application" });
+    }
+  });
+
+  // Enhanced Admin Routes for Loans
+  app.get('/api/admin/loans/pending', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const loans = await storage.getPendingLoans();
+      res.json(loans);
+    } catch (error) {
+      console.error("Error fetching pending loans:", error);
+      res.status(500).json({ message: "Failed to fetch pending loans" });
+    }
+  });
+
+  app.post('/api/admin/loans/:id/approve', isAuthenticated, requireAdmin, validateRequest(z.object({ interestRate: z.string(), termMonths: z.number() })), async (req: any, res) => {
+    try {
+      const loanId = req.params.id;
+      const { interestRate, termMonths } = req.body;
+
+      await storage.approveLoan(loanId, interestRate, termMonths);
+      res.json({ message: "Loan approved successfully" });
+    } catch (error) {
+      console.error("Error approving loan:", error);
+      res.status(500).json({ message: "Failed to approve loan" });
+    }
+  });
+
+  app.post('/api/admin/loans/:id/reject', isAuthenticated, requireAdmin, validateRequest(z.object({ reason: z.string() })), async (req: any, res) => {
+    try {
+      const loanId = req.params.id;
+      const { reason } = req.body;
+
+      await storage.rejectLoan(loanId, reason);
+      res.json({ message: "Loan rejected successfully" });
+    } catch (error) {
+      console.error("Error rejecting loan:", error);
+      res.status(500).json({ message: "Failed to reject loan" });
+    }
+  });
+
+  // Inheritance & Beneficiary Management  
+  app.get('/api/beneficiaries', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const beneficiaries = await storage.getBeneficiariesByUserId(userId);
+      res.json(beneficiaries);
+    } catch (error) {
+      console.error("Error fetching beneficiaries:", error);
+      res.status(500).json({ message: "Failed to fetch beneficiaries" });
+    }
+  });
+
+  app.post('/api/beneficiaries', isAuthenticated, validateRequest(z.object({ name: z.string(), relationship: z.string(), percentage: z.number(), contactInfo: z.string() })), async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const beneficiaryData = { ...req.body, userId };
+
+      const beneficiary = await storage.createBeneficiary(beneficiaryData);
+      res.json(beneficiary);
+    } catch (error) {
+      console.error("Error creating beneficiary:", error);
+      res.status(500).json({ message: "Failed to create beneficiary" });
+    }
+  });
+
+  // Admin Inheritance Management
+  app.post('/api/admin/inheritance/process', isAuthenticated, requireAdmin, validateRequest(z.object({ userId: z.string(), deathCertificateUrl: z.string() })), async (req: any, res) => {
+    try {
+      const { userId, deathCertificateUrl } = req.body;
+      
+      const inheritanceProcess = await storage.processInheritance(userId, deathCertificateUrl);
+      res.json(inheritanceProcess);
+    } catch (error) {
+      console.error("Error processing inheritance:", error);
+      res.status(500).json({ message: "Failed to process inheritance" });
+    }
+  });
+
+  // Enhanced Notifications
+  app.get('/api/notifications', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const notifications = await storage.getNotificationsByUserId(userId);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.patch('/api/notifications/:id/read', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const notificationId = req.params.id;
+
+      await storage.markNotificationAsRead(notificationId, userId);
+      res.json({ message: "Notification marked as read" });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

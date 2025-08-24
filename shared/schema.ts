@@ -493,6 +493,96 @@ export type InsertStandingOrder = typeof standingOrders.$inferInsert;
 export type CustomerProfile = typeof customerProfiles.$inferSelect;
 export type InsertCustomerProfile = typeof customerProfiles.$inferInsert;
 
+// Password reset tokens
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  token: varchar("token").unique().notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Loan status
+export const loanStatusEnum = pgEnum('loan_status', ['pending', 'approved', 'rejected', 'active', 'completed', 'defaulted']);
+
+// Loans table
+export const loans = pgTable("loans", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  type: varchar("type").notNull(), // personal, mortgage, auto, etc.
+  purpose: text("purpose"),
+  interestRate: decimal("interest_rate", { precision: 5, scale: 2 }).notNull(),
+  termMonths: varchar("term_months").notNull(),
+  status: loanStatusEnum("status").default('pending').notNull(),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  rejectionReason: text("rejection_reason"),
+  monthlyPayment: decimal("monthly_payment", { precision: 15, scale: 2 }),
+  remainingBalance: decimal("remaining_balance", { precision: 15, scale: 2 }),
+  nextPaymentDate: timestamp("next_payment_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Beneficiaries table
+export const beneficiaries = pgTable("beneficiaries", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  name: varchar("name").notNull(),
+  relationship: varchar("relationship").notNull(), // spouse, child, parent, etc.
+  percentage: decimal("percentage", { precision: 5, scale: 2 }).notNull(),
+  contactInfo: text("contact_info").notNull(),
+  dateOfBirth: timestamp("date_of_birth"),
+  address: text("address"),
+  ssn: varchar("ssn"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Inheritance processes table
+export const inheritanceProcesses = pgTable("inheritance_processes", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  deceasedUserId: varchar("deceased_user_id").references(() => users.id).notNull(),
+  deathCertificateUrl: varchar("death_certificate_url").notNull(),
+  status: varchar("status").default('pending').notNull(), // pending, verified, processed, completed
+  processedBy: varchar("processed_by").references(() => users.id),
+  processedAt: timestamp("processed_at"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relations for new tables
+export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
+  user: one(users, { fields: [passwordResetTokens.userId], references: [users.id] }),
+}));
+
+export const loansRelations = relations(loans, ({ one }) => ({
+  user: one(users, { fields: [loans.userId], references: [users.id] }),
+  approver: one(users, { fields: [loans.approvedBy], references: [users.id] }),
+}));
+
+export const beneficiariesRelations = relations(beneficiaries, ({ one }) => ({
+  user: one(users, { fields: [beneficiaries.userId], references: [users.id] }),
+}));
+
+export const inheritanceProcessesRelations = relations(inheritanceProcesses, ({ one }) => ({
+  deceasedUser: one(users, { fields: [inheritanceProcesses.deceasedUserId], references: [users.id] }),
+  processor: one(users, { fields: [inheritanceProcesses.processedBy], references: [users.id] }),
+}));
+
+// Additional types for new tables
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+export type Loan = typeof loans.$inferSelect;
+export type InsertLoan = typeof loans.$inferInsert;
+export type Beneficiary = typeof beneficiaries.$inferSelect;
+export type InsertBeneficiary = typeof beneficiaries.$inferInsert;
+export type InheritanceProcess = typeof inheritanceProcesses.$inferSelect;
+export type InsertInheritanceProcess = typeof inheritanceProcesses.$inferInsert;
+
 // Enums for TypeScript
 export type UserRole = 'admin' | 'customer';
 export type AccountStatus = 'active' | 'frozen' | 'closed';
@@ -506,3 +596,4 @@ export type BillStatus = 'pending' | 'paid' | 'failed' | 'cancelled';
 export type InvestmentType = 'stocks' | 'mutual_funds' | 'savings_plan' | 'forex';
 export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type LoanStatus = 'pending' | 'approved' | 'rejected' | 'active' | 'completed' | 'defaulted';
