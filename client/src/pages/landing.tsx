@@ -1,4 +1,6 @@
 import Navbar from "@/components/ui/navbar";
+import HeroSlider from "@/components/ui/hero-slider";
+import ServicesSection from "@/components/ui/services-section";
 import { Button } from "@/components/ui/button";
 import { Building, CreditCard, Smartphone, PiggyBank, FileText, TrendingUp, Users, ShoppingCart, Calendar, ArrowRight, Download, Award, DollarSign, Gift } from "lucide-react";
 
@@ -7,39 +9,11 @@ export default function Landing() {
     <div className="min-h-screen bg-white">
       <Navbar showLogin={true} />
 
-      {/* Hero Section */}
-      <section 
-        className="relative h-96 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=800')"
-        }}
-      >
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-          <div className="max-w-2xl">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Ghana Deposit Protection
-            </h1>
-            <Button 
-              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-sm font-semibold rounded-md"
-              data-testid="button-know-more"
-            >
-              KNOW MORE
-            </Button>
-          </div>
-        </div>
-        
-        {/* Carousel Dots */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          <div className="w-3 h-3 rounded-full bg-white opacity-100"></div>
-          <div className="w-3 h-3 rounded-full bg-white opacity-50"></div>
-          <div className="w-3 h-3 rounded-full bg-white opacity-50"></div>
-          <div className="w-3 h-3 rounded-full bg-white opacity-50"></div>
-          <div className="w-3 h-3 rounded-full bg-white opacity-50"></div>
-          <div className="w-3 h-3 rounded-full bg-white opacity-50"></div>
-          <div className="w-3 h-3 rounded-full bg-white opacity-50"></div>
-        </div>
-      </section>
+      {/* Dynamic Hero Section with Image Slider */}
+      <HeroSlider />
+      
+      {/* Re-add Services Section */}
+      <ServicesSection />
 
       {/* Service Icons Section */}
       <section className="py-16 bg-white border-b">
@@ -74,6 +48,46 @@ export default function Landing() {
                 <CreditCard className="w-8 h-8 text-finora-primary" />
               </div>
               <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Debit Cards</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mobile Banking Section - Re-added from old design */}
+      <section className="bg-finora-primary py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-white mb-12">
+            <h2 className="text-3xl font-bold mb-4">Finora Mobile Banking</h2>
+            <p className="text-lg opacity-90">Bank anywhere, anytime with our award-winning mobile app</p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="text-white">
+              <h3 className="text-2xl font-bold mb-6">Download our highly-rated app</h3>
+              <p className="mb-6 opacity-90">4.7 out of 5 Rating. Based on 379k ratings on the App Store</p>
+              
+              <div className="flex space-x-4 mb-8">
+                <div className="bg-white bg-opacity-20 px-4 py-2 rounded-lg">
+                  <span className="text-sm font-medium">App Store</span>
+                </div>
+                <div className="bg-white bg-opacity-20 px-4 py-2 rounded-lg">
+                  <span className="text-sm font-medium">Google Play</span>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <p className="font-semibold">Get started with mobile banking:</p>
+                <a href="#" className="block text-green-200 hover:text-white transition-colors">• Mobile Check Deposit</a>
+                <a href="#" className="block text-green-200 hover:text-white transition-colors">• Set up Alerts</a>
+                <a href="#" className="block text-green-200 hover:text-white transition-colors">• Manage Cards</a>
+                <a href="#" className="block text-green-200 hover:text-white transition-colors">• Transfer Money</a>
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="bg-white bg-opacity-10 rounded-lg p-8">
+                <Smartphone className="w-24 h-24 text-white mx-auto mb-4" />
+                <p className="text-white opacity-90">Mobile Banking App Preview</p>
+              </div>
             </div>
           </div>
         </div>

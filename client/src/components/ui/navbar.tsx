@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Home, Search } from "lucide-react";
+import { Home, Search, User, Lock } from "lucide-react";
 
 interface NavbarProps {
   showLogin: boolean;
@@ -32,7 +32,6 @@ export default function Navbar({ showLogin }: NavbarProps) {
             <Link href="/" className="flex items-center text-gray-600 hover:text-finora-primary transition-colors duration-200">
               <Home className="w-5 h-5" />
             </Link>
-            <span className="text-gray-600 text-sm">You're in <strong>Ghana</strong></span>
           </div>
           
           <nav className="hidden md:flex items-center space-x-8">
@@ -50,16 +49,18 @@ export default function Navbar({ showLogin }: NavbarProps) {
               <>
                 <Button 
                   variant="outline"
-                  className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white text-xs font-medium px-4 py-2"
+                  className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white text-xs font-medium px-4 py-2 flex items-center gap-2"
                   data-testid="button-open-account"
                 >
+                  <User className="w-4 h-4" />
                   OPEN AN ACCOUNT
                 </Button>
                 <Button 
                   onClick={handleLogin}
-                  className="bg-green-700 text-white hover:bg-green-800 text-xs font-medium px-6 py-2"
+                  className="bg-green-700 text-white hover:bg-green-800 text-xs font-medium px-6 py-2 flex items-center gap-2"
                   data-testid="button-login"
                 >
+                  <Lock className="w-4 h-4" />
                   LOGIN
                 </Button>
               </>
@@ -81,13 +82,13 @@ export default function Navbar({ showLogin }: NavbarProps) {
               </div>
             )}
             
-            <Link href="/">
-              <img 
-                src="/@assets/generated_images/Finora_banking_logo_bd4863b1.png" 
-                alt="Finora Bank Logo" 
-                className="h-8 cursor-pointer ml-4" 
-                data-testid="img-logo"
-              />
+            <Link href="/" className="flex items-center ml-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-finora-primary to-finora-secondary rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">F</span>
+                </div>
+                <span className="text-2xl font-bold text-finora-primary" data-testid="text-logo">Finora</span>
+              </div>
             </Link>
           </div>
         </div>
