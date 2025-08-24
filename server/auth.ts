@@ -23,11 +23,11 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Enable in production
+      secure: false, // Disable for development
       maxAge: sessionTtl,
-      sameSite: 'strict', // CSRF protection
+      sameSite: 'lax', // More permissive for development
     },
-    name: 'sessionId', // Hide default session name
+    name: 'connect.sid', // Use default session name
   });
 }
 
@@ -112,7 +112,13 @@ export async function setupAuth(app: Express) {
           if (err) {
             return res.status(500).json({ message: "Login failed" });
           }
-          return res.json({ message: "Login successful", user });
+          // Ensure session is saved before responding
+          req.session.save((err) => {
+            if (err) {
+              return res.status(500).json({ message: "Session save failed" });
+            }
+            return res.json({ message: "Login successful", user });
+          });
         });
       })(req, res, next);
     } catch (error) {
