@@ -1104,12 +1104,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         profileData.dateOfBirth = new Date(profileData.dateOfBirth);
       }
       
+      // Sanitize numeric fields - convert empty strings to null
+      if (profileData.annualIncome === '' || profileData.annualIncome === undefined) {
+        profileData.annualIncome = null;
+      }
+      
       // Remove timestamp fields that shouldn't be updated by user
       delete profileData.createdAt;
       delete profileData.updatedAt;
       
       // Remove fields that belong to users table, not customer_profiles table
       const { firstName, lastName, email, ...customerProfileData } = profileData;
+      
+      // Clean up any remaining empty string numeric values
+      Object.keys(customerProfileData).forEach(key => {
+        if (customerProfileData[key] === '') {
+          customerProfileData[key] = null;
+        }
+      });
       
       // Update user info separately if provided
       if (firstName || lastName || email) {
