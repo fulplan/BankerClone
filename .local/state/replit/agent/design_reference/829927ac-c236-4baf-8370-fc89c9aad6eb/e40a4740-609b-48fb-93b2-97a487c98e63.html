@@ -1,0 +1,776 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santander Bank - Online Banking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'santander-red': '#EC0000',
+                    'santander-dark-red': '#D10000',
+                    'santander-gray': '#6C757D',
+                    'santander-light-gray': '#F8F9FA',
+                    'santander-dark-gray': '#495057',
+                    'santander-bg': '#FFFFFF'
+                },
+                fontFamily: {
+                    'inter': ['Inter', 'sans-serif']
+                }
+            }
+        }
+    };
+    </script>
+</head>
+<body class="font-inter bg-white">
+    <!-- @COMPONENT: AppContainer [main app wrapper with routing] -->
+    <div id="app-container">
+        <!-- @COMPONENT: NavigationHeader [responsive header with logo and auth] -->
+        <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <!-- Logo Section -->
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 cursor-pointer" onclick="showView('home')">
+                            <span class="text-2xl font-bold text-santander-red">SANTANDER</span>
+                        </div>
+                        <!-- Desktop Navigation -->
+                        <nav class="hidden md:ml-8 md:flex md:space-x-8">
+                            <a href="#" onclick="showView('home')" class="text-santander-dark-gray hover:text-santander-red px-3 py-2 text-sm font-medium transition-colors">Personal</a>
+                            <a href="#" class="text-santander-dark-gray hover:text-santander-red px-3 py-2 text-sm font-medium transition-colors">Business</a>
+                            <a href="#" class="text-santander-dark-gray hover:text-santander-red px-3 py-2 text-sm font-medium transition-colors">Commercial</a>
+                            <a href="#" class="text-santander-dark-gray hover:text-santander-red px-3 py-2 text-sm font-medium transition-colors">Investing</a>
+                        </nav>
+                    </div>
+
+                    <!-- Right Side Navigation -->
+                    <div class="flex items-center space-x-4">
+                        <a href="#" class="hidden sm:block text-santander-dark-gray hover:text-santander-red text-sm font-medium">
+                            <i class="fas fa-map-marker-alt mr-1"></i>
+                            Find a Branch/ATM
+                        </a>
+                        
+                        <!-- User Status Display -->
+                        <div id="user-status" class="hidden items-center space-x-2">
+                            <span class="text-sm text-santander-dark-gray">Welcome, <span id="user-name" data-bind="currentUser.name">User</span></span>
+                            <span id="user-role" class="px-2 py-1 text-xs font-medium rounded-full bg-santander-red text-white" data-bind="currentUser.role">CUSTOMER</span>
+                            <button onclick="logout()" class="text-santander-red hover:text-santander-dark-red text-sm font-medium">Logout</button>
+                        </div>
+
+                        <!-- Login Button -->
+                        <button id="login-btn" onclick="showLoginModal()" class="bg-santander-red hover:bg-santander-dark-red text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                            Login
+                        </button>
+
+                        <!-- Mobile menu button -->
+                        <button class="md:hidden p-2">
+                            <i class="fas fa-bars text-santander-dark-gray"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- @END_COMPONENT: NavigationHeader -->
+
+        <!-- @COMPONENT: LoginModal [authentication modal with role selection] -->
+        <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-santander-dark-gray">Login to Online Banking</h2>
+                    <button onclick="hideLoginModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="login-form" data-event="submit:handleLogin">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="login-username" class="block text-sm font-medium text-santander-dark-gray mb-1">User ID</label>
+                            <input type="text" id="login-username" name="username" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-santander-red focus:border-transparent" data-mock="true" placeholder="Enter your User ID">
+                        </div>
+                        <div>
+                            <label for="login-password" class="block text-sm font-medium text-santander-dark-gray mb-1">Password</label>
+                            <input type="password" id="login-password" name="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-santander-red focus:border-transparent" data-mock="true" placeholder="Enter your Password">
+                        </div>
+                        <div>
+                            <label for="user-role-select" class="block text-sm font-medium text-santander-dark-gray mb-1">Login As</label>
+                            <select id="user-role-select" name="role" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-santander-red focus:border-transparent">
+                                <option value="customer">Customer</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="login-error" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                        <p class="text-sm text-red-600">Please enter a valid user ID and/or password</p>
+                    </div>
+                    
+                    <button type="submit" class="w-full mt-6 bg-santander-red hover:bg-santander-dark-red text-white py-2 px-4 rounded-md font-medium transition-colors">
+                        Login
+                    </button>
+                </form>
+                
+                <div class="mt-4 text-center space-y-2">
+                    <a href="#" class="block text-sm text-santander-red hover:text-santander-dark-red">First time user? Enroll now!</a>
+                    <a href="#" class="block text-sm text-santander-red hover:text-santander-dark-red">Forgot User ID?</a>
+                    <a href="#" class="block text-sm text-santander-red hover:text-santander-dark-red">Forgot Password?</a>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: LoginModal -->
+
+        <!-- @COMPONENT: HomeView [main landing page content] -->
+        <div id="home-view" class="view">
+            <!-- Hero Section -->
+            <section class="relative bg-santander-light-gray overflow-hidden">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div class="space-y-6">
+                            <h1 class="text-4xl lg:text-5xl font-bold text-santander-dark-gray leading-tight">
+                                The best financial tools and advice for every need.
+                            </h1>
+                            <p class="text-lg text-santander-gray">
+                                Simple and secure personal banking available in person, online, or on your device.
+                            </p>
+                            <button class="bg-santander-red hover:bg-santander-dark-red text-white px-8 py-3 rounded-md font-medium text-lg transition-colors">
+                                Choose your checking account
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <!-- Woman wearing a green shirt and jeans, holding the door open at her small business -->
+                            <img src="https://images.unsplash.com/photo-1556740758-90de374c12ad?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Professional woman opening door at small business" class="rounded-xl shadow-lg w-full h-auto">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Banking Products Section -->
+            <section class="py-16 bg-white">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl font-bold text-santander-dark-gray mb-4">Helping people bank smarter</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <!-- @MAP: bankingProducts.map(product => ( -->
+                        <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer">
+                            <div class="text-santander-red text-4xl mb-4">
+                                <i class="fas fa-piggy-bank"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-santander-dark-gray mb-2">Savings & CDs</h3>
+                            <p class="text-santander-gray">that make it convenient to earn more as you save.</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer">
+                            <div class="text-santander-red text-4xl mb-4">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-santander-dark-gray mb-2">Checking</h3>
+                            <p class="text-santander-gray">options for even easier everyday banking.</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer">
+                            <div class="text-santander-red text-4xl mb-4">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-santander-dark-gray mb-2">Credit cards</h3>
+                            <p class="text-santander-gray">with a range of benefits and rewards.</p>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Investment Section -->
+            <section class="py-16 bg-santander-light-gray">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <!-- Computer screen showing investment interface -->
+                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Computer screen showing investment dashboard" class="rounded-xl shadow-lg w-full h-auto">
+                        </div>
+                        <div class="space-y-6">
+                            <h2 class="text-3xl font-bold text-santander-dark-gray">Invest with confidence</h2>
+                            <p class="text-lg text-santander-gray">
+                                Santander Investment Services* offers a wide range of solutions that provide the guidance you need to set investment goals and the tools you need to achieve them. Start working with a Financial Advisor today.
+                            </p>
+                            <button class="bg-santander-red hover:bg-santander-dark-red text-white px-8 py-3 rounded-md font-medium transition-colors inline-flex items-center">
+                                Start investing
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mobile Banking Section -->
+            <section class="py-16 bg-white">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                        <div class="space-y-6">
+                            <h2 class="text-3xl font-bold text-santander-dark-gray">Santander mobile banking for anywhere convenience</h2>
+                            <p class="text-lg text-santander-gray">
+                                Make Mobile Check Deposits, set up Alerts, manage cards, and more, all from the Santander Mobile Banking App. It's the simplest, most secure way to manage your money on the go.
+                            </p>
+                            <div class="space-y-4">
+                                <p class="font-semibold text-santander-dark-gray">Download our highly-rated app</p>
+                                <p class="text-sm text-santander-gray">4.7 out of 5 Rating. Based on 379k ratings on the App Store as of 3/26/2025</p>
+                                <div class="flex space-x-4">
+                                    <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=300&h=100" alt="Download on App Store" class="h-12 cursor-pointer hover:opacity-80 transition-opacity">
+                                    <img src="https://pixabay.com/get/g2f304721f5f56e8e412e72aa7473911ca8c02e4951b45a612fb56a5b8ebce85be88ab7d4314b5a10f99b5a1362e30d9547aef30db3788a11835f265668cef2d5_1280.jpg" alt="Get it on Google Play" class="h-12 cursor-pointer hover:opacity-80 transition-opacity">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <!-- Mobile app login screen -->
+                            <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=800" alt="Mobile banking app interface on smartphone" class="rounded-xl shadow-lg mx-auto max-w-xs">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Community Action Section -->
+            <section class="py-16 bg-santander-light-gray">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <!-- A woman in a red apron handing food to another woman in a community setting -->
+                            <img src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Community volunteers helping distribute food" class="rounded-xl shadow-lg w-full h-auto">
+                        </div>
+                        <div class="space-y-8">
+                            <h2 class="text-3xl font-bold text-santander-dark-gray">Community-oriented action</h2>
+                            <p class="text-lg text-santander-gray">
+                                Our support for inclusive, sustainable growth helps customers and communities build paths to prosperity today, tomorrow, and for the future.
+                            </p>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                <div class="text-center">
+                                    <div class="text-santander-red text-3xl mb-2">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="text-2xl font-bold text-santander-dark-gray">68,000+</div>
+                                    <div class="text-sm text-santander-gray">Volunteer hours</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-santander-red text-3xl mb-2">
+                                        <i class="fas fa-handshake"></i>
+                                    </div>
+                                    <div class="text-2xl font-bold text-santander-dark-gray">$33.3M</div>
+                                    <div class="text-sm text-santander-gray">Given in support to nonprofits</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-santander-red text-3xl mb-2">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="text-2xl font-bold text-santander-dark-gray">400+</div>
+                                    <div class="text-sm text-santander-gray">nonprofits supported</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- @END_COMPONENT: HomeView -->
+
+        <!-- @COMPONENT: CustomerDashboard [protected customer area] -->
+        <div id="customer-dashboard" class="view hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-santander-dark-gray">Customer Dashboard</h1>
+                    <p class="text-santander-gray mt-2">Welcome back! Here's your account overview.</p>
+                </div>
+
+                <!-- Account Overview Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- @MAP: customerAccounts.map(account => ( -->
+                    <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-semibold text-santander-dark-gray" data-bind="account.name">Santander Select Checking</h3>
+                                <p class="text-sm text-santander-gray" data-bind="account.number">****1234</p>
+                            </div>
+                            <div class="text-santander-red">
+                                <i class="fas fa-university"></i>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-santander-gray">Available Balance</span>
+                                <span class="font-semibold text-santander-dark-gray" data-bind="account.balance">$2,450.67</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-santander-gray">Current Balance</span>
+                                <span class="font-semibold text-santander-dark-gray" data-bind="account.currentBalance">$2,450.67</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-semibold text-santander-dark-gray" data-bind="account.name">Santander Savings</h3>
+                                <p class="text-sm text-santander-gray" data-bind="account.number">****5678</p>
+                            </div>
+                            <div class="text-santander-red">
+                                <i class="fas fa-piggy-bank"></i>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-santander-gray">Balance</span>
+                                <span class="font-semibold text-santander-dark-gray" data-bind="account.balance">$15,847.23</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-santander-gray">APY</span>
+                                <span class="font-semibold text-santander-dark-gray">0.01%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-semibold text-santander-dark-gray" data-bind="account.name">Santander Credit Card</h3>
+                                <p class="text-sm text-santander-gray" data-bind="account.number">****9012</p>
+                            </div>
+                            <div class="text-santander-red">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-santander-gray">Current Balance</span>
+                                <span class="font-semibold text-santander-dark-gray" data-bind="account.balance">$1,205.34</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-santander-gray">Available Credit</span>
+                                <span class="font-semibold text-santander-dark-gray">$3,794.66</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                    <h3 class="text-xl font-semibold text-santander-dark-gray mb-4">Recent Transactions</h3>
+                    <div class="space-y-4">
+                        <!-- @MAP: recentTransactions.map(transaction => ( -->
+                        <div class="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0" data-mock="true">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-santander-light-gray rounded-full flex items-center justify-center">
+                                    <i class="fas fa-shopping-cart text-santander-red"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-santander-dark-gray" data-bind="transaction.description">Walmart Supercenter</p>
+                                    <p class="text-sm text-santander-gray" data-bind="transaction.date">Dec 15, 2024</p>
+                                </div>
+                            </div>
+                            <span class="font-semibold text-santander-dark-gray" data-bind="transaction.amount">-$87.42</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0" data-mock="true">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-santander-light-gray rounded-full flex items-center justify-center">
+                                    <i class="fas fa-money-bill text-green-500"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-santander-dark-gray" data-bind="transaction.description">Direct Deposit - Payroll</p>
+                                    <p class="text-sm text-santander-gray" data-bind="transaction.date">Dec 14, 2024</p>
+                                </div>
+                            </div>
+                            <span class="font-semibold text-green-600" data-bind="transaction.amount">+$2,450.00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0" data-mock="true">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-santander-light-gray rounded-full flex items-center justify-center">
+                                    <i class="fas fa-gas-pump text-santander-red"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-santander-dark-gray" data-bind="transaction.description">Shell Gas Station</p>
+                                    <p class="text-sm text-santander-gray" data-bind="transaction.date">Dec 13, 2024</p>
+                                </div>
+                            </div>
+                            <span class="font-semibold text-santander-dark-gray" data-bind="transaction.amount">-$45.67</span>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: CustomerDashboard -->
+
+        <!-- @COMPONENT: AdminDashboard [protected admin area] -->
+        <div id="admin-dashboard" class="view hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-santander-dark-gray">Admin Dashboard</h1>
+                    <p class="text-santander-gray mt-2">Manage users, accounts, and system settings.</p>
+                </div>
+
+                <!-- Admin Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-santander-gray text-sm">Total Users</p>
+                                <p class="text-2xl font-bold text-santander-dark-gray" data-bind="stats.totalUsers">12,547</p>
+                            </div>
+                            <div class="text-santander-red text-2xl">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-santander-gray text-sm">Active Accounts</p>
+                                <p class="text-2xl font-bold text-santander-dark-gray" data-bind="stats.activeAccounts">8,932</p>
+                            </div>
+                            <div class="text-green-500 text-2xl">
+                                <i class="fas fa-university"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-santander-gray text-sm">Total Deposits</p>
+                                <p class="text-2xl font-bold text-santander-dark-gray" data-bind="stats.totalDeposits">$847.2M</p>
+                            </div>
+                            <div class="text-blue-500 text-2xl">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-santander-gray text-sm">Pending Approvals</p>
+                                <p class="text-2xl font-bold text-santander-dark-gray" data-bind="stats.pendingApprovals">23</p>
+                            </div>
+                            <div class="text-yellow-500 text-2xl">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Management -->
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-8">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-semibold text-santander-dark-gray">User Management</h3>
+                            <button class="bg-santander-red hover:bg-santander-dark-red text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                Add New User
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-santander-light-gray">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-santander-dark-gray uppercase tracking-wider">User</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-santander-dark-gray uppercase tracking-wider">Role</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-santander-dark-gray uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-santander-dark-gray uppercase tracking-wider">Last Login</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-santander-dark-gray uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <!-- @MAP: users.map(user => ( -->
+                                <tr class="hover:bg-gray-50" data-mock="true">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-santander-red rounded-full flex items-center justify-center text-white font-medium">
+                                                JD
+                                            </div>
+                                            <div class="ml-3">
+                                                <div class="text-sm font-medium text-santander-dark-gray" data-bind="user.name">John Doe</div>
+                                                <div class="text-sm text-santander-gray" data-bind="user.email">john.doe@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800" data-bind="user.role">Customer</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800" data-bind="user.status">Active</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-santander-gray" data-bind="user.lastLogin">2024-12-15</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                                        <button class="text-santander-red hover:text-santander-dark-red" data-event="click:editUser">Edit</button>
+                                        <button class="text-red-600 hover:text-red-800" data-event="click:deleteUser">Delete</button>
+                                    </td>
+                                </tr>
+
+                                <tr class="hover:bg-gray-50" data-mock="true">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-santander-red rounded-full flex items-center justify-center text-white font-medium">
+                                                JS
+                                            </div>
+                                            <div class="ml-3">
+                                                <div class="text-sm font-medium text-santander-dark-gray" data-bind="user.name">Jane Smith</div>
+                                                <div class="text-sm text-santander-gray" data-bind="user.email">jane.smith@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-santander-red text-white" data-bind="user.role">Admin</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800" data-bind="user.status">Active</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-santander-gray" data-bind="user.lastLogin">2024-12-15</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                                        <button class="text-santander-red hover:text-santander-dark-red" data-event="click:editUser">Edit</button>
+                                        <button class="text-red-600 hover:text-red-800" data-event="click:deleteUser">Delete</button>
+                                    </td>
+                                </tr>
+                                <!-- @END_MAP )) -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- System Alerts -->
+                <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                    <h3 class="text-xl font-semibold text-santander-dark-gray mb-4">System Alerts</h3>
+                    <div class="space-y-4">
+                        <!-- @MAP: systemAlerts.map(alert => ( -->
+                        <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-md" data-mock="true">
+                            <div class="flex items-start">
+                                <div class="text-yellow-500 mt-1">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-yellow-800" data-bind="alert.title">Scheduled Maintenance</p>
+                                    <p class="text-sm text-yellow-700" data-bind="alert.message">System maintenance scheduled for Dec 16, 2024 from 2:00 AM - 4:00 AM EST</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-blue-50 border border-blue-200 rounded-md" data-mock="true">
+                            <div class="flex items-start">
+                                <div class="text-blue-500 mt-1">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-blue-800" data-bind="alert.title">Security Update</p>
+                                    <p class="text-sm text-blue-700" data-bind="alert.message">New security protocols implemented successfully</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: AdminDashboard -->
+
+        <!-- @COMPONENT: Footer [site footer with links and legal] -->
+        <footer class="bg-santander-dark-gray text-white py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Santander Bank</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Personal Banking</a></li>
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Investing</a></li>
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Small Business</a></li>
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Commercial</a></li>
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Private Client</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">About</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Careers</a></li>
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Our Commitment</a></li>
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Leadership</a></li>
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Media Center</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Resources & Help</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Find a Branch/ATM</a></li>
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Security Center</a></li>
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Personal Banking Resources</a></li>
+                            <li><a href="#" class="hover:text-santander-red transition-colors">Small Business Resources</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Connect With Us</h3>
+                        <div class="flex space-x-4 mb-4">
+                            <a href="#" class="text-white hover:text-santander-red transition-colors">
+                                <i class="fab fa-facebook text-xl"></i>
+                            </a>
+                            <a href="#" class="text-white hover:text-santander-red transition-colors">
+                                <i class="fab fa-twitter text-xl"></i>
+                            </a>
+                            <a href="#" class="text-white hover:text-santander-red transition-colors">
+                                <i class="fab fa-instagram text-xl"></i>
+                            </a>
+                            <a href="#" class="text-white hover:text-santander-red transition-colors">
+                                <i class="fab fa-linkedin text-xl"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-600 mt-8 pt-8 text-sm text-gray-300">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <p>&copy; 2024 Santander Bank, N.A. - Equal Housing Lender - Member FDIC</p>
+                        <div class="flex space-x-6 mt-4 md:mt-0">
+                            <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
+                            <a href="#" class="hover:text-white transition-colors">Terms of Use</a>
+                            <a href="#" class="hover:text-white transition-colors">Accessibility</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- @END_COMPONENT: Footer -->
+    </div>
+    <!-- @END_COMPONENT: AppContainer -->
+
+    <script>
+    (function() {
+        // @STATE: currentUser:object = null, currentView:string = 'home', isLoggedIn:boolean = false
+        let currentUser = null;
+        let currentView = 'home';
+        let isLoggedIn = false;
+
+        // Mock user data for demonstration
+        const mockUsers = {
+            'customer': {
+                id: 1,
+                name: 'John Customer',
+                role: 'customer',
+                username: 'customer',
+                password: 'password'
+            },
+            'admin': {
+                id: 2,
+                name: 'Jane Admin',
+                role: 'admin',
+                username: 'admin',
+                password: 'admin'
+            }
+        };
+
+        // View management functions
+        window.showView = function(viewName) {
+            // Hide all views
+            document.querySelectorAll('.view').forEach(view => {
+                view.classList.add('hidden');
+            });
+
+            // Show selected view
+            const targetView = document.getElementById(viewName === 'home' ? 'home-view' : viewName);
+            if (targetView) {
+                targetView.classList.remove('hidden');
+                currentView = viewName;
+            }
+        };
+
+        // Authentication functions
+        window.showLoginModal = function() {
+            document.getElementById('login-modal').classList.remove('hidden');
+        };
+
+        window.hideLoginModal = function() {
+            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('login-form').reset();
+        };
+
+        window.handleLogin = function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const username = formData.get('username');
+            const password = formData.get('password');
+            const role = formData.get('role');
+
+            // Mock authentication logic
+            const user = mockUsers[role];
+            if (user && (username === user.username || username === 'demo') && (password === user.password || password === 'demo')) {
+                // Successful login
+                currentUser = user;
+                isLoggedIn = true;
+                
+                // Update UI
+                updateAuthUI();
+                hideLoginModal();
+                
+                // Redirect to appropriate dashboard
+                if (role === 'admin') {
+                    showView('admin-dashboard');
+                } else {
+                    showView('customer-dashboard');
+                }
+            } else {
+                // Show error
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        };
+
+        window.logout = function() {
+            currentUser = null;
+            isLoggedIn = false;
+            updateAuthUI();
+            showView('home');
+        };
+
+        function updateAuthUI() {
+            const loginBtn = document.getElementById('login-btn');
+            const userStatus = document.getElementById('user-status');
+            const userName = document.getElementById('user-name');
+            const userRole = document.getElementById('user-role');
+
+            if (isLoggedIn && currentUser) {
+                loginBtn.classList.add('hidden');
+                userStatus.classList.remove('hidden');
+                userStatus.classList.add('flex');
+                userName.textContent = currentUser.name;
+                userRole.textContent = currentUser.role.toUpperCase();
+            } else {
+                loginBtn.classList.remove('hidden');
+                userStatus.classList.add('hidden');
+                userStatus.classList.remove('flex');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('login-form').addEventListener('submit', handleLogin);
+
+        // Close modal when clicking outside
+        document.getElementById('login-modal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                hideLoginModal();
+            }
+        });
+
+        // Initialize view
+        showView('home');
+    })();
+    </script>
+</body>
+</html>

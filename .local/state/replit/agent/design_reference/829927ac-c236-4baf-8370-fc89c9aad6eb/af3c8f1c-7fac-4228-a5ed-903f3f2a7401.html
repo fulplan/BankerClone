@@ -1,0 +1,494 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santander Bank - Personal Banking | Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'santander-red': '#EC0000',
+                        'santander-dark': '#B91C1C',
+                        'gray-50': '#F8F9FA',
+                        'gray-900': '#111827'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="font-inter bg-white">
+    <!-- @COMPONENT: LoginModal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-900">Login to Retail Online Banking</h2>
+                    <button onclick="closeLoginModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form data-implementation="Should validate credentials and handle authentication">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">User:</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-santander-red focus:border-transparent" data-bind="user.id" />
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password:</label>
+                        <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-santander-red focus:border-transparent" data-bind="user.password" />
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-santander-red text-white py-2 px-4 rounded-md hover:bg-santander-dark transition-colors duration-200" data-event="click:handleLogin">
+                        Login
+                    </button>
+                </form>
+                
+                <div class="mt-4 text-sm">
+                    <a href="#" class="text-santander-red hover:underline">First time user? Enroll now!</a><br>
+                    <a href="#" class="text-santander-red hover:underline">Forgot User ID?</a><br>
+                    <a href="#" class="text-santander-red hover:underline">Forgot Password?</a>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <p class="text-xs text-gray-600">FDIC-Insured - Backed by the full faith and credit of the U.S. Government</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: LoginModal -->
+
+    <!-- @COMPONENT: Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <img src="https://www.santanderbank.com/documents/330006/330008/logo+%281%29.png/ca903dab-71ae-9b33-0bab-05c7d754b18f?t=1600208431481&download=true" alt="Santander Bank Logo" class="h-8" />
+                </div>
+                
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#" class="text-gray-700 hover:text-santander-red transition-colors duration-200">Personal</a>
+                    <a href="#" class="text-gray-700 hover:text-santander-red transition-colors duration-200">Business</a>
+                    <a href="#" class="text-gray-700 hover:text-santander-red transition-colors duration-200">Commercial</a>
+                    <a href="#" class="text-gray-700 hover:text-santander-red transition-colors duration-200">Private Client</a>
+                    <a href="#" class="text-gray-700 hover:text-santander-red transition-colors duration-200">Investing</a>
+                </nav>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="#" class="text-gray-700 hover:text-santander-red transition-colors duration-200 text-sm">Find a Branch/ATM</a>
+                    <button onclick="openLoginModal()" class="bg-santander-red text-white px-4 py-2 rounded-md hover:bg-santander-dark transition-colors duration-200">
+                        Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <!-- @COMPONENT: HeroSection -->
+    <section class="bg-gray-50 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                        The best financial tools and advice for every need.
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-8">
+                        Simple and secure personal banking available in person, online, or on your device.
+                    </p>
+                    <button class="bg-santander-red text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-santander-dark transition-colors duration-200">
+                        Choose your checking account
+                    </button>
+                </div>
+                <div>
+                    <!-- Professional woman using banking services on mobile device -->
+                    <img src="https://images.unsplash.com/photo-1551836022-deb4988cc6c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Woman using mobile banking services" class="rounded-lg shadow-lg w-full h-auto" />
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: HeroSection -->
+
+    <!-- @COMPONENT: BankingServices -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Helping people bank smarter</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center p-6 bg-white rounded-lg shadow-sm border">
+                    <div class="w-16 h-16 bg-santander-red rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-piggy-bank text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Savings & CDs</h3>
+                    <p class="text-gray-600 mb-4">that make it convenient to earn more as you save.</p>
+                    <a href="#" class="text-santander-red hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="text-center p-6 bg-white rounded-lg shadow-sm border">
+                    <div class="w-16 h-16 bg-santander-red rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Checking</h3>
+                    <p class="text-gray-600 mb-4">options for even easier everyday banking.</p>
+                    <a href="#" class="text-santander-red hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="text-center p-6 bg-white rounded-lg shadow-sm border">
+                    <div class="w-16 h-16 bg-santander-red rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-credit-card text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Credit cards</h3>
+                    <p class="text-gray-600 mb-4">with a range of benefits and rewards.</p>
+                    <a href="#" class="text-santander-red hover:underline">Learn more →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: BankingServices -->
+
+    <!-- @COMPONENT: InvestmentSection -->
+    <section class="bg-gray-50 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <!-- Business meeting discussing financial investments -->
+                    <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Business professionals in investment meeting" class="rounded-lg shadow-lg w-full h-auto" />
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Invest with confidence</h2>
+                    <p class="text-lg text-gray-600 mb-8">
+                        Santander Investment Services* offers a wide range of solutions that provide the guidance you need to set investment goals and the tools you need to achieve them. Start working with a Financial Advisor today.
+                    </p>
+                    <button class="bg-santander-red text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-santander-dark transition-colors duration-200">
+                        Start investing →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: InvestmentSection -->
+
+    <!-- @COMPONENT: AppointmentSection -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-lg shadow-lg p-8 md:p-12">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 mb-6">Let's meet <strong>in person</strong></h2>
+                        <div class="flex items-center mb-6">
+                            <i class="fas fa-calendar-alt text-santander-red text-2xl mr-4"></i>
+                            <p class="text-lg text-gray-600">Schedule one-on-one time with a banker.</p>
+                        </div>
+                        <button class="bg-santander-red text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-santander-dark transition-colors duration-200">
+                            Book now
+                        </button>
+                    </div>
+                    <div>
+                        <!-- Customer meeting with bank advisor at desk -->
+                        <img src="https://images.unsplash.com/photo-1664575602554-2087b04935a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Customer meeting with bank advisor" class="rounded-lg shadow-lg w-full h-auto" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: AppointmentSection -->
+
+    <!-- @COMPONENT: ScholarshipSection -->
+    <section class="bg-gray-50 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <!-- Students celebrating graduation with caps in air -->
+                    <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Students celebrating graduation" class="rounded-lg shadow-lg w-full h-auto" />
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Fund your future with a Santander Open Scholarship</h2>
+                    <ul class="text-lg text-gray-600 mb-8 space-y-2">
+                        <li>• Up to $20K per student for college tuition</li>
+                        <li>• Open to current undergrads</li>
+                        <li>• Applications open August 1 to December 1, 2025</li>
+                    </ul>
+                    <button class="bg-santander-red text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-santander-dark transition-colors duration-200">
+                        Apply now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: ScholarshipSection -->
+
+    <!-- @COMPONENT: MobileBankingSection -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Santander mobile banking for anywhere convenience</h2>
+                <p class="text-lg text-gray-600">
+                    Make Mobile Check Deposits, set up Alerts, manage cards, and more, all from the Santander Mobile Banking App. It's the simplest, most secure way to manage your money on the go.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">Download our highly-rated app</h3>
+                    <p class="text-gray-600 mb-6">4.7 out of 5 Rating. Based on 379k ratings on the App Store as of 3/26/2025</p>
+                    
+                    <div class="flex space-x-4 mb-8">
+                        <img src="https://www.santanderbank.com/documents/330001/14323886/27601_apple_btn+%281%29.jpg/bf7ba4f1-97b8-1d4e-28bc-ae5aa6ecbcb8" alt="Download on App Store" class="h-12" />
+                        <img src="https://www.santanderbank.com/documents/330001/14323886/27601_google_btn+%281%29.jpg/dd96fe00-ed38-b079-1e46-319aa5d3776c" alt="Get it on Google Play" class="h-12" />
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <p class="font-semibold text-gray-900">Get started with one of our mobile app tutorials:</p>
+                        <a href="#" class="block text-santander-red hover:underline">Mobile Check Deposit</a>
+                        <a href="#" class="block text-santander-red hover:underline">Set up Alerts</a>
+                        <a href="#" class="block text-santander-red hover:underline">Manage cards</a>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <!-- Person using mobile banking app on smartphone -->
+                    <img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600" alt="Person using mobile banking app" class="rounded-lg shadow-lg mx-auto" />
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: MobileBankingSection -->
+
+    <!-- @COMPONENT: SecuritySection -->
+    <section class="bg-gray-50 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                        Freedom with Santander PRO<strong>TECH</strong>TION
+                    </h2>
+                    <p class="text-lg text-gray-600 mb-8">
+                        Mobile and Online Banking with Santander PROTECTION safeguards your information with several layers of technology.
+                    </p>
+                    <button class="bg-santander-red text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-santander-dark transition-colors duration-200">
+                        Learn more
+                    </button>
+                </div>
+                <div>
+                    <!-- Digital security concept with lock and technology -->
+                    <img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Digital security and protection concept" class="rounded-lg shadow-lg w-full h-auto" />
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: SecuritySection -->
+
+    <!-- @COMPONENT: PrivateClientSection -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg p-8 md:p-12 text-white">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-sm font-semibold text-santander-red mb-2">Santander® Private Client</h3>
+                        <h2 class="text-3xl font-bold mb-6">A banking experience designed around your individual goals</h2>
+                        <p class="text-lg text-gray-300 mb-8">
+                            Your dedicated Relationship Banker can provide you with access to our best rates on deposits, as well as preferred pricing on lending and investment products*.
+                        </p>
+                        <button class="bg-santander-red text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-santander-dark transition-colors duration-200">
+                            Learn More
+                        </button>
+                    </div>
+                    <div class="text-center">
+                        <img src="https://www.santanderbank.com/documents/330001/8990400/spc-card-tilted-310.png/28a89158-2191-3eac-eec3-42f28731cd38?t=1638549129771&download=true" alt="Private Client Debit Mastercard" class="mx-auto" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: PrivateClientSection -->
+
+    <!-- @COMPONENT: CommunitySection -->
+    <section class="bg-gray-50 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <!-- Community volunteers helping at food bank -->
+                    <img src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Community volunteers helping at food bank" class="rounded-lg shadow-lg w-full h-auto" />
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Community-oriented action</h2>
+                    <p class="text-lg text-gray-600 mb-8">
+                        Our support for inclusive, sustainable growth helps customers and communities build paths to prosperity today, tomorrow, and for the future.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 gap-6 mb-8">
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-santander-red text-2xl mr-4"></i>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-900">68,000+</p>
+                                <p class="text-gray-600">Volunteer hours</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-handshake text-santander-red text-2xl mr-4"></i>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-900">$33.3M</p>
+                                <p class="text-gray-600">Given in support to nonprofits</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-santander-red text-2xl mr-4"></i>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-900">400+</p>
+                                <p class="text-gray-600">nonprofits supported</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="bg-santander-red text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-santander-dark transition-colors duration-200">
+                        Learn More
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: CommunitySection -->
+
+    <!-- @COMPONENT: LocationSection -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Find Us</h2>
+                    <p class="text-lg text-gray-600 mb-8">
+                        Branches across the Northeast and in Miami, Florida, plus 2,000+ ATMs.
+                    </p>
+                    <div class="space-y-4">
+                        <button class="block w-full md:w-auto bg-santander-red text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-santander-dark transition-colors duration-200">
+                            Find a branch
+                        </button>
+                        <button class="block w-full md:w-auto bg-white border border-santander-red text-santander-red px-8 py-3 rounded-md text-lg font-semibold hover:bg-gray-50 transition-colors duration-200">
+                            Book an appointment
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <!-- Map showing bank branch locations across the northeast -->
+                    <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Map showing bank branch locations" class="rounded-lg shadow-lg w-full h-auto" />
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: LocationSection -->
+
+    <!-- @COMPONENT: Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="font-semibold text-lg mb-4">Santander Bank</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Personal Banking</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Investing</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Small Business</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Commercial</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Private Client</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-lg mb-4">About</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Careers</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Our Commitment</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Leadership</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Media Center</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Shareholder Relations</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-lg mb-4">Support Services</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">SCRA Benefits</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Homeowner Assistance</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-lg mb-4">Resources & Help</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Find a Branch/ATM</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Personal Banking Resources</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Security Center</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors duration-200">Site Map</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="text-sm text-gray-400 mb-4 md:mb-0">
+                        <a href="#" class="hover:text-white transition-colors duration-200">Privacy Policy</a> |
+                        <a href="#" class="hover:text-white transition-colors duration-200">Terms of Use</a> |
+                        <a href="#" class="hover:text-white transition-colors duration-200">Accessibility</a>
+                    </div>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-400 mt-4 text-center md:text-left">
+                    © 2025 Santander Bank, N.A. Equal Housing Lender - Member FDIC
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        (function() {
+            // Login modal functionality
+            window.openLoginModal = function() {
+                document.getElementById('loginModal').classList.remove('hidden');
+            };
+
+            window.closeLoginModal = function() {
+                document.getElementById('loginModal').classList.add('hidden');
+            };
+
+            // Close modal when clicking outside
+            document.getElementById('loginModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeLoginModal();
+                }
+            });
+
+            // Close modal on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeLoginModal();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
