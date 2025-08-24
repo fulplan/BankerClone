@@ -1177,6 +1177,215 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Support Ticket Management
+  app.get('/api/admin/support/tickets', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const tickets = await storage.getAllSupportTickets();
+      res.json(tickets);
+    } catch (error) {
+      console.error("Error fetching all support tickets:", error);
+      res.status(500).json({ message: "Failed to fetch support tickets" });
+    }
+  });
+
+  app.get('/api/admin/support/tickets/:id/messages', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const ticketId = req.params.id;
+      const messages = await storage.getChatMessagesByTicketId(ticketId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ message: "Failed to fetch chat messages" });
+    }
+  });
+
+  app.post('/api/admin/support/tickets/:id/messages', isAuthenticated, requireAdmin, rateLimit(20, 60000), async (req: any, res) => {
+    try {
+      const adminId = req.user.id;
+      const ticketId = req.params.id;
+      const { message } = req.body;
+
+      // Validate ticket exists
+      const ticket = await storage.getSupportTicketById(ticketId);
+      if (!ticket) {
+        return res.status(404).json({ message: "Ticket not found" });
+      }
+
+      const chatMessage = await storage.createChatMessage({
+        ticketId,
+        senderId: adminId,
+        message,
+        isFromAdmin: true,
+      });
+
+      // Update ticket status to in_progress if it was open
+      if (ticket.status === 'open') {
+        await storage.updateSupportTicketStatus(ticketId, 'in_progress', adminId);
+      }
+
+      res.json(chatMessage);
+    } catch (error) {
+      console.error("Error creating admin chat message:", error);
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  app.put('/api/admin/support/tickets/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const ticketId = req.params.id;
+      const { status, assignedTo, priority, resolution } = req.body;
+      const adminId = req.user.id;
+
+      const ticket = await storage.getSupportTicketById(ticketId);
+      if (!ticket) {
+        return res.status(404).json({ message: "Ticket not found" });
+      }
+
+      // Update ticket
+      await storage.updateSupportTicket(ticketId, {
+        status,
+        assignedTo,
+        priority,
+        resolution,
+        updatedAt: new Date(),
+      });
+
+      // Create audit log
+      await storage.createAuditLog({
+        userId: adminId,
+        action: 'email_sent',
+        details: `Ticket ${ticketId} updated - Status: ${status}`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'] || '',
+      });
+
+      res.json({ message: "Ticket updated successfully" });
+    } catch (error) {
+      console.error("Error updating support ticket:", error);
+      res.status(500).json({ message: "Failed to update ticket" });
+    }
+  });
+
+  // Admin User Management Routes
+  app.delete('/api/admin/users/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const userId = req.params.id;
+      const adminId = req.user.id;
+
+      // Prevent admin from deleting themselves
+      if (userId === adminId) {
+        return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+
+      // Check if user exists
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Delete user (this will cascade delete related data)
+      await storage.deleteUser(userId);
+
+      // Create audit log
+      await storage.createAuditLog({
+        userId: adminId,
+        action: 'email_sent', // Using available enum value
+        details: `User ${user.email} deleted by admin`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'] || '',
+      });
+
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
+  app.put('/api/admin/users/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const userId = req.params.id;
+      const adminId = req.user.id;
+      const { firstName, lastName, email, role } = req.body;
+
+      // Check if user exists
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Prevent admin from changing their own role to customer
+      if (userId === adminId && role === 'customer') {
+        return res.status(400).json({ message: "Cannot change your own role from admin" });
+      }
+
+      // Update user
+      await storage.updateUser(userId, {
+        firstName,
+        lastName,
+        email,
+        role,
+        updatedAt: new Date(),
+      });
+
+      // Create audit log
+      await storage.createAuditLog({
+        userId: adminId,
+        action: 'email_sent', // Using available enum value
+        details: `User ${user.email} updated by admin`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'] || '',
+      });
+
+      res.json({ message: "User updated successfully" });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  app.post('/api/admin/users/:id/reset-password', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const userId = req.params.id;
+      const adminId = req.user.id;
+
+      // Check if user exists
+      const user = await storage.getUserById(userId);
+      if (!user || !user.email) {
+        return res.status(404).json({ message: "User not found or no email" });
+      }
+
+      // Generate reset token (in production, use crypto)
+      const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
+
+      // Store reset token
+      await storage.storePasswordResetToken(userId, resetToken, resetTokenExpiry);
+
+      // Send reset email
+      await emailService.sendCustomEmail(
+        user.email,
+        userId,
+        'Admin Password Reset Request',
+        `Your password has been reset by an administrator. Click the link to set a new password: ${process.env.FRONTEND_URL}/reset-password?token=${resetToken}\n\nThis link expires in 1 hour.`
+      );
+
+      // Create audit log
+      await storage.createAuditLog({
+        userId: adminId,
+        action: 'email_sent',
+        details: `Password reset email sent to ${user.email}`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'] || '',
+      });
+
+      res.json({ message: "Password reset email sent successfully" });
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+      res.status(500).json({ message: "Failed to send password reset email" });
+    }
+  });
+
   // Password Reset & Recovery
   app.post('/api/auth/forgot-password', rateLimit(3, 60000), validateRequest(z.object({ email: z.string().email() })), async (req: any, res) => {
     try {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -75,6 +75,27 @@ export default function CustomerProfile() {
     queryKey: ["/api/profile"],
     retry: false,
   });
+
+  // Update form state when profile data loads
+  useEffect(() => {
+    if (profile) {
+      setProfileForm({
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
+        email: user?.email || '',
+        phoneNumber: profile.phoneNumber || '',
+        dateOfBirth: profile.dateOfBirth ? new Date(profile.dateOfBirth).toISOString().split('T')[0] : '',
+        address: profile.address || '',
+        city: profile.city || '',
+        state: profile.state || '',
+        zipCode: profile.zipCode || '',
+        country: profile.country || 'United States',
+        ssn: profile.ssn || '',
+        employmentStatus: profile.employmentStatus || '',
+        annualIncome: profile.annualIncome || '',
+      });
+    }
+  }, [profile, user]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: Partial<ProfileForm>) => {
@@ -381,7 +402,7 @@ export default function CustomerProfile() {
                       <Input
                         id="phoneNumber"
                         type="tel"
-                        value={profile?.phoneNumber || ''}
+                        value={profileForm.phoneNumber}
                         onChange={(e) => setProfileForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
                         disabled={!isEditingProfile}
                         placeholder="(555) 123-4567"
@@ -392,7 +413,7 @@ export default function CustomerProfile() {
                       <Input
                         id="dateOfBirth"
                         type="date"
-                        value={profile?.dateOfBirth ? new Date(profile.dateOfBirth).toISOString().split('T')[0] : ''}
+                        value={profileForm.dateOfBirth}
                         onChange={(e) => setProfileForm(prev => ({ ...prev, dateOfBirth: e.target.value }))}
                         disabled={!isEditingProfile}
                       />
@@ -403,8 +424,8 @@ export default function CustomerProfile() {
                     <Label htmlFor="ssn">Social Security Number</Label>
                     <Input
                       id="ssn"
-                      type="password"
-                      value={profile?.ssn ? '***-**-' + profile.ssn.slice(-4) : ''}
+                      type={isEditingProfile ? "text" : "password"}
+                      value={isEditingProfile ? profileForm.ssn : (profile?.ssn ? '***-**-' + profile.ssn.slice(-4) : '')}
                       onChange={(e) => setProfileForm(prev => ({ ...prev, ssn: e.target.value }))}
                       disabled={!isEditingProfile}
                       placeholder="XXX-XX-XXXX"
@@ -450,7 +471,7 @@ export default function CustomerProfile() {
                     <Label htmlFor="address">Street Address</Label>
                     <Input
                       id="address"
-                      value={profile?.address || ''}
+                      value={profileForm.address}
                       onChange={(e) => setProfileForm(prev => ({ ...prev, address: e.target.value }))}
                       disabled={!isEditingProfile}
                       placeholder="123 Main Street"
@@ -462,7 +483,7 @@ export default function CustomerProfile() {
                       <Label htmlFor="city">City</Label>
                       <Input
                         id="city"
-                        value={profile?.city || ''}
+                        value={profileForm.city}
                         onChange={(e) => setProfileForm(prev => ({ ...prev, city: e.target.value }))}
                         disabled={!isEditingProfile}
                         placeholder="New York"
@@ -471,7 +492,7 @@ export default function CustomerProfile() {
                     <div>
                       <Label htmlFor="state">State</Label>
                       <Select 
-                        value={profile?.state || ''} 
+                        value={profileForm.state} 
                         onValueChange={(value) => setProfileForm(prev => ({ ...prev, state: value }))}
                         disabled={!isEditingProfile}
                       >
@@ -491,7 +512,7 @@ export default function CustomerProfile() {
                       <Label htmlFor="zipCode">ZIP Code</Label>
                       <Input
                         id="zipCode"
-                        value={profile?.zipCode || ''}
+                        value={profileForm.zipCode}
                         onChange={(e) => setProfileForm(prev => ({ ...prev, zipCode: e.target.value }))}
                         disabled={!isEditingProfile}
                         placeholder="10001"
@@ -502,7 +523,7 @@ export default function CustomerProfile() {
                   <div>
                     <Label htmlFor="country">Country</Label>
                     <Select 
-                      value={profile?.country || 'United States'} 
+                      value={profileForm.country} 
                       onValueChange={(value) => setProfileForm(prev => ({ ...prev, country: value }))}
                       disabled={!isEditingProfile}
                     >
@@ -553,7 +574,7 @@ export default function CustomerProfile() {
                   <div>
                     <Label htmlFor="employmentStatus">Employment Status</Label>
                     <Select 
-                      value={profile?.employmentStatus || ''} 
+                      value={profileForm.employmentStatus} 
                       onValueChange={(value) => setProfileForm(prev => ({ ...prev, employmentStatus: value }))}
                       disabled={!isEditingProfile}
                     >
@@ -576,7 +597,7 @@ export default function CustomerProfile() {
                       id="annualIncome"
                       type="number"
                       step="1000"
-                      value={profile?.annualIncome || ''}
+                      value={profileForm.annualIncome}
                       onChange={(e) => setProfileForm(prev => ({ ...prev, annualIncome: e.target.value }))}
                       disabled={!isEditingProfile}
                       placeholder="50000"

@@ -659,6 +659,31 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
+  async getAllSupportTickets(): Promise<SupportTicket[]> {
+    return await db.select().from(supportTickets).orderBy(desc(supportTickets.createdAt));
+  }
+
+  async updateSupportTicketStatus(ticketId: string, status: string, assignedTo?: string): Promise<void> {
+    const updateData: any = { status, updatedAt: new Date() };
+    if (assignedTo) {
+      updateData.assignedTo = assignedTo;
+    }
+    await db.update(supportTickets).set(updateData).where(eq(supportTickets.id, ticketId));
+  }
+
+  async updateSupportTicket(ticketId: string, updateData: any): Promise<void> {
+    await db.update(supportTickets).set(updateData).where(eq(supportTickets.id, ticketId));
+  }
+
+  // User management methods
+  async deleteUser(userId: string): Promise<void> {
+    await db.delete(users).where(eq(users.id, userId));
+  }
+
+  async updateUser(userId: string, updateData: any): Promise<void> {
+    await db.update(users).set(updateData).where(eq(users.id, userId));
+  }
+
   // Password reset methods
   async storePasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<void> {
     await db.insert(passwordResetTokens).values({

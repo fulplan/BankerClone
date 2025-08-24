@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import AccountManagement from "@/components/admin/account-management";
 import TransferApproval from "@/components/admin/transfer-approval";
+import AdminSupportTickets from "@/components/admin/admin-support-tickets";
 import AuditLog from "@/components/admin/audit-log";
 import UserManagement from "@/pages/user-management";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -175,9 +176,10 @@ export default function AdminDashboard() {
         )}
 
         <Tabs defaultValue="accounts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="accounts" data-testid="tab-accounts">Account Management</TabsTrigger>
             <TabsTrigger value="transfers" data-testid="tab-transfers">Transfer Approval</TabsTrigger>
+            <TabsTrigger value="support" data-testid="tab-support">Support Tickets</TabsTrigger>
             <TabsTrigger value="users" data-testid="tab-users">User Management</TabsTrigger>
             <TabsTrigger value="audit" data-testid="tab-audit">Audit Log</TabsTrigger>
           </TabsList>
@@ -188,6 +190,10 @@ export default function AdminDashboard() {
           
           <TabsContent value="transfers">
             <TransferApproval />
+          </TabsContent>
+          
+          <TabsContent value="support">
+            <AdminSupportTickets />
           </TabsContent>
           
           <TabsContent value="users">
