@@ -781,7 +781,7 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  // Inheritance processing method
+  // Enhanced Inheritance Management Methods
   async processInheritance(userId: string, deathCertificateUrl: string): Promise<InheritanceProcess> {
     const [result] = await db.insert(inheritanceProcesses).values({
       deceasedUserId: userId,
@@ -789,6 +789,227 @@ export class DatabaseStorage implements IStorage {
       status: 'pending',
     }).returning();
     return result;
+  }
+
+  async getInheritanceProcesses(): Promise<any[]> {
+    const processes = await db
+      .select({
+        id: inheritanceProcesses.id,
+        deceasedUserId: inheritanceProcesses.deceasedUserId,
+        deathCertificateUrl: inheritanceProcesses.deathCertificateUrl,
+        status: inheritanceProcesses.status,
+        processedBy: inheritanceProcesses.processedBy,
+        processedAt: inheritanceProcesses.processedAt,
+        notes: inheritanceProcesses.notes,
+        createdAt: inheritanceProcesses.createdAt,
+        updatedAt: inheritanceProcesses.updatedAt,
+        deceasedUserEmail: users.email,
+        deceasedUserName: sql<string>`CONCAT(${users.firstName}, ' ', ${users.lastName})`,
+        processorName: sql<string>`CONCAT(processor.first_name, ' ', processor.last_name)`,
+      })
+      .from(inheritanceProcesses)
+      .leftJoin(users, eq(inheritanceProcesses.deceasedUserId, users.id))
+      .leftJoin(sql`users as processor`, sql`${inheritanceProcesses.processedBy} = processor.id`)
+      .orderBy(desc(inheritanceProcesses.createdAt));
+    
+    return processes;
+  }
+
+  async updateInheritanceProcessStatus(processId: string, status: string, adminId: string, notes?: string): Promise<void> {
+    await db.update(inheritanceProcesses).set({
+      status,
+      notes,
+      processedBy: adminId,
+      processedAt: new Date(),
+      updatedAt: new Date(),
+    }).where(eq(inheritanceProcesses.id, processId));
+
+    // Create audit log
+    await this.createAuditLog({
+      adminId,
+      targetUserId: null,
+      action: 'inheritance_reviewed' as any,
+      details: {
+        processId,
+        newStatus: status,
+        notes,
+      },
+    });
+  }
+
+  async createInheritanceDispute(disputeData: {
+    inheritanceProcessId: string;
+    disputantUserId: string;
+    disputeType: string;
+    description: string;
+    supportingDocumentsUrls?: string[];
+  }): Promise<any> {
+    // Since we're working with existing schema, store disputes as enhanced audit logs for now
+    const dispute = {
+      id: `dispute_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...disputeData,
+      status: 'open',
+      createdAt: new Date(),
+    };
+
+    // Create audit log to track dispute
+    await this.createAuditLog({
+      adminId: disputeData.disputantUserId,
+      targetUserId: disputeData.disputantUserId,
+      action: 'inheritance_disputed' as any,
+      details: dispute,
+    });
+
+    return dispute;
+  }
+
+  async getInheritanceDisputes(processId?: string): Promise<any[]> {
+    // Get disputes from audit logs for now
+    const disputes = await db
+      .select()
+      .from(auditLogs)
+      .where(
+        and(
+          eq(auditLogs.action, 'inheritance_disputed' as any),
+          processId ? sql`details->>'inheritanceProcessId' = ${processId}` : undefined
+        )
+      )
+      .orderBy(desc(auditLogs.createdAt));
+
+    return disputes.map(log => ({
+      id: log.id,
+      inheritanceProcessId: (log.details as any)?.inheritanceProcessId,
+      disputantUserId: log.adminId,
+      disputeType: (log.details as any)?.disputeType,
+      description: (log.details as any)?.description,
+      status: (log.details as any)?.status || 'open',
+      createdAt: log.createdAt,
+      details: log.details,
+    }));
+  }
+
+  async resolveInheritanceDispute(disputeId: string, resolution: string, adminId: string): Promise<void> {
+    // Update via audit log
+    await this.createAuditLog({
+      adminId,
+      targetUserId: null,
+      action: 'dispute_resolved' as any,
+      details: {
+        disputeId,
+        resolution,
+        resolvedAt: new Date(),
+      },
+    });
+  }
+
+  async createOwnershipTransferRequest(requestData: {
+    accountId: string;
+    requesterId: string;
+    targetUserEmail: string;
+    requestType: string;
+    reason: string;
+    ownershipPercentage?: string;
+    supportingDocumentsUrls?: string[];
+  }): Promise<any> {
+    // Store as enhanced audit log for now to work with existing schema
+    const transferRequest = {
+      id: `transfer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...requestData,
+      status: 'pending',
+      createdAt: new Date(),
+    };
+
+    await this.createAuditLog({
+      adminId: requestData.requesterId,
+      targetUserId: requestData.requesterId,
+      action: 'ownership_transfer_requested' as any,
+      details: transferRequest,
+    });
+
+    return transferRequest;
+  }
+
+  async getOwnershipTransferRequests(): Promise<any[]> {
+    const requests = await db
+      .select()
+      .from(auditLogs)
+      .where(eq(auditLogs.action, 'ownership_transfer_requested' as any))
+      .orderBy(desc(auditLogs.createdAt));
+
+    return requests.map(log => ({
+      id: log.id,
+      ...(log.details as any),
+      requesterId: log.adminId,
+      createdAt: log.createdAt,
+    }));
+  }
+
+  async reviewOwnershipTransferRequest(requestId: string, decision: string, adminId: string, notes: string): Promise<void> {
+    await this.createAuditLog({
+      adminId,
+      targetUserId: null,
+      action: 'ownership_transfer_reviewed' as any,
+      details: {
+        requestId,
+        decision,
+        notes,
+        reviewedAt: new Date(),
+      },
+    });
+
+    // If approved, handle the actual transfer logic here
+    if (decision === 'approved') {
+      // Implementation would depend on the specific transfer type
+      console.log(`Ownership transfer ${requestId} approved by admin ${adminId}`);
+    }
+  }
+
+  async verifyDocument(verificationData: {
+    relatedEntityId: string;
+    relatedEntityType: string;
+    documentType: string;
+    documentUrl: string;
+    verificationStatus: string;
+    verifiedBy: string;
+    verificationNotes?: string;
+    rejectionReason?: string;
+  }): Promise<any> {
+    // Store document verification as audit log
+    const verification = {
+      id: `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...verificationData,
+      verifiedAt: new Date(),
+      createdAt: new Date(),
+    };
+
+    await this.createAuditLog({
+      adminId: verificationData.verifiedBy,
+      targetUserId: null,
+      action: 'document_verified' as any,
+      details: verification,
+    });
+
+    return verification;
+  }
+
+  async getDocumentVerifications(relatedEntityId?: string): Promise<any[]> {
+    const verifications = await db
+      .select()
+      .from(auditLogs)
+      .where(
+        and(
+          eq(auditLogs.action, 'document_verified' as any),
+          relatedEntityId ? sql`details->>'relatedEntityId' = ${relatedEntityId}` : undefined
+        )
+      )
+      .orderBy(desc(auditLogs.createdAt));
+
+    return verifications.map(log => ({
+      id: log.id,
+      ...(log.details as any),
+      verifiedBy: log.adminId,
+      createdAt: log.createdAt,
+    }));
   }
 
   // KYC Verification Methods

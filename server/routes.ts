@@ -2323,6 +2323,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   });
 
   // Enhanced Admin Inheritance Management
+  // Enhanced Inheritance Management Routes
   app.get('/api/admin/inheritance', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const processes = await storage.getInheritanceProcesses();
@@ -2339,7 +2340,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       const { status, notes } = req.body;
       const adminId = req.user.id;
       
-      await storage.updateInheritanceProcessStatus(id, status, adminId);
+      await storage.updateInheritanceProcessStatus(id, status, adminId, notes);
       
       // If approved, process automatic inheritance
       if (status === 'completed') {
@@ -2350,6 +2351,133 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     } catch (error) {
       console.error("Error updating inheritance process:", error);
       res.status(500).json({ message: "Failed to update inheritance process" });
+    }
+  });
+
+  // Inheritance Disputes Routes
+  app.get('/api/admin/inheritance/disputes', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { processId } = req.query;
+      const disputes = await storage.getInheritanceDisputes(processId as string);
+      res.json(disputes);
+    } catch (error) {
+      console.error("Error fetching inheritance disputes:", error);
+      res.status(500).json({ message: "Failed to fetch inheritance disputes" });
+    }
+  });
+
+  app.post('/api/admin/inheritance/disputes', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { inheritanceProcessId, disputantUserId, disputeType, description, supportingDocumentsUrls } = req.body;
+      
+      const dispute = await storage.createInheritanceDispute({
+        inheritanceProcessId,
+        disputantUserId,
+        disputeType,
+        description,
+        supportingDocumentsUrls
+      });
+      
+      res.json(dispute);
+    } catch (error) {
+      console.error("Error creating inheritance dispute:", error);
+      res.status(500).json({ message: "Failed to create inheritance dispute" });
+    }
+  });
+
+  app.put('/api/admin/inheritance/disputes/:id/resolve', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { resolution } = req.body;
+      const adminId = req.user.id;
+      
+      await storage.resolveInheritanceDispute(id, resolution, adminId);
+      res.json({ message: "Dispute resolved successfully" });
+    } catch (error) {
+      console.error("Error resolving inheritance dispute:", error);
+      res.status(500).json({ message: "Failed to resolve inheritance dispute" });
+    }
+  });
+
+  // Ownership Transfer Routes
+  app.get('/api/admin/ownership-transfers', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const requests = await storage.getOwnershipTransferRequests();
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching ownership transfer requests:", error);
+      res.status(500).json({ message: "Failed to fetch ownership transfer requests" });
+    }
+  });
+
+  app.post('/api/admin/ownership-transfers', isAuthenticated, async (req: any, res) => {
+    try {
+      const { accountId, targetUserEmail, requestType, reason, ownershipPercentage, supportingDocumentsUrls } = req.body;
+      const requesterId = req.user.id;
+      
+      const request = await storage.createOwnershipTransferRequest({
+        accountId,
+        requesterId,
+        targetUserEmail,
+        requestType,
+        reason,
+        ownershipPercentage,
+        supportingDocumentsUrls
+      });
+      
+      res.json(request);
+    } catch (error) {
+      console.error("Error creating ownership transfer request:", error);
+      res.status(500).json({ message: "Failed to create ownership transfer request" });
+    }
+  });
+
+  app.put('/api/admin/ownership-transfers/:id/review', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { decision, notes } = req.body;
+      const adminId = req.user.id;
+      
+      await storage.reviewOwnershipTransferRequest(id, decision, adminId, notes);
+      res.json({ message: "Ownership transfer request reviewed successfully" });
+    } catch (error) {
+      console.error("Error reviewing ownership transfer request:", error);
+      res.status(500).json({ message: "Failed to review ownership transfer request" });
+    }
+  });
+
+  // Document Verification Routes
+  app.get('/api/admin/document-verifications', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { relatedEntityId } = req.query;
+      const verifications = await storage.getDocumentVerifications(relatedEntityId as string);
+      res.json(verifications);
+    } catch (error) {
+      console.error("Error fetching document verifications:", error);
+      res.status(500).json({ message: "Failed to fetch document verifications" });
+    }
+  });
+
+  app.post('/api/admin/document-verifications', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { relatedEntityId, relatedEntityType, documentType, documentUrl, verificationStatus, verificationNotes, rejectionReason } = req.body;
+      const verifiedBy = req.user.id;
+      
+      const verification = await storage.verifyDocument({
+        relatedEntityId,
+        relatedEntityType,
+        documentType,
+        documentUrl,
+        verificationStatus,
+        verifiedBy,
+        verificationNotes,
+        rejectionReason
+      });
+      
+      res.json(verification);
+    } catch (error) {
+      console.error("Error verifying document:", error);
+      res.status(500).json({ message: "Failed to verify document" });
     }
   });
 

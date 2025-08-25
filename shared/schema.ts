@@ -494,6 +494,16 @@ export type InsertStandingOrder = typeof standingOrders.$inferInsert;
 export type CustomerProfile = typeof customerProfiles.$inferSelect;
 export type InsertCustomerProfile = typeof customerProfiles.$inferInsert;
 
+// Enhanced inheritance management types
+export type InheritanceProcess = typeof inheritanceProcesses.$inferSelect;
+export type InsertInheritanceProcess = typeof inheritanceProcesses.$inferInsert;
+export type InheritanceDispute = typeof inheritanceDisputes.$inferSelect;
+export type InsertInheritanceDispute = typeof inheritanceDisputes.$inferInsert;
+export type OwnershipTransferRequest = typeof ownershipTransferRequests.$inferSelect;
+export type InsertOwnershipTransferRequest = typeof ownershipTransferRequests.$inferInsert;
+export type DocumentVerification = typeof documentVerifications.$inferSelect;
+export type InsertDocumentVerification = typeof documentVerifications.$inferInsert;
+
 // Password reset tokens
 export const passwordResetTokens = pgTable("password_reset_tokens", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -542,15 +552,81 @@ export const beneficiaries = pgTable("beneficiaries", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Inheritance processes table
+// Inheritance process status
+export const inheritanceStatusEnum = pgEnum('inheritance_status', [
+  'pending', 'document_review', 'legal_review', 'disputed', 'approved', 'rejected', 'completed'
+]);
+
+// Inheritance processes table (enhanced)
 export const inheritanceProcesses = pgTable("inheritance_processes", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   deceasedUserId: varchar("deceased_user_id").references(() => users.id).notNull(),
-  deathCertificateUrl: varchar("death_certificate_url").notNull(),
-  status: varchar("status").default('pending').notNull(), // pending, verified, processed, completed
+  deathCertificateUrl: varchar("death_certificate_url"),
+  willDocumentUrl: varchar("will_document_url"),
+  identificationDocumentUrl: varchar("identification_document_url"),
+  probateCourtOrderUrl: varchar("probate_court_order_url"),
+  status: inheritanceStatusEnum("status").default('pending').notNull(),
+  documentVerificationStatus: varchar("document_verification_status").default('pending'), // pending, verified, rejected
+  legalReviewStatus: varchar("legal_review_status").default('pending'), // pending, approved, disputed
   processedBy: varchar("processed_by").references(() => users.id),
   processedAt: timestamp("processed_at"),
   notes: text("notes"),
+  rejectionReason: text("rejection_reason"),
+  estimatedValue: decimal("estimated_value", { precision: 15, scale: 2 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Inheritance disputes table
+export const inheritanceDisputes = pgTable("inheritance_disputes", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  inheritanceProcessId: uuid("inheritance_process_id").references(() => inheritanceProcesses.id).notNull(),
+  disputantUserId: varchar("disputant_user_id").references(() => users.id).notNull(),
+  disputeType: varchar("dispute_type").notNull(), // beneficiary_challenge, document_validity, ownership_claim
+  description: text("description").notNull(),
+  supportingDocumentsUrls: json("supporting_documents_urls"), // Array of document URLs
+  status: varchar("status").default('open').notNull(), // open, under_investigation, resolved, dismissed
+  resolutionNotes: text("resolution_notes"),
+  resolvedBy: varchar("resolved_by").references(() => users.id),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Ownership transfer requests table
+export const ownershipTransferRequests = pgTable("ownership_transfer_requests", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  accountId: uuid("account_id").references(() => accounts.id).notNull(),
+  requesterId: varchar("requester_id").references(() => users.id).notNull(),
+  targetUserEmail: varchar("target_user_email").notNull(),
+  targetUserId: varchar("target_user_id").references(() => users.id),
+  requestType: varchar("request_type").notNull(), // full_transfer, add_joint_owner, remove_owner
+  ownershipPercentage: decimal("ownership_percentage", { precision: 5, scale: 2 }),
+  permissions: json("permissions"), // read, write, transfer permissions for joint accounts
+  reason: text("reason").notNull(),
+  supportingDocumentsUrls: json("supporting_documents_urls"),
+  status: varchar("status").default('pending').notNull(), // pending, approved, rejected, completed
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewNotes: text("review_notes"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Document verification table
+export const documentVerifications = pgTable("document_verifications", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  relatedEntityId: uuid("related_entity_id").notNull(), // Can reference inheritance process, transfer request, etc.
+  relatedEntityType: varchar("related_entity_type").notNull(), // inheritance_process, transfer_request, kyc
+  documentType: varchar("document_type").notNull(), // death_certificate, will, id, probate_order
+  documentUrl: varchar("document_url").notNull(),
+  verificationStatus: varchar("verification_status").default('pending').notNull(), // pending, verified, rejected, requires_resubmission
+  verifiedBy: varchar("verified_by").references(() => users.id),
+  verifiedAt: timestamp("verified_at"),
+  rejectionReason: text("rejection_reason"),
+  verificationNotes: text("verification_notes"),
+  expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -569,9 +645,29 @@ export const beneficiariesRelations = relations(beneficiaries, ({ one }) => ({
   user: one(users, { fields: [beneficiaries.userId], references: [users.id] }),
 }));
 
-export const inheritanceProcessesRelations = relations(inheritanceProcesses, ({ one }) => ({
+export const inheritanceProcessesRelations = relations(inheritanceProcesses, ({ one, many }) => ({
   deceasedUser: one(users, { fields: [inheritanceProcesses.deceasedUserId], references: [users.id] }),
   processor: one(users, { fields: [inheritanceProcesses.processedBy], references: [users.id] }),
+  disputes: many(inheritanceDisputes),
+  documentVerifications: many(documentVerifications),
+}));
+
+export const inheritanceDisputesRelations = relations(inheritanceDisputes, ({ one }) => ({
+  inheritanceProcess: one(inheritanceProcesses, { fields: [inheritanceDisputes.inheritanceProcessId], references: [inheritanceProcesses.id] }),
+  disputant: one(users, { fields: [inheritanceDisputes.disputantUserId], references: [users.id] }),
+  resolver: one(users, { fields: [inheritanceDisputes.resolvedBy], references: [users.id] }),
+}));
+
+export const ownershipTransferRequestsRelations = relations(ownershipTransferRequests, ({ one, many }) => ({
+  account: one(accounts, { fields: [ownershipTransferRequests.accountId], references: [accounts.id] }),
+  requester: one(users, { fields: [ownershipTransferRequests.requesterId], references: [users.id] }),
+  targetUser: one(users, { fields: [ownershipTransferRequests.targetUserId], references: [users.id] }),
+  reviewer: one(users, { fields: [ownershipTransferRequests.reviewedBy], references: [users.id] }),
+  documentVerifications: many(documentVerifications),
+}));
+
+export const documentVerificationsRelations = relations(documentVerifications, ({ one }) => ({
+  verifier: one(users, { fields: [documentVerifications.verifiedBy], references: [users.id] }),
 }));
 
 // KYC Verification System
@@ -621,7 +717,7 @@ export const adminNotificationSettings = pgTable("admin_notification_settings", 
 // Real-time Chat Messages (enhanced)
 export const realTimeChatMessages = pgTable("realtime_chat_messages", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  ticketId: varchar("ticket_id").references(() => supportTickets.id).notNull(),
+  ticketId: uuid("ticket_id").references(() => supportTickets.id).notNull(),
   senderId: varchar("sender_id").references(() => users.id).notNull(),
   messageType: varchar("message_type").default('text'), // text, file, image
   content: text("content").notNull(),

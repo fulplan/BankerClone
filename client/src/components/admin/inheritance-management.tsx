@@ -7,8 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
-import { Heart, CheckCircle2, XCircle, Clock, AlertTriangle, FileText, User, Crown, Shield, Search, Filter, Gavel } from 'lucide-react';
+import { Heart, CheckCircle2, XCircle, Clock, AlertTriangle, FileText, User, Crown, Shield, Search, Filter, Gavel, Plus, Eye, Upload, UserCheck, ArrowRightLeft, Scale } from 'lucide-react';
 
 interface InheritanceProcess {
   id: string;
@@ -17,17 +19,83 @@ interface InheritanceProcess {
   status: string;
   processedBy?: string;
   processedAt?: string;
+  notes?: string;
+  deceasedUserEmail?: string;
+  deceasedUserName?: string;
+  processorName?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+interface InheritanceDispute {
+  id: string;
+  inheritanceProcessId: string;
+  disputantUserId: string;
+  disputeType: string;
+  description: string;
+  status: string;
+  createdAt: string;
+  details?: any;
+}
+
+interface OwnershipTransferRequest {
+  id: string;
+  accountId: string;
+  requesterId: string;
+  targetUserEmail: string;
+  requestType: string;
+  reason: string;
+  status: string;
+  ownershipPercentage?: string;
+  createdAt: string;
+}
+
+interface DocumentVerification {
+  id: string;
+  relatedEntityId: string;
+  relatedEntityType: string;
+  documentType: string;
+  documentUrl: string;
+  verificationStatus: string;
+  verifiedBy: string;
+  verificationNotes?: string;
+  rejectionReason?: string;
+  createdAt: string;
 }
 
 export default function InheritanceManagement() {
   const [selectedProcess, setSelectedProcess] = useState<InheritanceProcess | null>(null);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [showDisputeDialog, setShowDisputeDialog] = useState(false);
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const [showDocumentDialog, setShowDocumentDialog] = useState(false);
   const [reviewStatus, setReviewStatus] = useState('');
   const [reviewNotes, setReviewNotes] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('processes');
+
+  // Form states for new features
+  const [disputeForm, setDisputeForm] = useState({
+    disputeType: '',
+    description: '',
+    disputantUserId: ''
+  });
+  const [transferForm, setTransferForm] = useState({
+    accountId: '',
+    targetUserEmail: '',
+    requestType: '',
+    reason: '',
+    ownershipPercentage: ''
+  });
+  const [documentForm, setDocumentForm] = useState({
+    relatedEntityId: '',
+    relatedEntityType: 'inheritance_process',
+    documentType: '',
+    documentUrl: '',
+    verificationStatus: 'verified',
+    verificationNotes: ''
+  });
 
   const queryClient = useQueryClient();
 
@@ -37,6 +105,36 @@ export default function InheritanceManagement() {
     queryFn: async () => {
       const response = await fetch('/api/admin/inheritance');
       if (!response.ok) throw new Error('Failed to fetch inheritance processes');
+      return response.json();
+    },
+  });
+
+  // Fetch inheritance disputes
+  const { data: disputes } = useQuery<InheritanceDispute[]>({
+    queryKey: ['admin-inheritance-disputes'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/inheritance/disputes');
+      if (!response.ok) throw new Error('Failed to fetch inheritance disputes');
+      return response.json();
+    },
+  });
+
+  // Fetch ownership transfer requests
+  const { data: transferRequests } = useQuery<OwnershipTransferRequest[]>({
+    queryKey: ['admin-ownership-transfers'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/ownership-transfers');
+      if (!response.ok) throw new Error('Failed to fetch ownership transfer requests');
+      return response.json();
+    },
+  });
+
+  // Fetch document verifications
+  const { data: documentVerifications } = useQuery<DocumentVerification[]>({
+    queryKey: ['admin-document-verifications'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/document-verifications');
+      if (!response.ok) throw new Error('Failed to fetch document verifications');
       return response.json();
     },
   });
@@ -95,6 +193,61 @@ export default function InheritanceManagement() {
     });
   };
 
+  // Enhanced mutation hooks for new features
+  const createDisputeMutation = useMutation({
+    mutationFn: async (disputeData: any) => {
+      const response = await fetch('/api/admin/inheritance/disputes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(disputeData),
+      });
+      if (!response.ok) throw new Error('Failed to create dispute');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-inheritance-disputes'] });
+      setShowDisputeDialog(false);
+      setDisputeForm({ disputeType: '', description: '', disputantUserId: '' });
+      toast({ title: "Success", description: "Dispute created successfully" });
+    },
+  });
+
+  const createTransferRequestMutation = useMutation({
+    mutationFn: async (transferData: any) => {
+      const response = await fetch('/api/admin/ownership-transfers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transferData),
+      });
+      if (!response.ok) throw new Error('Failed to create transfer request');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-ownership-transfers'] });
+      setShowTransferDialog(false);
+      setTransferForm({ accountId: '', targetUserEmail: '', requestType: '', reason: '', ownershipPercentage: '' });
+      toast({ title: "Success", description: "Transfer request created successfully" });
+    },
+  });
+
+  const verifyDocumentMutation = useMutation({
+    mutationFn: async (documentData: any) => {
+      const response = await fetch('/api/admin/document-verifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(documentData),
+      });
+      if (!response.ok) throw new Error('Failed to verify document');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-document-verifications'] });
+      setShowDocumentDialog(false);
+      setDocumentForm({ relatedEntityId: '', relatedEntityType: 'inheritance_process', documentType: '', documentUrl: '', verificationStatus: 'verified', verificationNotes: '' });
+      toast({ title: "Success", description: "Document verified successfully" });
+    },
+  });
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
@@ -135,10 +288,34 @@ export default function InheritanceManagement() {
             Inheritance & Estate Management
           </h2>
           <p className="text-sm text-muted-foreground">
-            Manage account inheritance processes, estate transfers, and beneficiary disputes
+            Comprehensive inheritance processing, document verification, ownership transfers, and dispute resolution
           </p>
         </div>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowDisputeDialog(true)} className="flex items-center gap-2">
+            <Scale className="h-4 w-4" />
+            Create Dispute
+          </Button>
+          <Button onClick={() => setShowTransferDialog(true)} className="flex items-center gap-2">
+            <ArrowRightLeft className="h-4 w-4" />
+            Transfer Request
+          </Button>
+          <Button onClick={() => setShowDocumentDialog(true)} className="flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            Verify Document
+          </Button>
+        </div>
       </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="processes">Inheritance Processes</TabsTrigger>
+          <TabsTrigger value="disputes">Disputes ({disputes?.length || 0})</TabsTrigger>
+          <TabsTrigger value="transfers">Ownership Transfers ({transferRequests?.length || 0})</TabsTrigger>
+          <TabsTrigger value="documents">Document Verification ({documentVerifications?.length || 0})</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="processes" className="space-y-6">{/* Inheritance Processes Tab */}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -345,6 +522,195 @@ export default function InheritanceManagement() {
         )}
       </div>
 
+        </TabsContent>
+
+        <TabsContent value="disputes" className="space-y-6">
+          {/* Disputes Tab */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Scale className="h-5 w-5 text-orange-600" />
+                Inheritance Disputes Management
+              </CardTitle>
+              <CardDescription>
+                Handle disputes related to inheritance processes, beneficiary challenges, and document validity
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {disputes && disputes.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Dispute ID</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {disputes.map((dispute) => (
+                      <TableRow key={dispute.id}>
+                        <TableCell className="font-mono">{dispute.id.slice(-8)}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{dispute.disputeType.replace('_', ' ')}</Badge>
+                        </TableCell>
+                        <TableCell className="max-w-md truncate">{dispute.description}</TableCell>
+                        <TableCell>
+                          <Badge className={dispute.status === 'open' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}>
+                            {dispute.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{new Date(dispute.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4 mr-1" />
+                            Review
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8">
+                  <Scale className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Disputes Found</h3>
+                  <p className="text-gray-600">No inheritance disputes have been filed yet.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="transfers" className="space-y-6">
+          {/* Ownership Transfers Tab */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ArrowRightLeft className="h-5 w-5 text-blue-600" />
+                Ownership Transfer Management
+              </CardTitle>
+              <CardDescription>
+                Review and process account ownership transfers and joint account requests
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {transferRequests && transferRequests.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Request ID</TableHead>
+                      <TableHead>Account</TableHead>
+                      <TableHead>Target Email</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {transferRequests.map((request) => (
+                      <TableRow key={request.id}>
+                        <TableCell className="font-mono">{request.id.slice(-8)}</TableCell>
+                        <TableCell className="font-mono">{request.accountId.slice(-8)}</TableCell>
+                        <TableCell>{request.targetUserEmail}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{request.requestType.replace('_', ' ')}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}>
+                            {request.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Button size="sm" variant="outline">
+                            <UserCheck className="h-4 w-4 mr-1" />
+                            Review
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8">
+                  <ArrowRightLeft className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Transfer Requests</h3>
+                  <p className="text-gray-600">No ownership transfer requests have been submitted yet.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="documents" className="space-y-6">
+          {/* Document Verification Tab */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-green-600" />
+                Document Verification Center
+              </CardTitle>
+              <CardDescription>
+                Verify death certificates, wills, probate orders, and other legal documents
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {documentVerifications && documentVerifications.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Document Type</TableHead>
+                      <TableHead>Related Entity</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Verified By</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {documentVerifications.map((doc) => (
+                      <TableRow key={doc.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            {doc.documentType.replace('_', ' ')}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono">{doc.relatedEntityId.slice(-8)}</TableCell>
+                        <TableCell>
+                          <Badge className={doc.verificationStatus === 'verified' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                            {doc.verificationStatus}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{doc.verifiedBy}</TableCell>
+                        <TableCell>{new Date(doc.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Document Verifications</h3>
+                  <p className="text-gray-600">No document verifications have been processed yet.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Enhanced Dialog Forms */}
       {/* Review Dialog */}
       <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
         <DialogContent className="sm:max-w-[600px]">
@@ -363,8 +729,8 @@ export default function InheritanceManagement() {
                   <p className="text-gray-600 font-mono">{selectedProcess.id}</p>
                 </div>
                 <div>
-                  <p className="font-medium text-sm">Deceased User ID</p>
-                  <p className="text-gray-600 font-mono">{selectedProcess.deceasedUserId}</p>
+                  <p className="font-medium text-sm">Deceased User</p>
+                  <p className="text-gray-600">{selectedProcess.deceasedUserName || selectedProcess.deceasedUserId}</p>
                 </div>
                 <div>
                   <p className="font-medium text-sm">Current Status</p>
@@ -399,30 +765,12 @@ export default function InheritanceManagement() {
                     <SelectValue placeholder="Select decision" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="under_review">
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-blue-600" />
-                        Under Review
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="approved">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        Approve Inheritance
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="rejected">
-                      <div className="flex items-center gap-2">
-                        <XCircle className="h-4 w-4 text-red-600" />
-                        Reject Process
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="completed">
-                      <div className="flex items-center gap-2">
-                        <Crown className="h-4 w-4 text-purple-600" />
-                        Mark as Completed
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="document_review">Document Review</SelectItem>
+                    <SelectItem value="legal_review">Legal Review</SelectItem>
+                    <SelectItem value="disputed">Disputed</SelectItem>
+                    <SelectItem value="approved">Approve Inheritance</SelectItem>
+                    <SelectItem value="rejected">Reject Process</SelectItem>
+                    <SelectItem value="completed">Mark as Completed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -437,33 +785,6 @@ export default function InheritanceManagement() {
                   rows={4}
                 />
               </div>
-              
-              {reviewStatus === 'approved' && (
-                <div className="flex items-start gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-green-900 text-sm">Inheritance Approval</p>
-                    <p className="text-green-700 text-sm">
-                      This will initiate the automatic inheritance transfer process. All accounts and assets 
-                      belonging to the deceased will be transferred to designated beneficiaries according 
-                      to their will or legal inheritance laws.
-                    </p>
-                  </div>
-                </div>
-              )}
-              
-              {reviewStatus === 'rejected' && (
-                <div className="flex items-start gap-2 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-red-900 text-sm">Process Rejection</p>
-                    <p className="text-red-700 text-sm">
-                      The inheritance process will be rejected. Beneficiaries will be notified and may need 
-                      to provide additional documentation or resolve legal issues before resubmitting.
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
           )}
           
@@ -476,6 +797,197 @@ export default function InheritanceManagement() {
               disabled={updateStatusMutation.isPending || !reviewNotes.trim()}
             >
               {updateStatusMutation.isPending ? "Processing..." : "Submit Decision"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Dispute Dialog */}
+      <Dialog open={showDisputeDialog} onOpenChange={setShowDisputeDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create Inheritance Dispute</DialogTitle>
+            <DialogDescription>
+              File a new dispute for an inheritance process
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Dispute Type</label>
+              <Select value={disputeForm.disputeType} onValueChange={(value) => setDisputeForm({...disputeForm, disputeType: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select dispute type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beneficiary_challenge">Beneficiary Challenge</SelectItem>
+                  <SelectItem value="document_validity">Document Validity</SelectItem>
+                  <SelectItem value="ownership_claim">Ownership Claim</SelectItem>
+                  <SelectItem value="fraud_allegation">Fraud Allegation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                placeholder="Describe the dispute in detail..."
+                value={disputeForm.description}
+                onChange={(e) => setDisputeForm({...disputeForm, description: e.target.value})}
+                rows={4}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Disputant User ID</label>
+              <Input
+                placeholder="Enter user ID of the disputant"
+                value={disputeForm.disputantUserId}
+                onChange={(e) => setDisputeForm({...disputeForm, disputantUserId: e.target.value})}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDisputeDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={() => createDisputeMutation.mutate({ inheritanceProcessId: selectedProcess?.id || '', ...disputeForm })}
+              disabled={!disputeForm.disputeType || !disputeForm.description || !disputeForm.disputantUserId}
+            >
+              Create Dispute
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Transfer Request Dialog */}
+      <Dialog open={showTransferDialog} onOpenChange={setShowTransferDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create Ownership Transfer Request</DialogTitle>
+            <DialogDescription>
+              Request ownership transfer or joint account access
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Account ID</label>
+              <Input
+                placeholder="Enter account ID"
+                value={transferForm.accountId}
+                onChange={(e) => setTransferForm({...transferForm, accountId: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Target User Email</label>
+              <Input
+                placeholder="Enter target user email"
+                value={transferForm.targetUserEmail}
+                onChange={(e) => setTransferForm({...transferForm, targetUserEmail: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Request Type</label>
+              <Select value={transferForm.requestType} onValueChange={(value) => setTransferForm({...transferForm, requestType: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select request type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="full_transfer">Full Ownership Transfer</SelectItem>
+                  <SelectItem value="add_joint_owner">Add Joint Owner</SelectItem>
+                  <SelectItem value="remove_owner">Remove Owner</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Reason</label>
+              <Textarea
+                placeholder="Explain the reason for this transfer..."
+                value={transferForm.reason}
+                onChange={(e) => setTransferForm({...transferForm, reason: e.target.value})}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTransferDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={() => createTransferRequestMutation.mutate(transferForm)}
+              disabled={!transferForm.accountId || !transferForm.targetUserEmail || !transferForm.requestType || !transferForm.reason}
+            >
+              Create Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Verification Dialog */}
+      <Dialog open={showDocumentDialog} onOpenChange={setShowDocumentDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Verify Document</DialogTitle>
+            <DialogDescription>
+              Record document verification for inheritance processes
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Related Entity ID</label>
+              <Input
+                placeholder="Enter inheritance process ID"
+                value={documentForm.relatedEntityId}
+                onChange={(e) => setDocumentForm({...documentForm, relatedEntityId: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Document Type</label>
+              <Select value={documentForm.documentType} onValueChange={(value) => setDocumentForm({...documentForm, documentType: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select document type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="death_certificate">Death Certificate</SelectItem>
+                  <SelectItem value="will">Will/Testament</SelectItem>
+                  <SelectItem value="probate_order">Probate Court Order</SelectItem>
+                  <SelectItem value="identification">Identification Document</SelectItem>
+                  <SelectItem value="other">Other Legal Document</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Document URL</label>
+              <Input
+                placeholder="Enter document URL"
+                value={documentForm.documentUrl}
+                onChange={(e) => setDocumentForm({...documentForm, documentUrl: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Verification Status</label>
+              <Select value={documentForm.verificationStatus} onValueChange={(value) => setDocumentForm({...documentForm, verificationStatus: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="verified">Verified</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="requires_resubmission">Requires Resubmission</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Verification Notes</label>
+              <Textarea
+                placeholder="Add verification notes..."
+                value={documentForm.verificationNotes}
+                onChange={(e) => setDocumentForm({...documentForm, verificationNotes: e.target.value})}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDocumentDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={() => verifyDocumentMutation.mutate(documentForm)}
+              disabled={!documentForm.relatedEntityId || !documentForm.documentType || !documentForm.documentUrl}
+            >
+              Verify Document
             </Button>
           </DialogFooter>
         </DialogContent>
