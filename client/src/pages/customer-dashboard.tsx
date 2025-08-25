@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import CustomerNavbar from "@/components/ui/customer-navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CustomerOverview from "@/components/customer/customer-overview";
@@ -18,6 +19,12 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 export default function CustomerDashboard() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const [location, setLocation] = useLocation();
+  
+  // Get active tab from URL query parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const activeTabFromUrl = urlParams.get('tab') || 'overview';
+  const [activeTab, setActiveTab] = useState(activeTabFromUrl);
 
   useEffect(() => {
     // Add small delay to prevent race condition with fresh logins
@@ -70,19 +77,40 @@ export default function CustomerDashboard() {
           </p>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-1">
-            <TabsTrigger value="overview" data-testid="tab-overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
-            <TabsTrigger value="accounts" data-testid="tab-accounts" className="text-xs sm:text-sm">Accounts</TabsTrigger>
-            <TabsTrigger value="cards" data-testid="tab-cards" className="text-xs sm:text-sm">Cards</TabsTrigger>
-            <TabsTrigger value="transfers" data-testid="tab-transfers" className="text-xs sm:text-sm">Transfers</TabsTrigger>
-            <TabsTrigger value="bills" data-testid="tab-bills" className="text-xs sm:text-sm">Bill Pay</TabsTrigger>
-            <TabsTrigger value="investments" data-testid="tab-investments" className="text-xs sm:text-sm">Investments</TabsTrigger>
-            <TabsTrigger value="inheritance" data-testid="tab-inheritance" className="text-xs sm:text-sm">Inheritance</TabsTrigger>
-            <TabsTrigger value="notifications" data-testid="tab-notifications" className="text-xs sm:text-sm">Notifications</TabsTrigger>
-            <TabsTrigger value="profile" data-testid="tab-profile" className="text-xs sm:text-sm">Profile</TabsTrigger>
-            <TabsTrigger value="support" data-testid="tab-support" className="text-xs sm:text-sm">Support</TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          {/* Mobile: Horizontal scrollable tabs */}
+          <div className="sm:hidden">
+            <div className="overflow-x-auto scrollbar-hide">
+              <TabsList className="flex w-max min-w-full space-x-1 p-1">
+                <TabsTrigger value="overview" data-testid="tab-overview" className="text-xs whitespace-nowrap px-3 py-2 min-w-[80px]">Overview</TabsTrigger>
+                <TabsTrigger value="accounts" data-testid="tab-accounts" className="text-xs whitespace-nowrap px-3 py-2 min-w-[80px]">Accounts</TabsTrigger>
+                <TabsTrigger value="cards" data-testid="tab-cards" className="text-xs whitespace-nowrap px-3 py-2 min-w-[70px]">Cards</TabsTrigger>
+                <TabsTrigger value="transfers" data-testid="tab-transfers" className="text-xs whitespace-nowrap px-3 py-2 min-w-[80px]">Transfers</TabsTrigger>
+                <TabsTrigger value="bills" data-testid="tab-bills" className="text-xs whitespace-nowrap px-3 py-2 min-w-[70px]">Bill Pay</TabsTrigger>
+                <TabsTrigger value="investments" data-testid="tab-investments" className="text-xs whitespace-nowrap px-3 py-2 min-w-[90px]">Investments</TabsTrigger>
+                <TabsTrigger value="inheritance" data-testid="tab-inheritance" className="text-xs whitespace-nowrap px-3 py-2 min-w-[90px]">Inheritance</TabsTrigger>
+                <TabsTrigger value="notifications" data-testid="tab-notifications" className="text-xs whitespace-nowrap px-3 py-2 min-w-[100px]">Notifications</TabsTrigger>
+                <TabsTrigger value="profile" data-testid="tab-profile" className="text-xs whitespace-nowrap px-3 py-2 min-w-[70px]">Profile</TabsTrigger>
+                <TabsTrigger value="support" data-testid="tab-support" className="text-xs whitespace-nowrap px-3 py-2 min-w-[70px]">Support</TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
+          
+          {/* Desktop: Grid layout */}
+          <div className="hidden sm:block">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-1">
+              <TabsTrigger value="overview" data-testid="tab-overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+              <TabsTrigger value="accounts" data-testid="tab-accounts" className="text-xs sm:text-sm">Accounts</TabsTrigger>
+              <TabsTrigger value="cards" data-testid="tab-cards" className="text-xs sm:text-sm">Cards</TabsTrigger>
+              <TabsTrigger value="transfers" data-testid="tab-transfers" className="text-xs sm:text-sm">Transfers</TabsTrigger>
+              <TabsTrigger value="bills" data-testid="tab-bills" className="text-xs sm:text-sm">Bill Pay</TabsTrigger>
+              <TabsTrigger value="investments" data-testid="tab-investments" className="text-xs sm:text-sm">Investments</TabsTrigger>
+              <TabsTrigger value="inheritance" data-testid="tab-inheritance" className="text-xs sm:text-sm">Inheritance</TabsTrigger>
+              <TabsTrigger value="notifications" data-testid="tab-notifications" className="text-xs sm:text-sm">Notifications</TabsTrigger>
+              <TabsTrigger value="profile" data-testid="tab-profile" className="text-xs sm:text-sm">Profile</TabsTrigger>
+              <TabsTrigger value="support" data-testid="tab-support" className="text-xs sm:text-sm">Support</TabsTrigger>
+            </TabsList>
+          </div>
           
           <TabsContent value="overview">
             <CustomerOverview />

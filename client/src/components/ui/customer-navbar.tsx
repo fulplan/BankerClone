@@ -36,7 +36,7 @@ export default function CustomerNavbar() {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         <div className="flex justify-between items-center py-3">
           <div className="flex items-center space-x-2">
@@ -57,10 +57,13 @@ export default function CustomerNavbar() {
               <Wallet className="w-4 h-4" />
               Accounts
             </Link>
-            <Link href="/dashboard?tab=transfers" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium flex items-center gap-1">
+            <button 
+              onClick={() => setLocation("/dashboard?tab=transfers")} 
+              className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium flex items-center gap-1"
+            >
               <Send className="w-4 h-4" />
               Transfer
-            </Link>
+            </button>
             <Link href="/dashboard?tab=bills" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium flex items-center gap-1">
               <Receipt className="w-4 h-4" />
               Bills
@@ -136,14 +139,16 @@ export default function CustomerNavbar() {
                   <Wallet className="w-5 h-5" />
                   My Accounts
                 </Link>
-                <Link 
-                  href="/dashboard?tab=transfers" 
-                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                <button 
+                  onClick={() => {
+                    setLocation("/dashboard?tab=transfers");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"
                 >
                   <Send className="w-5 h-5" />
                   Send Money
-                </Link>
+                </button>
                 <Link 
                   href="/dashboard?tab=bills" 
                   className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"

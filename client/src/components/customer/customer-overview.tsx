@@ -6,6 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { useLocation } from "wouter";
+import { 
+  Send, 
+  Receipt, 
+  CreditCard, 
+  TrendingUp, 
+  User, 
+  HeadphonesIcon 
+} from "lucide-react";
 import type { Account, Transaction, Card as BankCard, Notification } from "@shared/schema";
 
 interface CustomerStats {
@@ -32,6 +41,7 @@ interface ForexData {
 
 export default function CustomerOverview() {
   const { toast } = useToast();
+  const [location, setLocation] = useLocation();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Update time every second
@@ -365,30 +375,54 @@ export default function CustomerOverview() {
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <i className="fas fa-exchange-alt text-finora-primary"></i>
-              <span className="text-sm">Transfer Money</span>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            <Button 
+              variant="outline" 
+              className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-finora-primary hover:text-white transition-colors"
+              onClick={() => setLocation("/dashboard?tab=transfers")}
+            >
+              <Send className="w-4 h-4 sm:w-5 sm:h-5 text-finora-primary" />
+              <span className="text-xs sm:text-sm">Transfer Money</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <i className="fas fa-file-invoice text-finora-primary"></i>
-              <span className="text-sm">Pay Bills</span>
+            <Button 
+              variant="outline" 
+              className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-finora-primary hover:text-white transition-colors"
+              onClick={() => setLocation("/dashboard?tab=bills")}
+            >
+              <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-finora-primary" />
+              <span className="text-xs sm:text-sm">Pay Bills</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <i className="fas fa-credit-card text-finora-primary"></i>
-              <span className="text-sm">Manage Cards</span>
+            <Button 
+              variant="outline" 
+              className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-finora-primary hover:text-white transition-colors"
+              onClick={() => setLocation("/dashboard?tab=cards")}
+            >
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-finora-primary" />
+              <span className="text-xs sm:text-sm">Manage Cards</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <i className="fas fa-chart-pie text-finora-primary"></i>
-              <span className="text-sm">Investments</span>
+            <Button 
+              variant="outline" 
+              className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-finora-primary hover:text-white transition-colors"
+              onClick={() => setLocation("/dashboard?tab=investments")}
+            >
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-finora-primary" />
+              <span className="text-xs sm:text-sm">Investments</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <i className="fas fa-user-cog text-finora-primary"></i>
-              <span className="text-sm">Profile</span>
+            <Button 
+              variant="outline" 
+              className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-finora-primary hover:text-white transition-colors"
+              onClick={() => setLocation("/dashboard?tab=profile")}
+            >
+              <User className="w-4 h-4 sm:w-5 sm:h-5 text-finora-primary" />
+              <span className="text-xs sm:text-sm">Profile</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <i className="fas fa-headset text-finora-primary"></i>
-              <span className="text-sm">Support</span>
+            <Button 
+              variant="outline" 
+              className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-finora-primary hover:text-white transition-colors"
+              onClick={() => setLocation("/dashboard?tab=support")}
+            >
+              <HeadphonesIcon className="w-4 h-4 sm:w-5 sm:h-5 text-finora-primary" />
+              <span className="text-xs sm:text-sm">Support</span>
             </Button>
           </div>
         </CardContent>
