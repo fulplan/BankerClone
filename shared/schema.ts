@@ -557,7 +557,7 @@ export const inheritanceStatusEnum = pgEnum('inheritance_status', [
   'pending', 'document_review', 'legal_review', 'disputed', 'approved', 'rejected', 'completed'
 ]);
 
-// Inheritance processes table (enhanced)
+// Inheritance processes table (keep existing structure)
 export const inheritanceProcesses = pgTable("inheritance_processes", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   deceasedUserId: varchar("deceased_user_id").references(() => users.id).notNull(),
@@ -566,8 +566,8 @@ export const inheritanceProcesses = pgTable("inheritance_processes", {
   identificationDocumentUrl: varchar("identification_document_url"),
   probateCourtOrderUrl: varchar("probate_court_order_url"),
   status: inheritanceStatusEnum("status").default('pending').notNull(),
-  documentVerificationStatus: varchar("document_verification_status").default('pending'), // pending, verified, rejected
-  legalReviewStatus: varchar("legal_review_status").default('pending'), // pending, approved, disputed
+  documentVerificationStatus: varchar("document_verification_status").default('pending'),
+  legalReviewStatus: varchar("legal_review_status").default('pending'),
   processedBy: varchar("processed_by").references(() => users.id),
   processedAt: timestamp("processed_at"),
   notes: text("notes"),
@@ -575,6 +575,44 @@ export const inheritanceProcesses = pgTable("inheritance_processes", {
   estimatedValue: decimal("estimated_value", { precision: 15, scale: 2 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Inheritance documents table
+export const inheritanceDocuments = pgTable("inheritance_documents", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  inheritanceId: uuid("inheritance_id").references(() => inheritanceProcesses.id).notNull(),
+  documentType: varchar("document_type").notNull(), // death_certificate, will, trust, court_order, power_of_attorney, other
+  fileName: varchar("file_name").notNull(),
+  fileUrl: varchar("file_url").notNull(),
+  status: varchar("status").default('pending').notNull(), // pending, verified, rejected
+  verifiedAt: timestamp("verified_at"),
+  verifiedBy: varchar("verified_by").references(() => users.id),
+  uploadedAt: timestamp("uploaded_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Inheritance beneficiaries table
+export const inheritanceBeneficiaries = pgTable("inheritance_beneficiaries", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  inheritanceId: uuid("inheritance_id").references(() => inheritanceProcesses.id).notNull(),
+  beneficiaryId: varchar("beneficiary_id").references(() => users.id).notNull(),
+  percentage: decimal("percentage", { precision: 5, scale: 2 }).notNull(),
+  accountIds: json("account_ids").notNull(), // Array of account IDs
+  status: varchar("status").default('pending').notNull(), // pending, notified, accepted, rejected
+  notifiedAt: timestamp("notified_at"),
+  respondedAt: timestamp("responded_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Inheritance accounts table
+export const inheritanceAccounts = pgTable("inheritance_accounts", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  inheritanceId: uuid("inheritance_id").references(() => inheritanceProcesses.id).notNull(),
+  accountId: uuid("account_id").references(() => accounts.id).notNull(),
+  distributionStatus: varchar("distribution_status").default('pending').notNull(), // pending, in_progress, completed
+  distributedAmount: decimal("distributed_amount", { precision: 15, scale: 2 }),
+  distributedAt: timestamp("distributed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Inheritance disputes table
@@ -648,8 +686,26 @@ export const beneficiariesRelations = relations(beneficiaries, ({ one }) => ({
 export const inheritanceProcessesRelations = relations(inheritanceProcesses, ({ one, many }) => ({
   deceasedUser: one(users, { fields: [inheritanceProcesses.deceasedUserId], references: [users.id] }),
   processor: one(users, { fields: [inheritanceProcesses.processedBy], references: [users.id] }),
+  documents: many(inheritanceDocuments),
+  beneficiaries: many(inheritanceBeneficiaries),
+  accounts: many(inheritanceAccounts),
   disputes: many(inheritanceDisputes),
   documentVerifications: many(documentVerifications),
+}));
+
+export const inheritanceDocumentsRelations = relations(inheritanceDocuments, ({ one }) => ({
+  inheritance: one(inheritanceProcesses, { fields: [inheritanceDocuments.inheritanceId], references: [inheritanceProcesses.id] }),
+  verifier: one(users, { fields: [inheritanceDocuments.verifiedBy], references: [users.id] }),
+}));
+
+export const inheritanceBeneficiariesRelations = relations(inheritanceBeneficiaries, ({ one }) => ({
+  inheritance: one(inheritanceProcesses, { fields: [inheritanceBeneficiaries.inheritanceId], references: [inheritanceProcesses.id] }),
+  beneficiary: one(users, { fields: [inheritanceBeneficiaries.beneficiaryId], references: [users.id] }),
+}));
+
+export const inheritanceAccountsRelations = relations(inheritanceAccounts, ({ one }) => ({
+  inheritance: one(inheritanceProcesses, { fields: [inheritanceAccounts.inheritanceId], references: [inheritanceProcesses.id] }),
+  account: one(accounts, { fields: [inheritanceAccounts.accountId], references: [accounts.id] }),
 }));
 
 export const inheritanceDisputesRelations = relations(inheritanceDisputes, ({ one }) => ({
@@ -806,6 +862,12 @@ export type InheritanceProcess = typeof inheritanceProcesses.$inferSelect;
 export type InsertInheritanceProcess = typeof inheritanceProcesses.$inferInsert;
 export type KycVerification = typeof kycVerifications.$inferSelect;
 export type InsertKycVerification = typeof kycVerifications.$inferInsert;
+export type InheritanceDocument = typeof inheritanceDocuments.$inferSelect;
+export type InsertInheritanceDocument = typeof inheritanceDocuments.$inferInsert;
+export type InheritanceBeneficiary = typeof inheritanceBeneficiaries.$inferSelect;
+export type InsertInheritanceBeneficiary = typeof inheritanceBeneficiaries.$inferInsert;
+export type InheritanceAccount = typeof inheritanceAccounts.$inferSelect;
+export type InsertInheritanceAccount = typeof inheritanceAccounts.$inferInsert;
 export type EmailTemplate = typeof emailTemplates.$inferSelect;
 export type InsertEmailTemplate = typeof emailTemplates.$inferInsert;
 export type AdminNotificationSetting = typeof adminNotificationSettings.$inferSelect;
