@@ -910,6 +910,38 @@ export class DatabaseStorage implements IStorage {
     return statements;
   }
 
+  async getAccountStatementById(statementId: string): Promise<any | undefined> {
+    // For now, generate a mock statement since we don't have a statements table
+    // In a real implementation, this would query the statements table
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 1);
+    const endDate = new Date();
+    
+    return {
+      id: statementId,
+      accountId: 'mock-account-id', // This would be looked up from actual statement
+      userId: 'mock-user-id',
+      statementType: 'monthly',
+      periodStart: startDate,
+      periodEnd: endDate,
+      status: 'ready',
+      createdAt: new Date()
+    };
+  }
+
+  async getTransactionsByAccountIdAndPeriod(accountId: string, startDate: Date, endDate: Date): Promise<Transaction[]> {
+    return await db.select()
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.accountId, accountId),
+          sql`${transactions.createdAt} >= ${startDate.toISOString()}`,
+          sql`${transactions.createdAt} <= ${endDate.toISOString()}`
+        )
+      )
+      .orderBy(desc(transactions.createdAt));
+  }
+
   // Email Templates Methods
   async getEmailTemplates(): Promise<any[]> {
     return [

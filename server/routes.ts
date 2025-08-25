@@ -6,6 +6,8 @@ import { setupAuth, isAuthenticated } from "./auth";
 import { insertTransferSchema, insertAccountSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import { hashPassword } from "./auth";
+import puppeteer from "puppeteer";
+import ExcelJS from "exceljs";
 
 // Rate limiting store
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -1910,41 +1912,254 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id, format } = req.params;
       const userId = req.user.id;
       
-      // Generate statement data
-      const accounts = await storage.getAccountsByUserId(userId);
-      const account = accounts[0]; // Use first account for demo
+      // Get user's statements to find the requested one
+      const statements = await storage.getAccountStatementsByUserId(userId);
+      const statement = statements.find(s => s.id === id);
+      if (!statement) {
+        return res.status(404).json({ message: "Statement not found" });
+      }
+      
+      // Get account and verify ownership
+      const account = await storage.getAccountById(statement.accountId);
+      if (!account || account.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to statement" });
+      }
+      
+      // Get transactions for the statement period
+      const transactions = await storage.getTransactionsByAccountIdAndPeriod(
+        statement.accountId, 
+        new Date(statement.periodStart), 
+        new Date(statement.periodEnd)
+      );
+      
+      const user = req.user;
+      const userName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email;
+      const periodStart = new Date(statement.periodStart).toLocaleDateString();
+      const periodEnd = new Date(statement.periodEnd).toLocaleDateString();
       
       if (format === 'pdf') {
-        // Create PDF-like content
-        const pdfContent = `
-BANK STATEMENT - ${new Date().toLocaleDateString()}
-================================================================
-
-Account Holder: ${req.user.name}
-Account Number: ${account?.accountNumber}
-Statement Period: Last 30 days
-Current Balance: $${account?.balance}
-
-Recent Transactions:
-Date                Description             Amount      Balance
-----------------------------------------------------------------
-${new Date().toLocaleDateString()}        Current Balance           $0.00       $${account?.balance}
-
-================================================================
+        // Generate PDF using puppeteer
+        const browser = await puppeteer.launch({ 
+          headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+        const page = await browser.newPage();
+        
+        // Create HTML content for PDF
+        const htmlContent = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Bank Statement</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+              .header { text-align: center; border-bottom: 2px solid #0066cc; padding-bottom: 20px; margin-bottom: 30px; }
+              .bank-name { font-size: 24px; font-weight: bold; color: #0066cc; margin-bottom: 10px; }
+              .statement-title { font-size: 18px; margin-bottom: 5px; }
+              .account-info { margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 5px; }
+              .info-row { display: flex; justify-content: space-between; margin: 8px 0; }
+              .info-label { font-weight: bold; }
+              .transactions-section { margin-top: 30px; }
+              .section-title { font-size: 16px; font-weight: bold; color: #0066cc; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+              th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+              th { background-color: #f8f9fa; font-weight: bold; }
+              .amount-credit { color: #28a745; }
+              .amount-debit { color: #dc3545; }
+              .summary { margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 5px; }
+              .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #666; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div class="bank-name">Santander Bank</div>
+              <div class="statement-title">Account Statement</div>
+              <div>Statement Period: ${periodStart} - ${periodEnd}</div>
+            </div>
+            
+            <div class="account-info">
+              <div class="info-row">
+                <span class="info-label">Account Holder:</span>
+                <span>${userName}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Account Number:</span>
+                <span>****${account.accountNumber.slice(-4)}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Account Type:</span>
+                <span>${account.accountType.charAt(0).toUpperCase() + account.accountType.slice(1)}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Current Balance:</span>
+                <span>$${parseFloat(account.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Statement Date:</span>
+                <span>${new Date().toLocaleDateString()}</span>
+              </div>
+            </div>
+            
+            <div class="transactions-section">
+              <div class="section-title">Transaction History</div>
+              ${transactions.length > 0 ? `
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Description</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${transactions.map((transaction: any) => `
+                      <tr>
+                        <td>${new Date(transaction.createdAt).toLocaleDateString()}</td>
+                        <td>${transaction.description}</td>
+                        <td>${transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}</td>
+                        <td class="${transaction.type === 'credit' ? 'amount-credit' : 'amount-debit'}">
+                          ${transaction.type === 'credit' ? '+' : '-'}$${parseFloat(transaction.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </td>
+                        <td>$${parseFloat(transaction.balanceAfter).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              ` : `
+                <p>No transactions found for this period.</p>
+              `}
+            </div>
+            
+            <div class="summary">
+              <div class="section-title">Summary</div>
+              <div class="info-row">
+                <span class="info-label">Total Transactions:</span>
+                <span>${transactions.length}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Total Credits:</span>
+                <span class="amount-credit">+$${transactions.filter((t: any) => t.type === 'credit').reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Total Debits:</span>
+                <span class="amount-debit">-$${transactions.filter((t: any) => t.type === 'debit').reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+            
+            <div class="footer">
+              <p>This statement was generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+              <p>For questions regarding this statement, please contact customer service.</p>
+            </div>
+          </body>
+          </html>
         `;
         
+        await page.setContent(htmlContent);
+        const pdfBuffer = await page.pdf({ 
+          format: 'A4', 
+          printBackground: true,
+          margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' }
+        });
+        
+        await browser.close();
+        
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="statement_${id}.pdf"`);
-        res.send(pdfContent);
+        res.setHeader('Content-Disposition', `attachment; filename="statement_${account.accountNumber}_${periodStart.replace(/\//g, '-')}_to_${periodEnd.replace(/\//g, '-')}.pdf"`);
+        res.send(pdfBuffer);
         
       } else if (format === 'excel') {
-        // Create CSV content (Excel-compatible)
-        const csvContent = `Account Number,Date,Description,Amount,Balance
-${account?.accountNumber},${new Date().toISOString()},Current Balance,0,${account?.balance}`;
+        // Generate Excel file using ExcelJS
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Account Statement');
         
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', `attachment; filename="statement_${id}.csv"`);
-        res.send(csvContent);
+        // Set column widths
+        worksheet.columns = [
+          { header: 'Date', key: 'date', width: 15 },
+          { header: 'Description', key: 'description', width: 30 },
+          { header: 'Type', key: 'type', width: 15 },
+          { header: 'Amount', key: 'amount', width: 15 },
+          { header: 'Balance', key: 'balance', width: 15 }
+        ];
+        
+        // Add title and account info
+        worksheet.mergeCells('A1:E1');
+        worksheet.getCell('A1').value = 'SANTANDER BANK - ACCOUNT STATEMENT';
+        worksheet.getCell('A1').font = { size: 16, bold: true };
+        worksheet.getCell('A1').alignment = { horizontal: 'center' };
+        
+        worksheet.mergeCells('A3:E3');
+        worksheet.getCell('A3').value = `Account Holder: ${userName}`;
+        worksheet.getCell('A3').font = { bold: true };
+        
+        worksheet.mergeCells('A4:E4');
+        worksheet.getCell('A4').value = `Account Number: ****${account.accountNumber.slice(-4)}`;
+        
+        worksheet.mergeCells('A5:E5');
+        worksheet.getCell('A5').value = `Statement Period: ${periodStart} - ${periodEnd}`;
+        
+        worksheet.mergeCells('A6:E6');
+        worksheet.getCell('A6').value = `Current Balance: $${parseFloat(account.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        worksheet.getCell('A6').font = { bold: true };
+        
+        // Add header row for transactions
+        const headerRow = worksheet.getRow(8);
+        headerRow.values = ['Date', 'Description', 'Type', 'Amount', 'Balance'];
+        headerRow.font = { bold: true };
+        headerRow.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFE6F3FF' }
+        };
+        
+        // Add transaction data
+        transactions.forEach((transaction: any, index: number) => {
+          const row = worksheet.getRow(9 + index);
+          row.values = [
+            new Date(transaction.createdAt).toLocaleDateString(),
+            transaction.description,
+            transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1),
+            `${transaction.type === 'credit' ? '+' : '-'}$${parseFloat(transaction.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+            `$${parseFloat(transaction.balanceAfter).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+          ];
+          
+          // Color code amounts
+          if (transaction.type === 'credit') {
+            row.getCell(4).font = { color: { argb: 'FF00AA00' } };
+          } else {
+            row.getCell(4).font = { color: { argb: 'FFAA0000' } };
+          }
+        });
+        
+        // Add summary section
+        const summaryStartRow = 10 + transactions.length;
+        worksheet.mergeCells(`A${summaryStartRow}:E${summaryStartRow}`);
+        worksheet.getCell(`A${summaryStartRow}`).value = 'SUMMARY';
+        worksheet.getCell(`A${summaryStartRow}`).font = { size: 14, bold: true };
+        worksheet.getCell(`A${summaryStartRow}`).alignment = { horizontal: 'center' };
+        
+        worksheet.getCell(`A${summaryStartRow + 2}`).value = 'Total Transactions:';
+        worksheet.getCell(`B${summaryStartRow + 2}`).value = transactions.length;
+        
+        worksheet.getCell(`A${summaryStartRow + 3}`).value = 'Total Credits:';
+        worksheet.getCell(`B${summaryStartRow + 3}`).value = `+$${transactions.filter((t: any) => t.type === 'credit').reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        worksheet.getCell(`B${summaryStartRow + 3}`).font = { color: { argb: 'FF00AA00' } };
+        
+        worksheet.getCell(`A${summaryStartRow + 4}`).value = 'Total Debits:';
+        worksheet.getCell(`B${summaryStartRow + 4}`).value = `-$${transactions.filter((t: any) => t.type === 'debit').reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        worksheet.getCell(`B${summaryStartRow + 4}`).font = { color: { argb: 'FFAA0000' } };
+        
+        // Generate Excel buffer
+        const excelBuffer = await workbook.xlsx.writeBuffer();
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="statement_${account.accountNumber}_${periodStart.replace(/\//g, '-')}_to_${periodEnd.replace(/\//g, '-')}.xlsx"`);
+        res.send(Buffer.from(excelBuffer));
+        
+      } else {
+        return res.status(400).json({ message: "Invalid format. Use 'pdf' or 'excel'" });
       }
       
     } catch (error) {
