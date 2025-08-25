@@ -467,6 +467,143 @@ const TransferForm = () => {
 };
 ```
 
+## 📱 Mobile Responsiveness Architecture
+
+### Mobile-First Design Principles
+Our banking application follows a mobile-first approach to ensure optimal user experience across all devices:
+
+#### Responsive Design Strategy
+```css
+/* Mobile-first CSS approach */
+/* Base styles for mobile (375px+) */
+.component {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Tablet styles (640px+) */
+@media (min-width: 640px) {
+  .component {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* Desktop styles (1024px+) */
+@media (min-width: 1024px) {
+  .component {
+    padding: 1.5rem;
+    font-size: 1.125rem;
+  }
+}
+```
+
+#### Navigation Patterns
+```typescript
+// Mobile hamburger navigation implementation
+const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+return (
+  <header className="bg-white border-b border-gray-200">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+      <div className="flex justify-between items-center py-3">
+        {/* Logo - responsive sizing */}
+        <Link href="/dashboard">
+          <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
+          <span className="hidden xs:block font-bold text-sm sm:text-base lg:text-lg">
+            Global Deposit Protection
+          </span>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex items-center space-x-6">
+          {/* Navigation items */}
+        </nav>
+
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="lg:hidden p-2 rounded-md text-gray-600"
+        >
+          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {/* Mobile Navigation Menu */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden border-t border-gray-200">
+          {/* Mobile navigation items */}
+        </div>
+      )}
+    </div>
+  </header>
+);
+```
+
+#### Tab Layout Optimization
+```typescript
+// Responsive tab navigation for customer dashboard
+<TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-1">
+  <TabsTrigger 
+    value="overview" 
+    className="text-xs sm:text-sm"
+  >
+    Overview
+  </TabsTrigger>
+  {/* More tabs with responsive sizing */}
+</TabsList>
+```
+
+#### Card Layout Responsiveness
+```typescript
+// Responsive account card layout
+<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-0">
+  <div className="flex-1">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-2">
+      <h4 className="font-semibold text-base sm:text-lg">
+        {account.accountType} Account
+      </h4>
+      <Badge className={getStatusColor(account.status)}>
+        {account.status}
+      </Badge>
+    </div>
+    
+    <div className="space-y-1 text-xs sm:text-sm text-gray-600">
+      {/* Account details with responsive text sizing */}
+    </div>
+  </div>
+  
+  <div className="text-left lg:text-right">
+    <p className="text-xl sm:text-2xl font-bold">
+      ${account.balance}
+    </p>
+  </div>
+</div>
+```
+
+#### Touch-Friendly Interactions
+```css
+/* Ensure minimum touch target sizes */
+@media (max-width: 768px) {
+  [role="tablist"] button {
+    font-size: 0.75rem !important;
+    padding: 0.375rem 0.5rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .mobile-button-spacing {
+    @apply space-y-2 space-x-0;
+  }
+  
+  .mobile-text-wrap {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+}
+```
+
 ## 🎭 Component Patterns
 
 ### Compound Component Pattern
