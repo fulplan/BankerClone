@@ -790,6 +790,253 @@ export class DatabaseStorage implements IStorage {
     }).returning();
     return result;
   }
+
+  // KYC Verification Methods
+  async createKycVerification(kycData: any): Promise<any> {
+    // Update customer profile KYC status for now
+    await db.update(customerProfiles)
+      .set({ 
+        kycStatus: kycData.status || 'pending',
+        idVerificationStatus: kycData.verificationType === 'id' ? (kycData.status || 'pending') : undefined,
+        updatedAt: new Date()
+      })
+      .where(eq(customerProfiles.userId, kycData.userId));
+    return { id: Date.now().toString(), ...kycData, createdAt: new Date() };
+  }
+
+  async getKycVerificationsByUserId(userId: string): Promise<any[]> {
+    const profile = await db.select().from(customerProfiles).where(eq(customerProfiles.userId, userId));
+    if (profile.length > 0) {
+      const p = profile[0];
+      return [
+        {
+          id: p.id,
+          userId: p.userId,
+          verificationType: 'kyc_status',
+          status: p.kycStatus || 'pending',
+          createdAt: p.createdAt
+        },
+        {
+          id: p.id + '_id',
+          userId: p.userId,
+          verificationType: 'id_verification',
+          status: p.idVerificationStatus || 'pending',
+          createdAt: p.createdAt
+        }
+      ];
+    }
+    return [];
+  }
+
+  async updateKycVerificationStatus(userId: string, verificationType: string, status: string, verifiedBy: string): Promise<void> {
+    const updates: any = { updatedAt: new Date() };
+    if (verificationType === 'kyc_status') {
+      updates.kycStatus = status;
+    } else if (verificationType === 'id_verification') {
+      updates.idVerificationStatus = status;
+    }
+    
+    await db.update(customerProfiles)
+      .set(updates)
+      .where(eq(customerProfiles.userId, userId));
+  }
+
+  // Real-time Chat Methods (Enhanced)
+  async createRealTimeChatMessage(messageData: any): Promise<any> {
+    return await this.createChatMessage({
+      ticketId: messageData.ticketId,
+      senderId: messageData.senderId,
+      message: messageData.content,
+      isFromAdmin: messageData.isFromAdmin || false
+    });
+  }
+
+  async getRealTimeChatMessagesByTicketId(ticketId: string): Promise<any[]> {
+    return await db.select().from(chatMessages)
+      .where(eq(chatMessages.ticketId, ticketId))
+      .orderBy(desc(chatMessages.createdAt));
+  }
+
+  // Account Statements Methods
+  async generateAccountStatement(userId: string, accountId: string, periodStart: Date, periodEnd: Date, type: string): Promise<any> {
+    // Get account transactions for the period
+    const transactions = await db.select()
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.accountId, accountId),
+          sql`${transactions.createdAt} >= ${periodStart.toISOString()}`,
+          sql`${transactions.createdAt} <= ${periodEnd.toISOString()}`
+        )
+      )
+      .orderBy(desc(transactions.createdAt));
+
+    const account = await this.getAccountById(accountId);
+    
+    return {
+      id: Date.now().toString(),
+      accountId,
+      userId,
+      statementType: type,
+      periodStart,
+      periodEnd,
+      account,
+      transactions,
+      status: 'ready',
+      createdAt: new Date()
+    };
+  }
+
+  async getAccountStatementsByUserId(userId: string): Promise<any[]> {
+    const accounts = await this.getAccountsByUserId(userId);
+    const statements = [];
+    
+    for (const account of accounts) {
+      const endDate = new Date();
+      const startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
+      
+      statements.push({
+        id: `${account.id}_monthly_${endDate.getTime()}`,
+        accountId: account.id,
+        userId,
+        statementType: 'monthly',
+        periodStart: startDate,
+        periodEnd: endDate,
+        status: 'ready',
+        createdAt: new Date()
+      });
+    }
+    
+    return statements;
+  }
+
+  // Email Templates Methods
+  async getEmailTemplates(): Promise<any[]> {
+    return [
+      {
+        id: '1',
+        name: 'Welcome Email',
+        subject: 'Welcome to Your Bank Account!',
+        templateType: 'welcome',
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #2563eb;">Welcome {{customerName}}!</h1>
+            <p>Your account {{accountNumber}} is now active and ready to use.</p>
+            <p>Thank you for choosing our banking services.</p>
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-top: 20px;">
+              <h3>Next Steps:</h3>
+              <ul>
+                <li>Complete your profile verification</li>
+                <li>Set up your beneficiaries</li>
+                <li>Explore our services</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        variables: ['customerName', 'accountNumber'],
+        isActive: true,
+        createdAt: new Date()
+      },
+      {
+        id: '2',
+        name: 'Transfer Confirmation',
+        subject: 'Transfer Confirmation - ${{amount}}',
+        templateType: 'transfer_confirmation',
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #059669;">Transfer Confirmed</h1>
+            <p>Your transfer of <strong>${{amount}}</strong> to {{recipientName}} has been successfully processed.</p>
+            <div style="background: #ecfdf5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p><strong>Transaction ID:</strong> {{transactionId}}</p>
+              <p><strong>Date:</strong> {{transactionDate}}</p>
+            </div>
+          </div>
+        `,
+        variables: ['amount', 'recipientName', 'transactionId', 'transactionDate'],
+        isActive: true,
+        createdAt: new Date()
+      },
+      {
+        id: '4',
+        name: 'Ticket Response',
+        subject: 'Response to Your Support Ticket #{{ticketId}}',
+        templateType: 'ticket_response',
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #2563eb;">Support Team Response</h1>
+            <p>Hello {{customerName}},</p>
+            <p>We have responded to your support ticket <strong>#{{ticketId}}</strong>.</p>
+            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3>Response:</h3>
+              <p>{{responseMessage}}</p>
+            </div>
+            <p>You can continue the conversation by logging into your account and visiting the support section.</p>
+          </div>
+        `,
+        variables: ['customerName', 'ticketId', 'responseMessage'],
+        isActive: true,
+        createdAt: new Date()
+      }
+    ];
+  }
+
+  // Enhanced Inheritance Process Methods
+  async processAutomaticInheritance(deceasedUserId: string, beneficiaryId: string): Promise<void> {
+    const deceasedAccounts = await this.getAccountsByUserId(deceasedUserId);
+    
+    for (const account of deceasedAccounts) {
+      await db.update(accounts)
+        .set({ userId: beneficiaryId, updatedAt: new Date() })
+        .where(eq(accounts.id, account.id));
+      
+      await this.createAuditLog({
+        adminId: 'system',
+        action: 'inheritance_transfer' as AuditAction,
+        targetUserId: beneficiaryId,
+        details: `Account ${account.accountNumber} inherited from deceased user ${deceasedUserId}`,
+        ipAddress: '127.0.0.1',
+        userAgent: 'system'
+      });
+    }
+  }
+
+  async getInheritanceProcesses(): Promise<InheritanceProcess[]> {
+    return await db.select().from(inheritanceProcesses).orderBy(desc(inheritanceProcesses.createdAt));
+  }
+
+  async updateInheritanceProcessStatus(processId: string, status: string, processedBy?: string): Promise<void> {
+    await db.update(inheritanceProcesses)
+      .set({ 
+        status, 
+        processedBy, 
+        processedAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(inheritanceProcesses.id, processId));
+  }
+
+  // Notification Methods (Enhanced)
+  async createNotificationForUser(userId: string, title: string, message: string, type: string): Promise<void> {
+    await db.insert(notifications).values({
+      userId,
+      title,
+      message,
+      type: type as NotificationType,
+      status: 'unread' as NotificationStatus
+    });
+  }
+
+  async notifyCustomerOfAdminResponse(ticketId: string, customerId: string, responseMessage: string): Promise<void> {
+    // Create notification
+    await this.createNotificationForUser(
+      customerId, 
+      'New Support Response', 
+      `You have received a response to your support ticket: ${responseMessage.substring(0, 100)}...`,
+      'support'
+    );
+
+    console.log(`Email notification would be sent to customer ${customerId} about ticket ${ticketId}`);
+  }
 }
 
 export const storage = new DatabaseStorage();

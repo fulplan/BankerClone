@@ -903,6 +903,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const billData = { ...req.body, userId };
 
+      // Fix timestamp field - convert string to Date object
+      if (billData.dueDate && typeof billData.dueDate === 'string') {
+        if (billData.dueDate.trim() !== '') {
+          billData.dueDate = new Date(billData.dueDate);
+        } else {
+          billData.dueDate = null;
+        }
+      }
+
       // Validate account belongs to user
       const account = await storage.getAccountById(billData.accountId);
       if (!account || account.userId !== userId) {
@@ -1784,6 +1793,268 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error marking notification as read:", error);
       res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  // KYC Verification Routes
+  app.get('/api/kyc-verifications', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const verifications = await storage.getKycVerificationsByUserId(userId);
+      res.json(verifications);
+    } catch (error) {
+      console.error("Error fetching KYC verifications:", error);
+      res.status(500).json({ message: "Failed to fetch KYC verifications" });
+    }
+  });
+
+  app.post('/api/kyc-verifications', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const verification = await storage.createKycVerification({
+        ...req.body,
+        userId,
+        status: 'pending'
+      });
+      res.json(verification);
+    } catch (error) {
+      console.error("Error creating KYC verification:", error);
+      res.status(500).json({ message: "Failed to create KYC verification" });
+    }
+  });
+
+  // Admin KYC Routes
+  app.get('/api/admin/kyc-verifications', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      const verifications = [];
+      
+      for (const user of allUsers.filter(u => u.role === 'customer')) {
+        const userVerifications = await storage.getKycVerificationsByUserId(user.id);
+        verifications.push(...userVerifications.map(v => ({
+          ...v,
+          user: { name: user.name, email: user.email }
+        })));
+      }
+      
+      res.json(verifications);
+    } catch (error) {
+      console.error("Error fetching all KYC verifications:", error);
+      res.status(500).json({ message: "Failed to fetch KYC verifications" });
+    }
+  });
+
+  app.put('/api/admin/kyc-verifications/:userId/:type', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { userId, type } = req.params;
+      const { status } = req.body;
+      const adminId = req.user.id;
+      
+      await storage.updateKycVerificationStatus(userId, type, status, adminId);
+      
+      // Create notification for customer
+      await storage.createNotificationForUser(
+        userId,
+        'KYC Verification Update',
+        `Your ${type} verification status has been updated to: ${status}`,
+        'kyc'
+      );
+      
+      res.json({ message: "KYC verification updated successfully" });
+    } catch (error) {
+      console.error("Error updating KYC verification:", error);
+      res.status(500).json({ message: "Failed to update KYC verification" });
+    }
+  });
+
+  // Account Statements Routes
+  app.get('/api/statements', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const statements = await storage.getAccountStatementsByUserId(userId);
+      res.json(statements);
+    } catch (error) {
+      console.error("Error fetching statements:", error);
+      res.status(500).json({ message: "Failed to fetch statements" });
+    }
+  });
+
+  app.post('/api/statements/generate', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { accountId, periodStart, periodEnd, type } = req.body;
+      
+      // Validate account ownership
+      const account = await storage.getAccountById(accountId);
+      if (!account || account.userId !== userId) {
+        return res.status(403).json({ message: "Access denied to account" });
+      }
+      
+      const statement = await storage.generateAccountStatement(
+        userId,
+        accountId,
+        new Date(periodStart),
+        new Date(periodEnd),
+        type
+      );
+      
+      res.json(statement);
+    } catch (error) {
+      console.error("Error generating statement:", error);
+      res.status(500).json({ message: "Failed to generate statement" });
+    }
+  });
+
+  app.get('/api/statements/:id/download/:format', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id, format } = req.params;
+      const userId = req.user.id;
+      
+      // Generate statement data
+      const accounts = await storage.getAccountsByUserId(userId);
+      const account = accounts[0]; // Use first account for demo
+      
+      if (format === 'pdf') {
+        // Create PDF-like content
+        const pdfContent = `
+BANK STATEMENT - ${new Date().toLocaleDateString()}
+================================================================
+
+Account Holder: ${req.user.name}
+Account Number: ${account?.accountNumber}
+Statement Period: Last 30 days
+Current Balance: $${account?.balance}
+
+Recent Transactions:
+Date                Description             Amount      Balance
+----------------------------------------------------------------
+${new Date().toLocaleDateString()}        Current Balance           $0.00       $${account?.balance}
+
+================================================================
+        `;
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="statement_${id}.pdf"`);
+        res.send(pdfContent);
+        
+      } else if (format === 'excel') {
+        // Create CSV content (Excel-compatible)
+        const csvContent = `Account Number,Date,Description,Amount,Balance
+${account?.accountNumber},${new Date().toISOString()},Current Balance,0,${account?.balance}`;
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="statement_${id}.csv"`);
+        res.send(csvContent);
+      }
+      
+    } catch (error) {
+      console.error("Error downloading statement:", error);
+      res.status(500).json({ message: "Failed to download statement" });
+    }
+  });
+
+  // Enhanced Real-time Chat Routes
+  app.post('/api/chat/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { ticketId, content } = req.body;
+      
+      // Verify ticket ownership or admin access
+      const ticket = await storage.getSupportTicketById(ticketId);
+      if (!ticket || (ticket.userId !== userId && req.user.role !== 'admin')) {
+        return res.status(403).json({ message: "Access denied to ticket" });
+      }
+      
+      const message = await storage.createRealTimeChatMessage({
+        ticketId,
+        senderId: userId,
+        content,
+        isFromAdmin: req.user.role === 'admin'
+      });
+      
+      // If admin replied, notify customer immediately
+      if (req.user.role === 'admin' && ticket.userId !== userId) {
+        await storage.notifyCustomerOfAdminResponse(ticketId, ticket.userId, content);
+      }
+      
+      res.json(message);
+    } catch (error) {
+      console.error("Error creating chat message:", error);
+      res.status(500).json({ message: "Failed to create chat message" });
+    }
+  });
+
+  app.get('/api/chat/messages/:ticketId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { ticketId } = req.params;
+      const userId = req.user.id;
+      
+      // Verify ticket access
+      const ticket = await storage.getSupportTicketById(ticketId);
+      if (!ticket || (ticket.userId !== userId && req.user.role !== 'admin')) {
+        return res.status(403).json({ message: "Access denied to ticket" });
+      }
+      
+      const messages = await storage.getRealTimeChatMessagesByTicketId(ticketId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ message: "Failed to fetch chat messages" });
+    }
+  });
+
+  // Admin Email Templates Routes
+  app.get('/api/admin/email-templates', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const templates = await storage.getEmailTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching email templates:", error);
+      res.status(500).json({ message: "Failed to fetch email templates" });
+    }
+  });
+
+  app.post('/api/admin/email-templates', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const template = await storage.createEmailTemplate({
+        ...req.body,
+        createdBy: req.user.id
+      });
+      res.json(template);
+    } catch (error) {
+      console.error("Error creating email template:", error);
+      res.status(500).json({ message: "Failed to create email template" });
+    }
+  });
+
+  // Enhanced Admin Inheritance Management
+  app.get('/api/admin/inheritance', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const processes = await storage.getInheritanceProcesses();
+      res.json(processes);
+    } catch (error) {
+      console.error("Error fetching inheritance processes:", error);
+      res.status(500).json({ message: "Failed to fetch inheritance processes" });
+    }
+  });
+
+  app.put('/api/admin/inheritance/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { status, notes } = req.body;
+      const adminId = req.user.id;
+      
+      await storage.updateInheritanceProcessStatus(id, status, adminId);
+      
+      // If approved, process automatic inheritance
+      if (status === 'completed') {
+        console.log(`Inheritance process ${id} completed by admin ${adminId}`);
+      }
+      
+      res.json({ message: "Inheritance process updated successfully" });
+    } catch (error) {
+      console.error("Error updating inheritance process:", error);
+      res.status(500).json({ message: "Failed to update inheritance process" });
     }
   });
 

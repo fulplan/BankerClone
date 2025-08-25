@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   index,
   jsonb,
+  json,
   pgTable,
   timestamp,
   varchar,
@@ -573,6 +574,131 @@ export const inheritanceProcessesRelations = relations(inheritanceProcesses, ({ 
   processor: one(users, { fields: [inheritanceProcesses.processedBy], references: [users.id] }),
 }));
 
+// KYC Verification System
+export const kycVerifications = pgTable("kyc_verifications", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  verificationType: varchar("verification_type").notNull(), // id, ssn, email, phone
+  status: varchar("status").default('pending').notNull(), // pending, verified, rejected
+  documentUrl: varchar("document_url"),
+  verificationData: json("verification_data"), // Store verification details
+  verifiedBy: varchar("verified_by").references(() => users.id),
+  verifiedAt: timestamp("verified_at"),
+  rejectionReason: text("rejection_reason"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Email Templates for Admin
+export const emailTemplates = pgTable("email_templates", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull().unique(),
+  subject: varchar("subject").notNull(),
+  htmlContent: text("html_content").notNull(),
+  textContent: text("text_content"),
+  templateType: varchar("template_type").notNull(), // welcome, transfer_confirmation, fraud_alert, etc
+  variables: json("variables"), // Available template variables
+  isActive: boolean("is_active").default(true),
+  createdBy: varchar("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Admin Notifications Configuration
+export const adminNotificationSettings = pgTable("admin_notification_settings", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventType: varchar("event_type").notNull(), // transfer_created, kyc_submitted, etc
+  emailEnabled: boolean("email_enabled").default(true),
+  smsEnabled: boolean("sms_enabled").default(false),
+  pushEnabled: boolean("push_enabled").default(true),
+  emailTemplate: uuid("email_template").references(() => emailTemplates.id),
+  recipientRoles: json("recipient_roles"), // ['admin', 'manager']
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Real-time Chat Messages (enhanced)
+export const realTimeChatMessages = pgTable("realtime_chat_messages", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  ticketId: varchar("ticket_id").references(() => supportTickets.id).notNull(),
+  senderId: varchar("sender_id").references(() => users.id).notNull(),
+  messageType: varchar("message_type").default('text'), // text, file, image
+  content: text("content").notNull(),
+  fileUrl: varchar("file_url"),
+  isRead: boolean("is_read").default(false),
+  readAt: timestamp("read_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Account Statements
+export const accountStatements = pgTable("account_statements", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  accountId: uuid("account_id").references(() => accounts.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  statementType: varchar("statement_type").notNull(), // monthly, quarterly, annual
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  pdfUrl: varchar("pdf_url"),
+  excelUrl: varchar("excel_url"),
+  status: varchar("status").default('generating'), // generating, ready, error
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Joint Account Ownership
+export const jointAccounts = pgTable("joint_accounts", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  accountId: uuid("account_id").references(() => accounts.id).notNull(),
+  primaryOwnerId: varchar("primary_owner_id").references(() => users.id).notNull(),
+  jointOwnerId: varchar("joint_owner_id").references(() => users.id).notNull(),
+  ownershipType: varchar("ownership_type").default('joint'), // joint, survivor
+  permissions: json("permissions"), // read, write, transfer permissions
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// SMTP Configuration for Admin
+export const smtpConfigurations = pgTable("smtp_configurations", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull(),
+  host: varchar("host").notNull(),
+  port: varchar("port").notNull(),
+  username: varchar("username").notNull(),
+  password: varchar("password").notNull(), // encrypted
+  encryption: varchar("encryption").default('tls'), // tls, ssl, none
+  isActive: boolean("is_active").default(false),
+  isDefault: boolean("is_default").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relations for new tables
+export const kycVerificationsRelations = relations(kycVerifications, ({ one }) => ({
+  user: one(users, { fields: [kycVerifications.userId], references: [users.id] }),
+  verifier: one(users, { fields: [kycVerifications.verifiedBy], references: [users.id] }),
+}));
+
+export const emailTemplatesRelations = relations(emailTemplates, ({ one }) => ({
+  creator: one(users, { fields: [emailTemplates.createdBy], references: [users.id] }),
+}));
+
+export const realTimeChatMessagesRelations = relations(realTimeChatMessages, ({ one }) => ({
+  ticket: one(supportTickets, { fields: [realTimeChatMessages.ticketId], references: [supportTickets.id] }),
+  sender: one(users, { fields: [realTimeChatMessages.senderId], references: [users.id] }),
+}));
+
+export const accountStatementsRelations = relations(accountStatements, ({ one }) => ({
+  account: one(accounts, { fields: [accountStatements.accountId], references: [accounts.id] }),
+  user: one(users, { fields: [accountStatements.userId], references: [users.id] }),
+}));
+
+export const jointAccountsRelations = relations(jointAccounts, ({ one }) => ({
+  account: one(accounts, { fields: [jointAccounts.accountId], references: [accounts.id] }),
+  primaryOwner: one(users, { fields: [jointAccounts.primaryOwnerId], references: [users.id] }),
+  jointOwner: one(users, { fields: [jointAccounts.jointOwnerId], references: [users.id] }),
+}));
+
 // Additional types for new tables
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
@@ -582,6 +708,20 @@ export type Beneficiary = typeof beneficiaries.$inferSelect;
 export type InsertBeneficiary = typeof beneficiaries.$inferInsert;
 export type InheritanceProcess = typeof inheritanceProcesses.$inferSelect;
 export type InsertInheritanceProcess = typeof inheritanceProcesses.$inferInsert;
+export type KycVerification = typeof kycVerifications.$inferSelect;
+export type InsertKycVerification = typeof kycVerifications.$inferInsert;
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+export type InsertEmailTemplate = typeof emailTemplates.$inferInsert;
+export type AdminNotificationSetting = typeof adminNotificationSettings.$inferSelect;
+export type InsertAdminNotificationSetting = typeof adminNotificationSettings.$inferInsert;
+export type RealTimeChatMessage = typeof realTimeChatMessages.$inferSelect;
+export type InsertRealTimeChatMessage = typeof realTimeChatMessages.$inferInsert;
+export type AccountStatement = typeof accountStatements.$inferSelect;
+export type InsertAccountStatement = typeof accountStatements.$inferInsert;
+export type JointAccount = typeof jointAccounts.$inferSelect;
+export type InsertJointAccount = typeof jointAccounts.$inferInsert;
+export type SmtpConfiguration = typeof smtpConfigurations.$inferSelect;
+export type InsertSmtpConfiguration = typeof smtpConfigurations.$inferInsert;
 
 // Enums for TypeScript
 export type UserRole = 'admin' | 'customer';
