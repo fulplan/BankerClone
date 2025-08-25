@@ -1403,6 +1403,19 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         await storage.updateSupportTicketStatus(ticketId, 'in_progress', adminId);
       }
 
+      // Send notification to customer about admin response
+      await storage.createAdminNotificationForUser(
+        ticket.userId,
+        `Admin Response to Ticket #${ticket.id.slice(-6)}`,
+        `An admin has responded to your support ticket "${ticket.subject}". Please check your support messages for details.`,
+        'support_response',
+        {
+          ticketId: ticket.id,
+          ticketSubject: ticket.subject,
+          responsePreview: message.length > 100 ? message.substring(0, 100) + '...' : message
+        }
+      );
+
       res.json(chatMessage);
     } catch (error) {
       console.error("Error creating admin chat message:", error);
@@ -2340,7 +2353,61 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       const { status, notes } = req.body;
       const adminId = req.user.id;
       
+      // Get the process details first to send notification
+      const processes = await storage.getInheritanceProcesses();
+      const process = processes.find(p => p.id === id);
+      
       await storage.updateInheritanceProcessStatus(id, status, adminId, notes);
+      
+      if (process && process.deceasedUserId) {
+        // Send notification about inheritance process update
+        let notificationTitle = '';
+        let notificationMessage = '';
+        
+        switch (status) {
+          case 'approved':
+            notificationTitle = 'Inheritance Process Approved';
+            notificationMessage = `Your inheritance process has been approved. The inheritance transfer process will begin shortly. ${notes ? 'Notes: ' + notes : ''}`;
+            break;
+          case 'rejected':
+            notificationTitle = 'Inheritance Process Requires Attention';
+            notificationMessage = `Your inheritance process requires additional documentation or action. Please contact our support team. ${notes ? 'Notes: ' + notes : ''}`;
+            break;
+          case 'completed':
+            notificationTitle = 'Inheritance Process Completed';
+            notificationMessage = `Your inheritance process has been successfully completed. All assets have been transferred according to the inheritance plan. ${notes ? 'Notes: ' + notes : ''}`;
+            break;
+          case 'document_review':
+            notificationTitle = 'Documents Under Review';
+            notificationMessage = `Your inheritance documentation is currently under review by our legal team. We will update you once the review is complete. ${notes ? 'Notes: ' + notes : ''}`;
+            break;
+          default:
+            notificationTitle = 'Inheritance Process Update';
+            notificationMessage = `Your inheritance process status has been updated to: ${status}. ${notes ? 'Notes: ' + notes : ''}`;
+        }
+        
+        // Get all beneficiaries to notify them as well
+        const beneficiaries = await storage.getBeneficiariesByUserId(process.deceasedUserId);
+        const beneficiaryIds = beneficiaries.map(b => b.userId).filter(Boolean);
+        
+        // Send notification to all relevant parties
+        const notificationUserIds = [process.deceasedUserId, ...beneficiaryIds].filter(Boolean);
+        
+        if (notificationUserIds.length > 0) {
+          await storage.sendNotificationToMultipleUsers(
+            notificationUserIds,
+            notificationTitle,
+            notificationMessage,
+            'admin_response',
+            {
+              inheritanceProcessId: id,
+              status,
+              notes,
+              processedBy: adminId
+            }
+          );
+        }
+      }
       
       // If approved, process automatic inheritance
       if (status === 'completed') {
@@ -2478,6 +2545,135 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     } catch (error) {
       console.error("Error verifying document:", error);
       res.status(500).json({ message: "Failed to verify document" });
+    }
+  });
+
+  // Enhanced Notification System Routes
+  
+  // Customer notification routes
+  app.get('/api/notifications', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const notifications = await storage.getNotificationsByUserId(userId);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.get('/api/notifications/unread-count', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const count = await storage.getUnreadNotificationCount(userId);
+      res.json({ count });
+    } catch (error) {
+      console.error("Error fetching unread count:", error);
+      res.status(500).json({ message: "Failed to fetch unread count" });
+    }
+  });
+
+  app.get('/api/notifications/recent-admin-responses', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const limit = parseInt(req.query.limit as string) || 5;
+      const recentResponses = await storage.getRecentAdminResponses(userId, limit);
+      res.json(recentResponses);
+    } catch (error) {
+      console.error("Error fetching recent admin responses:", error);
+      res.status(500).json({ message: "Failed to fetch recent admin responses" });
+    }
+  });
+
+  app.put('/api/notifications/:id/read', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      await storage.markNotificationAsRead(id, userId);
+      res.json({ message: "Notification marked as read" });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  app.put('/api/notifications/mark-all-read', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      await storage.markAllNotificationsAsRead(userId);
+      res.json({ message: "All notifications marked as read" });
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      res.status(500).json({ message: "Failed to mark all notifications as read" });
+    }
+  });
+
+  app.delete('/api/notifications/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      await storage.deleteNotification(id, userId);
+      res.json({ message: "Notification deleted" });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      res.status(500).json({ message: "Failed to delete notification" });
+    }
+  });
+
+  // Admin notification management routes
+  app.post('/api/admin/notifications/send', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { userId, title, message, type, metadata } = req.body;
+      
+      if (!userId || !title || !message) {
+        return res.status(400).json({ message: "userId, title, and message are required" });
+      }
+      
+      const notification = await storage.createAdminNotificationForUser(userId, title, message, type, metadata);
+      res.json(notification);
+    } catch (error) {
+      console.error("Error sending notification:", error);
+      res.status(500).json({ message: "Failed to send notification" });
+    }
+  });
+
+  app.post('/api/admin/notifications/send-bulk', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { userIds, title, message, type, metadata } = req.body;
+      
+      if (!userIds || !Array.isArray(userIds) || userIds.length === 0 || !title || !message) {
+        return res.status(400).json({ message: "userIds (array), title, and message are required" });
+      }
+      
+      const notifications = await storage.sendNotificationToMultipleUsers(userIds, title, message, type, metadata);
+      res.json({ message: `Sent ${notifications.length} notifications`, notifications });
+    } catch (error) {
+      console.error("Error sending bulk notifications:", error);
+      res.status(500).json({ message: "Failed to send bulk notifications" });
+    }
+  });
+
+  app.post('/api/admin/notifications/send-to-all', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { title, message, type, metadata } = req.body;
+      
+      if (!title || !message) {
+        return res.status(400).json({ message: "title and message are required" });
+      }
+      
+      // Get all customer user IDs (non-admin users)
+      const customers = await storage.getAllCustomers();
+      const customerIds = customers.map(customer => customer.id);
+      
+      if (customerIds.length === 0) {
+        return res.json({ message: "No customers found to send notifications to" });
+      }
+      
+      const notifications = await storage.sendNotificationToMultipleUsers(customerIds, title, message, type || 'admin_announcement', metadata);
+      res.json({ message: `Sent ${notifications.length} notifications to all customers`, notifications });
+    } catch (error) {
+      console.error("Error sending notifications to all customers:", error);
+      res.status(500).json({ message: "Failed to send notifications to all customers" });
     }
   });
 

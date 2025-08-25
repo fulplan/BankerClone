@@ -336,6 +336,14 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(users.createdAt));
   }
 
+  async getAllCustomers(): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .where(eq(users.role, 'customer'))
+      .orderBy(desc(users.createdAt));
+  }
+
   async getAllAccounts(): Promise<Account[]> {
     return await db
       .select()
@@ -546,13 +554,63 @@ export class DatabaseStorage implements IStorage {
     await db.update(cards).set(updateData).where(eq(cards.id, cardId));
   }
 
-  // Notifications methods
+  // Enhanced Notifications methods
   async getNotificationsByUserId(userId: string): Promise<Notification[]> {
     return await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
   }
 
   async markNotificationAsRead(notificationId: string, userId: string): Promise<void> {
     await db.update(notifications).set({ status: 'read' }).where(and(eq(notifications.id, notificationId), eq(notifications.userId, userId)));
+  }
+
+  async markAllNotificationsAsRead(userId: string): Promise<void> {
+    await db.update(notifications).set({ status: 'read' }).where(and(eq(notifications.userId, userId), eq(notifications.status, 'unread')));
+  }
+
+  async createAdminNotificationForUser(userId: string, title: string, message: string, type: string = 'admin_response', metadata?: any): Promise<Notification> {
+    const [notification] = await db.insert(notifications).values({
+      userId,
+      type: type as any,
+      title,
+      message,
+      status: 'unread',
+      metadata: metadata || {},
+    }).returning();
+    return notification;
+  }
+
+  async sendNotificationToMultipleUsers(userIds: string[], title: string, message: string, type: string = 'admin_announcement', metadata?: any): Promise<Notification[]> {
+    const notificationData = userIds.map(userId => ({
+      userId,
+      type: type as any,
+      title,
+      message,
+      status: 'unread' as const,
+      metadata: metadata || {},
+    }));
+    
+    const results = await db.insert(notifications).values(notificationData).returning();
+    return results;
+  }
+
+  async getUnreadNotificationCount(userId: string): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)` }).from(notifications)
+      .where(and(eq(notifications.userId, userId), eq(notifications.status, 'unread')));
+    return result[0]?.count || 0;
+  }
+
+  async deleteNotification(notificationId: string, userId: string): Promise<void> {
+    await db.delete(notifications).where(and(eq(notifications.id, notificationId), eq(notifications.userId, userId)));
+  }
+
+  async getRecentAdminResponses(userId: string, limit: number = 5): Promise<Notification[]> {
+    return await db.select().from(notifications)
+      .where(and(
+        eq(notifications.userId, userId),
+        sql`${notifications.type} IN ('admin_response', 'admin_announcement', 'account_update', 'support_response')`
+      ))
+      .orderBy(desc(notifications.createdAt))
+      .limit(limit);
   }
 
   // Bill payments methods

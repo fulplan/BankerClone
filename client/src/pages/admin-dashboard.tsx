@@ -11,6 +11,7 @@ import TransferApproval from "@/components/admin/transfer-approval";
 import AdminSupportTickets from "@/components/admin/admin-support-tickets";
 import AuditLog from "@/components/admin/audit-log";
 import InheritanceManagement from "@/components/admin/inheritance-management";
+import NotificationManagement from "@/components/admin/notification-management";
 import UserManagement from "@/pages/user-management";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Users, DollarSign, Activity, TrendingUp, AlertTriangle, CheckCircle, Clock } from "lucide-react";
@@ -177,10 +178,11 @@ export default function AdminDashboard() {
         )}
 
         <Tabs defaultValue="accounts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="accounts" data-testid="tab-accounts">Account Management</TabsTrigger>
             <TabsTrigger value="transfers" data-testid="tab-transfers">Transfer Approval</TabsTrigger>
             <TabsTrigger value="inheritance" data-testid="tab-inheritance">Inheritance Management</TabsTrigger>
+            <TabsTrigger value="notifications" data-testid="tab-notifications">Notifications</TabsTrigger>
             <TabsTrigger value="support" data-testid="tab-support">Support Tickets</TabsTrigger>
             <TabsTrigger value="users" data-testid="tab-users">User Management</TabsTrigger>
             <TabsTrigger value="audit" data-testid="tab-audit">Audit Log</TabsTrigger>
@@ -196,6 +198,10 @@ export default function AdminDashboard() {
           
           <TabsContent value="inheritance">
             <InheritanceManagement />
+          </TabsContent>
+          
+          <TabsContent value="notifications">
+            <NotificationManagement />
           </TabsContent>
           
           <TabsContent value="support">
