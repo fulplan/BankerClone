@@ -54,7 +54,9 @@ export const auditActionEnum = pgEnum('audit_action', [
   'balance_debited',
   'transfer_approved',
   'transfer_rejected',
-  'email_sent'
+  'email_sent',
+  'inheritance_reviewed',
+  'inheritance_disputed'
 ]);
 
 // User storage table
@@ -885,7 +887,7 @@ export type InsertSmtpConfiguration = typeof smtpConfigurations.$inferInsert;
 export type UserRole = 'admin' | 'customer';
 export type AccountStatus = 'active' | 'frozen' | 'closed';
 export type TransferStatus = 'pending' | 'processing' | 'verification_required' | 'approved' | 'completed' | 'rejected' | 'failed';
-export type AuditAction = 'account_created' | 'account_frozen' | 'account_unfrozen' | 'account_closed' | 'balance_credited' | 'balance_debited' | 'transfer_approved' | 'transfer_rejected' | 'email_sent';
+export type AuditAction = 'account_created' | 'account_frozen' | 'account_unfrozen' | 'account_closed' | 'balance_credited' | 'balance_debited' | 'transfer_approved' | 'transfer_rejected' | 'email_sent' | 'inheritance_reviewed' | 'inheritance_disputed';
 export type CardType = 'debit' | 'credit' | 'virtual';
 export type CardStatus = 'active' | 'frozen' | 'cancelled';
 export type NotificationType = 'transaction' | 'security' | 'account_update' | 'transfer' | 'bill_payment' | 'investment' | 'fraud_alert' | 'marketing' | 'system';
