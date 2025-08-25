@@ -1069,6 +1069,229 @@ export class DatabaseStorage implements IStorage {
 
     console.log(`Email notification would be sent to customer ${customerId} about ticket ${ticketId}`);
   }
+
+  // Joint Accounts Management
+  async getJointAccountsByUserId(userId: string) {
+    // This would need to join with a joint_accounts table - for now return mock data
+    return [
+      {
+        id: '1',
+        accountNumber: '123456789',
+        accountType: 'checking',
+        balance: '25000.00',
+        primaryOwnerId: userId,
+        jointOwners: [
+          {
+            id: '1',
+            userId,
+            accountId: '1',
+            ownershipPercentage: 100,
+            permissions: ['view_balance', 'view_transactions', 'make_transfers'],
+            status: 'active',
+            addedAt: new Date().toISOString(),
+            user: {
+              name: 'John Doe',
+              email: 'john@example.com'
+            }
+          }
+        ],
+        ownershipType: 'joint_tenancy',
+        createdAt: new Date().toISOString(),
+        status: 'active'
+      }
+    ];
+  }
+
+  async createOwnershipRequest(data: any) {
+    // This would create a record in ownership_requests table - for now return mock data
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      accountId: data.accountId,
+      requesterId: data.requesterId,
+      targetUserId: 'target_user_id', // Would lookup by email
+      requestType: data.requestType,
+      ownershipPercentage: data.ownershipPercentage,
+      permissions: data.permissions,
+      status: 'pending',
+      notes: data.notes,
+      createdAt: new Date().toISOString(),
+      requester: {
+        name: 'John Doe',
+        email: 'john@example.com'
+      },
+      targetUser: {
+        name: 'Jane Smith',
+        email: data.targetUserEmail
+      }
+    };
+  }
+
+  async getOwnershipRequestsByUserId(userId: string) {
+    // This would fetch from ownership_requests table - for now return mock data
+    return [
+      {
+        id: '1',
+        accountId: '123456789',
+        requesterId: 'requester_id',
+        targetUserId: userId,
+        requestType: 'add_joint_owner',
+        ownershipPercentage: 50,
+        permissions: ['view_balance', 'view_transactions'],
+        status: 'pending',
+        notes: 'Adding spouse as joint owner',
+        createdAt: new Date().toISOString(),
+        requester: {
+          name: 'John Doe',
+          email: 'john@example.com'
+        },
+        targetUser: {
+          name: 'Jane Smith',
+          email: 'jane@example.com'
+        }
+      }
+    ];
+  }
+
+  async respondToOwnershipRequest(requestId: string, action: string, userId: string, notes?: string) {
+    // This would update the ownership_requests table - for now return mock data
+    return {
+      id: requestId,
+      requestType: 'add_joint_owner',
+      accountId: '123456789',
+      targetUserId: userId,
+      ownershipPercentage: 50,
+      permissions: ['view_balance', 'view_transactions'],
+      status: action === 'approve' ? 'approved' : 'rejected'
+    };
+  }
+
+  async addJointAccountOwner(accountId: string, userId: string, percentage: number, permissions: string[]) {
+    // This would add a record to joint_account_owners table
+    console.log(`Adding joint owner ${userId} to account ${accountId} with ${percentage}% ownership`);
+    return true;
+  }
+
+  async transferAccountOwnership(accountId: string, newOwnerId: string) {
+    // This would update the account's primary owner
+    console.log(`Transferring ownership of account ${accountId} to user ${newOwnerId}`);
+    return true;
+  }
+
+  // Enhanced Inheritance Management
+  async getInheritanceProcessesByUser(userId: string) {
+    // This would fetch inheritance processes where user is initiator or beneficiary
+    return [
+      {
+        id: Math.random().toString(36).substr(2, 9),
+        deceasedUserId: 'deceased_user_id',
+        initiatorId: userId,
+        status: 'pending',
+        documents: [
+          {
+            id: '1',
+            inheritanceId: '1',
+            documentType: 'death_certificate',
+            fileName: 'death_certificate.pdf',
+            fileUrl: '/uploads/death_certificate.pdf',
+            uploadedAt: new Date().toISOString(),
+            status: 'pending'
+          }
+        ],
+        beneficiaries: [
+          {
+            id: '1',
+            inheritanceId: '1',
+            beneficiaryId: userId,
+            percentage: 100,
+            accountIds: ['123456789'],
+            status: 'pending',
+            beneficiary: {
+              name: 'John Doe',
+              email: 'john@example.com'
+            }
+          }
+        ],
+        accounts: [
+          {
+            id: '123456789',
+            accountNumber: '123456789',
+            accountType: 'checking',
+            balance: '25000.00',
+            distributionStatus: 'pending'
+          }
+        ],
+        totalValue: '25000.00',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        deceased: {
+          name: 'Robert Smith',
+          email: 'robert@example.com'
+        },
+        initiator: {
+          name: 'John Doe',
+          email: 'john@example.com'
+        }
+      }
+    ];
+  }
+
+  async getUserByEmail(email: string) {
+    const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return user[0] || null;
+  }
+
+  async createInheritanceProcess(data: any) {
+    // This would create a record in inheritance_processes table
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      deceasedUserId: data.deceasedUserId,
+      initiatorId: data.initiatorId,
+      status: 'pending',
+      totalValue: '0.00',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      deceased: {
+        name: 'Robert Smith',
+        email: 'robert@example.com'
+      },
+      initiator: {
+        name: 'John Doe',
+        email: 'john@example.com'
+      }
+    };
+  }
+
+  async getInheritanceProcessById(processId: string) {
+    // This would fetch from inheritance_processes table
+    return {
+      id: processId,
+      initiatorId: 'initiator_id',
+      beneficiaries: [
+        {
+          beneficiaryId: 'beneficiary_id'
+        }
+      ]
+    };
+  }
+
+  async createInheritanceDocument(document: any) {
+    // This would create a record in inheritance_documents table
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      inheritanceId: document.inheritanceId,
+      documentType: document.documentType,
+      fileName: document.fileName,
+      fileUrl: document.fileUrl,
+      uploadedAt: new Date().toISOString(),
+      status: document.status
+    };
+  }
+
+  async respondToInheritanceClaim(processId: string, userId: string, accept: boolean) {
+    // This would update the beneficiary's response in the inheritance process
+    console.log(`User ${userId} ${accept ? 'accepted' : 'declined'} inheritance process ${processId}`);
+    return true;
+  }
 }
 
 export const storage = new DatabaseStorage();

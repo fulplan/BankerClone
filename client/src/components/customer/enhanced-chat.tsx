@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,11 +42,14 @@ interface EnhancedChatProps {
 
 export default function EnhancedChat({ ticketId, ticket, onClose }: EnhancedChatProps) {
   const [newMessage, setNewMessage] = useState('');
-  const [isPolling, setIsPolling] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const wsRef = useRef<WebSocket | null>(null);
+  const { user } = useAuth();
 
-  // Fetch messages with aggressive polling for real-time feel
+  // Fetch initial messages (no polling needed with WebSocket)
   const { data: messages, isLoading, refetch } = useQuery<ChatMessage[]>({
     queryKey: ['chat-messages', ticketId],
     queryFn: async () => {
@@ -53,36 +57,122 @@ export default function EnhancedChat({ ticketId, ticket, onClose }: EnhancedChat
       if (!response.ok) throw new Error('Failed to fetch messages');
       return response.json();
     },
-    refetchInterval: isPolling ? 2000 : false, // Poll every 2 seconds when active
-    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
   });
 
-  // Send message mutation
+  // WebSocket connection setup
+  const connectWebSocket = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+    
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/chat`);
+    wsRef.current = ws;
+    
+    setConnectionStatus('connecting');
+    
+    ws.onopen = () => {
+      setConnectionStatus('connected');
+      setIsConnected(true);
+      
+      // Send authentication message
+      ws.send(JSON.stringify({
+        type: 'auth',
+        userId: user?.id || 'anonymous'
+      }));
+      
+      toast({
+        title: "Connected",
+        description: "Real-time chat is now active",
+      });
+    };
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'new_message' && data.ticketId === ticketId) {
+          // New message received
+          queryClient.invalidateQueries({ queryKey: ['chat-messages', ticketId] });
+          refetch();
+          
+          // Show notification if message is from admin
+          if (data.message.isFromAdmin && document.hidden && Notification.permission === 'granted') {
+            new Notification('New support response', {
+              body: data.message.message.substring(0, 100) + '...',
+              icon: '/favicon.ico'
+            });
+          }
+        } else if (data.type === 'message_sent') {
+          // Message sent confirmation
+          queryClient.invalidateQueries({ queryKey: ['chat-messages', ticketId] });
+          queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
+          refetch();
+        }
+      } catch (error) {
+        console.error('WebSocket message parse error:', error);
+      }
+    };
+    
+    ws.onclose = () => {
+      setConnectionStatus('disconnected');
+      setIsConnected(false);
+      
+      // Attempt to reconnect after 3 seconds
+      setTimeout(() => {
+        if (wsRef.current?.readyState !== WebSocket.OPEN) {
+          connectWebSocket();
+        }
+      }, 3000);
+    };
+    
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setConnectionStatus('disconnected');
+      setIsConnected(false);
+    };
+  }, [ticketId, queryClient, refetch]);
+
+  // Send message via WebSocket
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      const response = await fetch('/api/chat/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        // Send via WebSocket for real-time delivery
+        wsRef.current.send(JSON.stringify({
+          type: 'chat_message',
           ticketId,
-          content
-        }),
-      });
-      if (!response.ok) throw new Error('Failed to send message');
-      return response.json();
+          content,
+          senderId: user?.id || 'anonymous',
+          isFromAdmin: user?.role === 'admin'
+        }));
+        return { success: true };
+      } else {
+        // Fallback to HTTP if WebSocket not available
+        const response = await fetch('/api/chat/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ticketId,
+            content
+          }),
+        });
+        if (!response.ok) throw new Error('Failed to send message');
+        return response.json();
+      }
     },
     onSuccess: () => {
       setNewMessage('');
-      queryClient.invalidateQueries({ queryKey: ['chat-messages', ticketId] });
-      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
       
-      // Force immediate refetch for instant UI update
-      refetch();
-      
-      toast({
-        title: "Message sent",
-        description: "Your message has been delivered to our support team",
-      });
+      if (wsRef.current?.readyState !== WebSocket.OPEN) {
+        // Only invalidate queries if not using WebSocket (fallback mode)
+        queryClient.invalidateQueries({ queryKey: ['chat-messages', ticketId] });
+        queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
+        refetch();
+        
+        toast({
+          title: "Message sent",
+          description: "Your message has been delivered to our support team",
+        });
+      }
     },
     onError: (error: any) => {
       toast({
@@ -120,19 +210,16 @@ export default function EnhancedChat({ ticketId, ticket, onClose }: EnhancedChat
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Focus management and polling control
+  // WebSocket connection management
   useEffect(() => {
-    const handleFocus = () => setIsPolling(true);
-    const handleBlur = () => setIsPolling(false);
-    
-    window.addEventListener('focus', handleFocus);
-    window.addEventListener('blur', handleBlur);
+    connectWebSocket();
     
     return () => {
-      window.removeEventListener('focus', handleFocus);
-      window.removeEventListener('blur', handleBlur);
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
     };
-  }, []);
+  }, [connectWebSocket]);
 
   // Notification for new admin messages
   useEffect(() => {
@@ -307,9 +394,9 @@ export default function EnhancedChat({ ticketId, ticket, onClose }: EnhancedChat
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => refetch()}
+            onClick={connectionStatus === 'disconnected' ? connectWebSocket : () => refetch()}
             className="shrink-0"
-            title="Refresh messages"
+            title={connectionStatus === 'disconnected' ? "Reconnect" : "Refresh messages"}
           >
             <Refresh className="h-4 w-4" />
           </Button>
@@ -345,8 +432,14 @@ export default function EnhancedChat({ ticketId, ticket, onClose }: EnhancedChat
         <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
-              <div className={`w-2 h-2 rounded-full ${isPolling ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-              <span>{isPolling ? 'Live updates active' : 'Updates paused'}</span>
+              <div className={`w-2 h-2 rounded-full ${
+                connectionStatus === 'connected' ? 'bg-green-500' : 
+                connectionStatus === 'connecting' ? 'bg-yellow-500' : 'bg-red-500'
+              }`}></div>
+              <span>
+                {connectionStatus === 'connected' ? 'Real-time chat active' : 
+                 connectionStatus === 'connecting' ? 'Connecting...' : 'Disconnected'}
+              </span>
             </div>
             
             {messages && messages.length > 0 && (

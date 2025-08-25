@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from 'ws';
 import { storage } from "./storage";
 import { emailService } from "./emailService";
 import { setupAuth, isAuthenticated } from "./auth";
@@ -92,7 +93,86 @@ function requireAdmin(req: any, res: any, next: any) {
   next();
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express, httpServer?: Server): Promise<Server> {
+  // Create HTTP server if not provided
+  const server = httpServer || createServer(app);
+  
+  // Set up WebSocket server for real-time chat on a specific path
+  const wss = new WebSocketServer({ 
+    server,
+    path: '/ws/chat'
+  });
+  
+  // Store active WebSocket connections by user ID
+  const wsConnections = new Map<string, WebSocket>();
+  
+  // WebSocket connection handling
+  wss.on('connection', (ws: WebSocket, req) => {
+    let userId: string | null = null;
+    
+    ws.on('message', async (message: string) => {
+      try {
+        const data = JSON.parse(message);
+        
+        if (data.type === 'auth') {
+          // Store user connection
+          userId = data.userId;
+          if (userId) {
+            wsConnections.set(userId, ws);
+            ws.send(JSON.stringify({ type: 'auth_success', message: 'Connected to real-time chat' }));
+          }
+        } else if (data.type === 'chat_message') {
+          // Handle real-time chat message
+          const { ticketId, content, isFromAdmin, senderId } = data;
+          
+          // Create message in database
+          const chatMessage = await storage.createRealTimeChatMessage({
+            ticketId,
+            senderId,
+            content,
+            isFromAdmin: isFromAdmin || false
+          });
+          
+          // Get ticket to find recipient
+          const ticket = await storage.getSupportTicketById(ticketId);
+          if (ticket) {
+            const recipientId = isFromAdmin ? ticket.userId : 'admin';
+            
+            // Send message to recipient if connected
+            const recipientWs = wsConnections.get(recipientId);
+            if (recipientWs && recipientWs.readyState === WebSocket.OPEN) {
+              recipientWs.send(JSON.stringify({
+                type: 'new_message',
+                message: chatMessage,
+                ticketId
+              }));
+            }
+            
+            // Also send back to sender for confirmation
+            ws.send(JSON.stringify({
+              type: 'message_sent',
+              message: chatMessage,
+              ticketId
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+        ws.send(JSON.stringify({ type: 'error', message: 'Invalid message format' }));
+      }
+    });
+    
+    ws.on('close', () => {
+      if (userId) {
+        wsConnections.delete(userId);
+      }
+    });
+    
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
+  });
+
   // Auth middleware
   await setupAuth(app);
 
@@ -2273,6 +2353,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  // Joint Accounts Management Routes
+  app.get('/api/accounts/joint', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const jointAccounts = await storage.getJointAccountsByUserId(userId);
+      res.json(jointAccounts);
+    } catch (error) {
+      console.error("Error fetching joint accounts:", error);
+      res.status(500).json({ message: "Failed to fetch joint accounts" });
+    }
+  });
+
+  app.post('/api/accounts/joint/add-owner', isAuthenticated, async (req: any, res) => {
+    try {
+      const requesterId = req.user.id;
+      const { accountId, targetUserEmail, ownershipPercentage, permissions, notes } = req.body;
+      
+      // Create ownership request
+      const request = await storage.createOwnershipRequest({
+        accountId,
+        requesterId,
+        targetUserEmail,
+        requestType: 'add_joint_owner',
+        ownershipPercentage,
+        permissions,
+        notes
+      });
+      
+      res.json(request);
+    } catch (error) {
+      console.error("Error creating joint owner request:", error);
+      res.status(500).json({ message: "Failed to create joint owner request" });
+    }
+  });
+
+  app.post('/api/accounts/transfer-ownership', isAuthenticated, async (req: any, res) => {
+    try {
+      const requesterId = req.user.id;
+      const { accountId, newOwnerEmail, notes } = req.body;
+      
+      // Create ownership transfer request
+      const request = await storage.createOwnershipRequest({
+        accountId,
+        requesterId,
+        targetUserEmail: newOwnerEmail,
+        requestType: 'transfer_ownership',
+        notes
+      });
+      
+      res.json(request);
+    } catch (error) {
+      console.error("Error creating ownership transfer request:", error);
+      res.status(500).json({ message: "Failed to create ownership transfer request" });
+    }
+  });
+
+  // Ownership Requests Routes
+  app.get('/api/ownership/requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const requests = await storage.getOwnershipRequestsByUserId(userId);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching ownership requests:", error);
+      res.status(500).json({ message: "Failed to fetch ownership requests" });
+    }
+  });
+
+  app.put('/api/ownership/requests/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { action, notes } = req.body;
+      const userId = req.user.id;
+      
+      if (!['approve', 'reject'].includes(action)) {
+        return res.status(400).json({ message: "Invalid action" });
+      }
+      
+      const request = await storage.respondToOwnershipRequest(id, action, userId, notes);
+      
+      // If approved, process the request
+      if (action === 'approve') {
+        if (request.requestType === 'add_joint_owner') {
+          await storage.addJointAccountOwner(request.accountId, request.targetUserId, request.ownershipPercentage, request.permissions);
+        } else if (request.requestType === 'transfer_ownership') {
+          await storage.transferAccountOwnership(request.accountId, request.targetUserId);
+        }
+      }
+      
+      res.json({ message: `Request ${action}d successfully` });
+    } catch (error) {
+      console.error("Error responding to ownership request:", error);
+      res.status(500).json({ message: "Failed to respond to ownership request" });
+    }
+  });
+
+  // Enhanced Inheritance Routes
+  app.get('/api/inheritance/processes', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const processes = await storage.getInheritanceProcessesByUser(userId);
+      res.json(processes);
+    } catch (error) {
+      console.error("Error fetching inheritance processes:", error);
+      res.status(500).json({ message: "Failed to fetch inheritance processes" });
+    }
+  });
+
+  app.post('/api/inheritance/initiate', isAuthenticated, async (req: any, res) => {
+    try {
+      const initiatorId = req.user.id;
+      const { deceasedEmail, relationship, deathDate, notes } = req.body;
+      
+      // Find deceased user
+      const deceasedUser = await storage.getUserByEmail(deceasedEmail);
+      if (!deceasedUser) {
+        return res.status(404).json({ message: "Deceased user not found" });
+      }
+      
+      const process = await storage.createInheritanceProcess({
+        deceasedUserId: deceasedUser.id,
+        initiatorId,
+        relationship,
+        deathDate,
+        notes
+      });
+      
+      res.json(process);
+    } catch (error) {
+      console.error("Error initiating inheritance process:", error);
+      res.status(500).json({ message: "Failed to initiate inheritance process" });
+    }
+  });
+
+  app.post('/api/inheritance/documents', isAuthenticated, async (req: any, res) => {
+    try {
+      // This would handle file uploads - in a real app you'd use multer or similar
+      const { processId } = req.body;
+      const userId = req.user.id;
+      
+      // Verify user has access to this process
+      const process = await storage.getInheritanceProcessById(processId);
+      if (!process || (process.initiatorId !== userId && !process.beneficiaries.some(b => b.beneficiaryId === userId))) {
+        return res.status(403).json({ message: "Access denied to inheritance process" });
+      }
+      
+      // For now, we'll simulate document upload
+      const document = {
+        inheritanceId: processId,
+        documentType: 'death_certificate',
+        fileName: 'death_certificate.pdf',
+        fileUrl: '/uploads/death_certificate.pdf',
+        status: 'pending'
+      };
+      
+      const savedDocument = await storage.createInheritanceDocument(document);
+      res.json(savedDocument);
+    } catch (error) {
+      console.error("Error uploading inheritance documents:", error);
+      res.status(500).json({ message: "Failed to upload documents" });
+    }
+  });
+
+  app.post('/api/inheritance/respond/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { accept } = req.body;
+      const userId = req.user.id;
+      
+      await storage.respondToInheritanceClaim(id, userId, accept);
+      
+      res.json({ message: accept ? "Inheritance accepted" : "Inheritance declined" });
+    } catch (error) {
+      console.error("Error responding to inheritance:", error);
+      res.status(500).json({ message: "Failed to respond to inheritance" });
+    }
+  });
+
+  return server;
 }
