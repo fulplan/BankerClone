@@ -213,7 +213,7 @@ export default function AccountOverview() {
                           <span className="font-medium">Routing Number:</span> {account.routingNumber}
                         </p>
                         <p>
-                          <span className="font-medium">Opened:</span> {new Date(account.createdAt).toLocaleDateString()}
+                          <span className="font-medium">Opened:</span> {account.createdAt ? new Date(account.createdAt).toLocaleDateString() : 'N/A'}
                         </p>
                       </div>
                     </div>
