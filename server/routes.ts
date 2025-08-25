@@ -2335,6 +2335,159 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
+  app.put('/api/admin/email-templates/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const template = await storage.updateEmailTemplate(id, req.body);
+      res.json(template);
+    } catch (error) {
+      console.error("Error updating email template:", error);
+      res.status(500).json({ message: "Failed to update email template" });
+    }
+  });
+
+  app.delete('/api/admin/email-templates/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteEmailTemplate(id);
+      res.json({ message: "Email template deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting email template:", error);
+      res.status(500).json({ message: "Failed to delete email template" });
+    }
+  });
+
+  // Admin Email Configuration Routes
+  app.get('/api/admin/email-configuration', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const configurations = await storage.getEmailConfigurations();
+      res.json(configurations);
+    } catch (error) {
+      console.error("Error fetching email configurations:", error);
+      res.status(500).json({ message: "Failed to fetch email configurations" });
+    }
+  });
+
+  app.post('/api/admin/email-configuration', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      // Deactivate other configurations if this one is being set as active
+      if (req.body.isActive) {
+        const existingConfigs = await storage.getEmailConfigurations();
+        for (const config of existingConfigs) {
+          if (config.isActive) {
+            await storage.updateEmailConfiguration(config.id, { isActive: false });
+          }
+        }
+      }
+
+      const configuration = await storage.createEmailConfiguration({
+        ...req.body,
+        createdBy: req.user.id
+      });
+      res.json(configuration);
+    } catch (error) {
+      console.error("Error creating email configuration:", error);
+      res.status(500).json({ message: "Failed to create email configuration" });
+    }
+  });
+
+  app.put('/api/admin/email-configuration/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Deactivate other configurations if this one is being set as active
+      if (req.body.isActive) {
+        const existingConfigs = await storage.getEmailConfigurations();
+        for (const config of existingConfigs) {
+          if (config.isActive && config.id !== id) {
+            await storage.updateEmailConfiguration(config.id, { isActive: false });
+          }
+        }
+      }
+
+      const configuration = await storage.updateEmailConfiguration(id, req.body);
+      res.json(configuration);
+    } catch (error) {
+      console.error("Error updating email configuration:", error);
+      res.status(500).json({ message: "Failed to update email configuration" });
+    }
+  });
+
+  app.delete('/api/admin/email-configuration/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteEmailConfiguration(id);
+      res.json({ message: "Email configuration deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting email configuration:", error);
+      res.status(500).json({ message: "Failed to delete email configuration" });
+    }
+  });
+
+  app.post('/api/admin/email-configuration/test', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { configId, testEmail } = req.body;
+      
+      if (!testEmail || !testEmail.includes('@')) {
+        return res.status(400).json({ message: "Valid test email address is required" });
+      }
+
+      // Get the configuration
+      const config = await storage.getEmailConfigurations();
+      const targetConfig = config.find(c => c.id === configId);
+      
+      if (!targetConfig) {
+        return res.status(404).json({ message: "Email configuration not found" });
+      }
+
+      // Send test email using the configuration
+      const testSuccess = await emailService.sendEmail({
+        to: testEmail,
+        subject: 'Test Email from Banking System',
+        html: `
+          <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #EC0000; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+              <h1 style="margin: 0; font-size: 24px;">Banking System Test Email</h1>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 0 0 8px 8px;">
+              <h2 style="color: #111827; margin: 0 0 20px 0;">Email Configuration Test</h2>
+              
+              <p style="color: #374151; margin: 0 0 15px 0;">
+                This is a test email to verify your email configuration is working correctly.
+              </p>
+              
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <p style="margin: 0; color: #6b7280;"><strong>Configuration:</strong> ${targetConfig.configName}</p>
+                <p style="margin: 5px 0 0 0; color: #6b7280;"><strong>Sender:</strong> ${targetConfig.senderName} &lt;${targetConfig.senderEmail}&gt;</p>
+                <p style="margin: 5px 0 0 0; color: #6b7280;"><strong>Test Time:</strong> ${new Date().toLocaleString()}</p>
+              </div>
+              
+              <p style="color: #374151; margin: 20px 0 0 0;">
+                If you received this email, your configuration is working properly!
+              </p>
+            </div>
+          </div>
+        `,
+        templateData: {
+          configName: targetConfig.configName,
+          senderName: targetConfig.senderName,
+          senderEmail: targetConfig.senderEmail,
+          testTime: new Date().toLocaleString()
+        }
+      });
+
+      if (testSuccess) {
+        res.json({ message: "Test email sent successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to send test email" });
+      }
+    } catch (error) {
+      console.error("Error sending test email:", error);
+      res.status(500).json({ message: "Failed to send test email" });
+    }
+  });
+
   // Enhanced Admin Inheritance Management
   // Enhanced Inheritance Management Routes
   app.get('/api/admin/inheritance', isAuthenticated, requireAdmin, async (req: any, res) => {

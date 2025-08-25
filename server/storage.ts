@@ -5,6 +5,9 @@ import {
   transactions,
   auditLogs,
   emailNotifications,
+  emailTemplates,
+  emailConfigurations,
+  smtpConfigurations,
   cards,
   notifications,
   billPayments,
@@ -36,6 +39,12 @@ import {
   type InsertAuditLog,
   type EmailNotification,
   type InsertEmailNotification,
+  type EmailTemplate,
+  type InsertEmailTemplate,
+  type EmailConfiguration,
+  type InsertEmailConfiguration,
+  type SmtpConfiguration,
+  type InsertSmtpConfiguration,
   type Card,
   type InsertCard,
   type Notification,
@@ -113,6 +122,20 @@ export interface IStorage {
   // Email notification operations
   createEmailNotification(notification: InsertEmailNotification): Promise<EmailNotification>;
   getEmailNotificationsByUserId(userId: string): Promise<EmailNotification[]>;
+  
+  // Email configuration operations
+  createEmailConfiguration(config: InsertEmailConfiguration): Promise<EmailConfiguration>;
+  getEmailConfigurations(): Promise<EmailConfiguration[]>;
+  getActiveEmailConfiguration(): Promise<EmailConfiguration | undefined>;
+  updateEmailConfiguration(id: string, config: Partial<InsertEmailConfiguration>): Promise<EmailConfiguration>;
+  deleteEmailConfiguration(id: string): Promise<void>;
+  
+  // Email template operations
+  createEmailTemplate(template: InsertEmailTemplate): Promise<EmailTemplate>;
+  getEmailTemplates(): Promise<EmailTemplate[]>;
+  getEmailTemplateById(id: string): Promise<EmailTemplate | undefined>;
+  updateEmailTemplate(id: string, template: Partial<InsertEmailTemplate>): Promise<EmailTemplate>;
+  deleteEmailTemplate(id: string): Promise<void>;
   
   // Admin operations
   getAllUsers(): Promise<User[]>;
@@ -339,6 +362,86 @@ export class DatabaseStorage implements IStorage {
       .from(emailNotifications)
       .where(eq(emailNotifications.userId, userId))
       .orderBy(desc(emailNotifications.sentAt));
+  }
+
+  // Email configuration operations
+  async createEmailConfiguration(configData: InsertEmailConfiguration): Promise<EmailConfiguration> {
+    const [config] = await db
+      .insert(emailConfigurations)
+      .values(configData)
+      .returning();
+    return config;
+  }
+
+  async getEmailConfigurations(): Promise<EmailConfiguration[]> {
+    return await db
+      .select()
+      .from(emailConfigurations)
+      .orderBy(desc(emailConfigurations.createdAt));
+  }
+
+  async getActiveEmailConfiguration(): Promise<EmailConfiguration | undefined> {
+    const [config] = await db
+      .select()
+      .from(emailConfigurations)
+      .where(eq(emailConfigurations.isActive, true))
+      .limit(1);
+    return config;
+  }
+
+  async updateEmailConfiguration(id: string, configData: Partial<InsertEmailConfiguration>): Promise<EmailConfiguration> {
+    const [config] = await db
+      .update(emailConfigurations)
+      .set({ ...configData, updatedAt: new Date() })
+      .where(eq(emailConfigurations.id, id))
+      .returning();
+    return config;
+  }
+
+  async deleteEmailConfiguration(id: string): Promise<void> {
+    await db
+      .delete(emailConfigurations)
+      .where(eq(emailConfigurations.id, id));
+  }
+
+  // Email template operations
+  async createEmailTemplate(templateData: InsertEmailTemplate): Promise<EmailTemplate> {
+    const [template] = await db
+      .insert(emailTemplates)
+      .values(templateData)
+      .returning();
+    return template;
+  }
+
+  async getEmailTemplates(): Promise<EmailTemplate[]> {
+    return await db
+      .select()
+      .from(emailTemplates)
+      .orderBy(desc(emailTemplates.createdAt));
+  }
+
+  async getEmailTemplateById(id: string): Promise<EmailTemplate | undefined> {
+    const [template] = await db
+      .select()
+      .from(emailTemplates)
+      .where(eq(emailTemplates.id, id))
+      .limit(1);
+    return template;
+  }
+
+  async updateEmailTemplate(id: string, templateData: Partial<InsertEmailTemplate>): Promise<EmailTemplate> {
+    const [template] = await db
+      .update(emailTemplates)
+      .set({ ...templateData, updatedAt: new Date() })
+      .where(eq(emailTemplates.id, id))
+      .returning();
+    return template;
+  }
+
+  async deleteEmailTemplate(id: string): Promise<void> {
+    await db
+      .delete(emailTemplates)
+      .where(eq(emailTemplates.id, id));
   }
 
   // Admin operations
@@ -1628,6 +1731,104 @@ export class DatabaseStorage implements IStorage {
       }
     });
     return true;
+  }
+
+  // Email Templates
+  async getEmailTemplates() {
+    try {
+      return await db.select().from(emailTemplates);
+    } catch (error) {
+      console.error("Error fetching email templates:", error);
+      return [];
+    }
+  }
+
+  async createEmailTemplate(template: any) {
+    try {
+      const [created] = await db.insert(emailTemplates).values(template).returning();
+      return created;
+    } catch (error) {
+      console.error("Error creating email template:", error);
+      throw error;
+    }
+  }
+
+  async getEmailTemplateById(id: string) {
+    try {
+      const templates = await db.select().from(emailTemplates).where(eq(emailTemplates.id, id));
+      return templates[0] || null;
+    } catch (error) {
+      console.error("Error fetching email template by ID:", error);
+      return null;
+    }
+  }
+
+  async updateEmailTemplate(id: string, template: any) {
+    try {
+      const [updated] = await db.update(emailTemplates).set(template).where(eq(emailTemplates.id, id)).returning();
+      return updated;
+    } catch (error) {
+      console.error("Error updating email template:", error);
+      throw error;
+    }
+  }
+
+  async deleteEmailTemplate(id: string) {
+    try {
+      return await db.delete(emailTemplates).where(eq(emailTemplates.id, id));
+    } catch (error) {
+      console.error("Error deleting email template:", error);
+      throw error;
+    }
+  }
+
+  // Email Configuration
+  async getEmailConfigurations() {
+    try {
+      return await db.select().from(emailConfigurations);
+    } catch (error) {
+      console.error("Error fetching email configurations:", error);
+      return [];
+    }
+  }
+
+  async getActiveEmailConfiguration() {
+    try {
+      const configs = await db.select().from(emailConfigurations).where(eq(emailConfigurations.isActive, true));
+      return configs[0] || null;
+    } catch (error) {
+      console.error("Error fetching active email configuration:", error);
+      return null;
+    }
+  }
+
+  async createEmailConfiguration(config: any) {
+    try {
+      const [created] = await db.insert(emailConfigurations).values(config).returning();
+      return created;
+    } catch (error) {
+      console.error("Error creating email configuration:", error);
+      throw error;
+    }
+  }
+
+  async updateEmailConfiguration(id: string, config: any) {
+    try {
+      const [updated] = await db.update(emailConfigurations).set(config).where(eq(emailConfigurations.id, id)).returning();
+      return updated;
+    } catch (error) {
+      console.error("Error updating email configuration:", error);
+      throw error;
+    }
+  }
+
+  async deleteEmailConfiguration(id: string) {
+    try {
+      return await db.delete(emailConfigurations).where(eq(emailConfigurations.id, id));
+    } catch (error) {
+      console.error("Error deleting email configuration:", error);
+      throw error;
+    }
   }
 }
 

@@ -759,6 +759,36 @@ export const emailTemplates = pgTable("email_templates", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Email Configuration for Admin
+export const emailConfigurations = pgTable("email_configurations", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  configName: varchar("config_name").notNull().unique().default('default'),
+  resendApiKey: text("resend_api_key").notNull(),
+  senderEmail: varchar("sender_email").notNull(),
+  senderName: varchar("sender_name").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdBy: varchar("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// SMTP Configuration (alternative to Resend)
+export const smtpConfigurations = pgTable("smtp_configurations", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  configName: varchar("config_name").notNull().unique(),
+  host: varchar("host").notNull(),
+  port: varchar("port").notNull(),
+  username: varchar("username").notNull(),
+  password: text("password").notNull(),
+  secure: boolean("secure").default(true),
+  senderEmail: varchar("sender_email").notNull(),
+  senderName: varchar("sender_name").notNull(),
+  isActive: boolean("is_active").default(false),
+  createdBy: varchar("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Admin Notifications Configuration
 export const adminNotificationSettings = pgTable("admin_notification_settings", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -812,20 +842,6 @@ export const jointAccounts = pgTable("joint_accounts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// SMTP Configuration for Admin
-export const smtpConfigurations = pgTable("smtp_configurations", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: varchar("name").notNull(),
-  host: varchar("host").notNull(),
-  port: varchar("port").notNull(),
-  username: varchar("username").notNull(),
-  password: varchar("password").notNull(), // encrypted
-  encryption: varchar("encryption").default('tls'), // tls, ssl, none
-  isActive: boolean("is_active").default(false),
-  isDefault: boolean("is_default").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
 
 // Relations for new tables
 export const kycVerificationsRelations = relations(kycVerifications, ({ one }) => ({
@@ -835,6 +851,14 @@ export const kycVerificationsRelations = relations(kycVerifications, ({ one }) =
 
 export const emailTemplatesRelations = relations(emailTemplates, ({ one }) => ({
   creator: one(users, { fields: [emailTemplates.createdBy], references: [users.id] }),
+}));
+
+export const emailConfigurationsRelations = relations(emailConfigurations, ({ one }) => ({
+  creator: one(users, { fields: [emailConfigurations.createdBy], references: [users.id] }),
+}));
+
+export const smtpConfigurationsRelations = relations(smtpConfigurations, ({ one }) => ({
+  creator: one(users, { fields: [smtpConfigurations.createdBy], references: [users.id] }),
 }));
 
 export const realTimeChatMessagesRelations = relations(realTimeChatMessages, ({ one }) => ({
@@ -872,6 +896,10 @@ export type InheritanceAccount = typeof inheritanceAccounts.$inferSelect;
 export type InsertInheritanceAccount = typeof inheritanceAccounts.$inferInsert;
 export type EmailTemplate = typeof emailTemplates.$inferSelect;
 export type InsertEmailTemplate = typeof emailTemplates.$inferInsert;
+export type EmailConfiguration = typeof emailConfigurations.$inferSelect;
+export type InsertEmailConfiguration = typeof emailConfigurations.$inferInsert;
+export type SmtpConfiguration = typeof smtpConfigurations.$inferSelect;
+export type InsertSmtpConfiguration = typeof smtpConfigurations.$inferInsert;
 export type AdminNotificationSetting = typeof adminNotificationSettings.$inferSelect;
 export type InsertAdminNotificationSetting = typeof adminNotificationSettings.$inferInsert;
 export type RealTimeChatMessage = typeof realTimeChatMessages.$inferSelect;
@@ -880,8 +908,6 @@ export type AccountStatement = typeof accountStatements.$inferSelect;
 export type InsertAccountStatement = typeof accountStatements.$inferInsert;
 export type JointAccount = typeof jointAccounts.$inferSelect;
 export type InsertJointAccount = typeof jointAccounts.$inferInsert;
-export type SmtpConfiguration = typeof smtpConfigurations.$inferSelect;
-export type InsertSmtpConfiguration = typeof smtpConfigurations.$inferInsert;
 
 // Enums for TypeScript
 export type UserRole = 'admin' | 'customer';
