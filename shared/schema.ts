@@ -151,7 +151,7 @@ export const cardTypeEnum = pgEnum('card_type', ['debit', 'credit', 'virtual']);
 // Notification types
 export const notificationTypeEnum = pgEnum('notification_type', [
   'transaction', 'security', 'account_update', 'transfer', 'bill_payment', 
-  'investment', 'fraud_alert', 'marketing', 'system'
+  'investment', 'fraud_alert', 'marketing', 'system', 'admin_response'
 ]);
 
 // Notification status

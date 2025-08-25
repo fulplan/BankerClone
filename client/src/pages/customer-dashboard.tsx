@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import Navbar from "@/components/ui/navbar";
+import CustomerNavbar from "@/components/ui/customer-navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CustomerOverview from "@/components/customer/customer-overview";
 import AccountOverview from "@/components/customer/account-overview";
@@ -12,6 +12,7 @@ import InvestmentDashboard from "@/components/customer/investment-dashboard";
 import CustomerProfile from "@/components/customer/customer-profile";
 import CustomerSupport from "@/components/customer/customer-support";
 import NotificationsCenter from "@/components/notifications/notifications-center";
+import InheritanceManagement from "@/components/customer/inheritance-management";
 import { isUnauthorizedError } from "@/lib/authUtils";
 
 export default function CustomerDashboard() {
@@ -59,7 +60,7 @@ export default function CustomerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar showLogin={false} />
+      <CustomerNavbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -70,13 +71,14 @@ export default function CustomerDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9">
+          <TabsList className="grid w-full grid-cols-10">
             <TabsTrigger value="overview" data-testid="tab-overview">Overview</TabsTrigger>
             <TabsTrigger value="accounts" data-testid="tab-accounts">Accounts</TabsTrigger>
             <TabsTrigger value="cards" data-testid="tab-cards">Cards</TabsTrigger>
             <TabsTrigger value="transfers" data-testid="tab-transfers">Transfers</TabsTrigger>
             <TabsTrigger value="bills" data-testid="tab-bills">Bill Pay</TabsTrigger>
             <TabsTrigger value="investments" data-testid="tab-investments">Investments</TabsTrigger>
+            <TabsTrigger value="inheritance" data-testid="tab-inheritance">Inheritance</TabsTrigger>
             <TabsTrigger value="notifications" data-testid="tab-notifications">Notifications</TabsTrigger>
             <TabsTrigger value="profile" data-testid="tab-profile">Profile</TabsTrigger>
             <TabsTrigger value="support" data-testid="tab-support">Support</TabsTrigger>
@@ -104,6 +106,10 @@ export default function CustomerDashboard() {
           
           <TabsContent value="investments">
             <InvestmentDashboard />
+          </TabsContent>
+          
+          <TabsContent value="inheritance">
+            <InheritanceManagement />
           </TabsContent>
           
           <TabsContent value="notifications">
