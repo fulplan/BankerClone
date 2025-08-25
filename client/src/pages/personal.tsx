@@ -1,6 +1,8 @@
 import Navbar from "@/components/ui/navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import familyFinancialPlanning from "@assets/generated_images/diverse_family_financial_planning_cece0fd4.png";
+import professionalOnlineBanking from "@assets/generated_images/diverse_professional_online_banking_2a63fb70.png";
 
 export default function Personal() {
   return (
@@ -122,7 +124,7 @@ export default function Personal() {
             </div>
             <div>
               <img 
-                src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" 
+                src={familyFinancialPlanning}
                 alt="Happy family in front of their new home" 
                 className="rounded-lg shadow-lg w-full h-auto" 
               />
@@ -144,7 +146,7 @@ export default function Personal() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <img 
-                src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=800" 
+                src={professionalOnlineBanking}
                 alt="Person using mobile banking app" 
                 className="rounded-lg shadow-lg mx-auto" 
               />

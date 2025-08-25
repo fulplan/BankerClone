@@ -2,6 +2,14 @@ import Navbar from "@/components/ui/navbar";
 import HeroSlider from "@/components/ui/hero-slider";
 import ServicesSection from "@/components/ui/services-section";
 import { Button } from "@/components/ui/button";
+import digitalBankingTeam from "@assets/generated_images/diverse_digital_banking_team_89132ea5.png";
+import investmentConsulting from "@assets/generated_images/diverse_investment_consulting_meeting_a8d646d1.png";
+import businessBankingMeeting from "@assets/generated_images/diverse_business_banking_meeting_a56d3a4b.png";
+import personalFinancialPlanning from "@assets/generated_images/diverse_personal_financial_planning_a89c4526.png";
+import professionalOnlineBanking from "@assets/generated_images/diverse_professional_online_banking_2a63fb70.png";
+import familyFinancialPlanning from "@assets/generated_images/diverse_family_financial_planning_cece0fd4.png";
+import customerService from "@assets/generated_images/diverse_bank_customer_service_837f286b.png";
+import bankingConsultation from "@assets/generated_images/diverse_banking_consultation_team_7a09bdfe.png";
 import { Building, CreditCard, Smartphone, PiggyBank, FileText, TrendingUp, Users, ShoppingCart, Calendar, ArrowRight, Download, Award, DollarSign, Gift } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -112,7 +120,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-6">
             <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/dashboard")}>
               <img 
-                src="https://images.unsplash.com/photo-1559526324-593bc054d924?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                src={digitalBankingTeam}
                 alt="Digital banking promotion" 
                 className="w-full h-48 object-cover"
               />
@@ -124,7 +132,7 @@ export default function Landing() {
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/products?category=credit-cards")}>
               <img 
-                src="https://images.unsplash.com/photo-1551836022-deb4988cc6c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                src={investmentConsulting}
                 alt="Credit card promotion" 
                 className="w-full h-48 object-cover"
               />
@@ -136,7 +144,7 @@ export default function Landing() {
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/business")}>
               <img 
-                src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                src={businessBankingMeeting}
                 alt="Business banking promotion" 
                 className="w-full h-48 object-cover"
               />
@@ -157,7 +165,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                src={personalFinancialPlanning}
                 alt="Personal Banking" 
                 className="w-full h-48 object-cover"
               />
@@ -169,7 +177,7 @@ export default function Landing() {
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                src={professionalOnlineBanking}
                 alt="Digital Banking" 
                 className="w-full h-48 object-cover"
               />
@@ -181,7 +189,7 @@ export default function Landing() {
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                src={familyFinancialPlanning}
                 alt="Islamic Banking" 
                 className="w-full h-48 object-cover"
               />
@@ -193,7 +201,7 @@ export default function Landing() {
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                src={customerService}
                 alt="Priority Banking" 
                 className="w-full h-48 object-cover"
               />
@@ -214,7 +222,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-6">
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                src={businessBankingMeeting}
                 alt="Business Banking" 
                 className="w-full h-48 object-cover"
               />
@@ -226,7 +234,7 @@ export default function Landing() {
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                src={bankingConsultation}
                 alt="Corporate Banking" 
                 className="w-full h-48 object-cover"
               />
@@ -238,7 +246,7 @@ export default function Landing() {
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1551836022-deb4988cc6c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                src={investmentConsulting}
                 alt="Trade Finance" 
                 className="w-full h-48 object-cover"
               />
@@ -259,7 +267,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
             <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => window.open("https://apps.apple.com/app/finora-mobile", "_blank")}>
               <img 
-                src="https://images.unsplash.com/photo-1551836022-deb4988cc6c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200" 
+                src={digitalBankingTeam}
                 alt="Bank branch expansion" 
                 className="w-full h-32 object-cover"
               />
@@ -269,7 +277,7 @@ export default function Landing() {
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/dashboard")}>
               <img 
-                src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200" 
+                src={professionalOnlineBanking}
                 alt="Digital innovation" 
                 className="w-full h-32 object-cover"
               />
@@ -279,7 +287,7 @@ export default function Landing() {
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/investing")}>
               <img 
-                src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200" 
+                src={investmentConsulting}
                 alt="Investment opportunities" 
                 className="w-full h-32 object-cover"
               />
@@ -289,7 +297,7 @@ export default function Landing() {
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/help")}>
               <img 
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200" 
+                src={customerService}
                 alt="Customer support" 
                 className="w-full h-32 object-cover"
               />
@@ -299,7 +307,7 @@ export default function Landing() {
             </div>
             <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={() => setLocation("/services")}>
               <img 
-                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200" 
+                src={familyFinancialPlanning}
                 alt="Financial planning" 
                 className="w-full h-32 object-cover"
               />
@@ -316,7 +324,7 @@ export default function Landing() {
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-20"
           style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1559526324-593bc054d924?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=600')"
+            backgroundImage: `url(${digitalBankingTeam})`
           }}
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -341,7 +349,7 @@ export default function Landing() {
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-20"
           style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=600')"
+            backgroundImage: `url(${bankingConsultation})`
           }}
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

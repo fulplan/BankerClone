@@ -1,46 +1,53 @@
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import modernBankInterior from "@assets/generated_images/modern_diverse_bank_interior_bcd98c1b.png";
+import digitalBankingTeam from "@assets/generated_images/diverse_digital_banking_team_89132ea5.png";
+import investmentConsulting from "@assets/generated_images/diverse_investment_consulting_meeting_a8d646d1.png";
+import businessBankingMeeting from "@assets/generated_images/diverse_business_banking_meeting_a56d3a4b.png";
+import personalFinancialPlanning from "@assets/generated_images/diverse_personal_financial_planning_a89c4526.png";
+import mobileBankingApp from "@assets/generated_images/mobile_banking_app_professional_e2997bac.png";
+import customerService from "@assets/generated_images/diverse_bank_customer_service_837f286b.png";
 
 const heroSlides = [
   {
-    image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=800",
-    title: "Ghana Deposit Protection",
+    image: modernBankInterior,
+    title: "Global Deposit Protection",
     subtitle: "Your deposits are protected with comprehensive insurance coverage, giving you peace of mind with every transaction.",
     buttonText: "KNOW MORE"
   },
   {
-    image: "https://images.unsplash.com/photo-1559526324-593bc054d924?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=800",
+    image: digitalBankingTeam,
     title: "Digital Banking Excellence",
     subtitle: "Experience the future of banking with our innovative digital solutions and 24/7 online services.",
     buttonText: "GET STARTED"
   },
   {
-    image: "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=800",
+    image: investmentConsulting,
     title: "Investment Opportunities",
     subtitle: "Grow your wealth with our comprehensive investment services and expert financial guidance.",
     buttonText: "INVEST NOW"
   },
   {
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=800",
+    image: businessBankingMeeting,
     title: "Business Banking Solutions",
     subtitle: "Power your business forward with tailored commercial banking solutions and expert support.",
     buttonText: "LEARN MORE"
   },
   {
-    image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=800",
+    image: personalFinancialPlanning,
     title: "Personal Financial Planning",
     subtitle: "Secure your financial future with our personalized banking services and wealth management solutions.",
     buttonText: "PLAN TODAY"
   },
   {
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=800",
+    image: mobileBankingApp,
     title: "Mobile Banking App",
     subtitle: "Bank anywhere, anytime with our award-winning mobile app featuring advanced security and convenience.",
     buttonText: "DOWNLOAD NOW"
   },
   {
-    image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=800",
+    image: customerService,
     title: "Exceptional Customer Service",
     subtitle: "Experience personalized banking with our dedicated customer support team available 24/7.",
     buttonText: "CONTACT US"

@@ -1,21 +1,24 @@
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import personalFinancialPlanning from "@assets/generated_images/diverse_personal_financial_planning_a89c4526.png";
+import professionalOnlineBanking from "@assets/generated_images/diverse_professional_online_banking_2a63fb70.png";
+import familyFinancialPlanning from "@assets/generated_images/diverse_family_financial_planning_cece0fd4.png";
 
 const heroSlides = [
   {
-    image: "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
+    image: personalFinancialPlanning,
     title: "Banking That Grows With You",
     subtitle: "Experience the future of financial services with Finora's innovative banking solutions",
     cta: "Start Your Journey"
   },
   {
-    image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
+    image: professionalOnlineBanking,
     title: "Invest in Your Tomorrow",
     subtitle: "Build wealth with our comprehensive investment and wealth management services",
     cta: "Explore Investing"
   },
   {
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
+    image: familyFinancialPlanning,
     title: "Business Banking Excellence",
     subtitle: "Power your business forward with tailored commercial banking solutions",
     cta: "Grow Your Business"

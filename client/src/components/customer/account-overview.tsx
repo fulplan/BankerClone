@@ -10,8 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import type { Account } from "@shared/schema";
-import bankingCustomerService from "@assets/generated_images/banking_customer_service_representative_75a1a79a.png";
-import mobileBankingApp from "@assets/generated_images/mobile_banking_app_smartphone_aacbdc6b.png";
+import bankingCustomerService from "@assets/generated_images/diverse_customer_service_banking_professional_b409fbf2.png";
+import mobileBankingApp from "@assets/generated_images/professional_mobile_banking_usage_904a481c.png";
 
 export default function AccountOverview() {
   const { toast } = useToast();
