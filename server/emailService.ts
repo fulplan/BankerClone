@@ -45,6 +45,11 @@ export class EmailService {
     }
   }
 
+  // Reload configuration when needed (for testing purposes)
+  async reloadConfiguration() {
+    await this.loadActiveConfiguration();
+  }
+
   private async getEmailConfig(): Promise<EmailConfiguration | null> {
     if (!this.activeConfig) {
       await this.loadActiveConfiguration();
@@ -106,7 +111,7 @@ export class EmailService {
         });
 
         if (result.error) {
-          throw new Error(`Resend API error: ${result.error.message}`);
+          throw new Error(`Resend API error: ${result.error.message || JSON.stringify(result.error)}`);
         }
       } else {
         // Fallback to direct API call

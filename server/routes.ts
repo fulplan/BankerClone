@@ -2440,47 +2440,50 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         return res.status(404).json({ message: "Email configuration not found" });
       }
 
-      // Send test email using the configuration
-      const testSuccess = await emailService.sendEmail({
-        to: testEmail,
-        subject: 'Test Email from Banking System',
-        html: `
-          <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background-color: #EC0000; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-              <h1 style="margin: 0; font-size: 24px;">Banking System Test Email</h1>
-            </div>
-            
-            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 0 0 8px 8px;">
-              <h2 style="color: #111827; margin: 0 0 20px 0;">Email Configuration Test</h2>
-              
-              <p style="color: #374151; margin: 0 0 15px 0;">
-                This is a test email to verify your email configuration is working correctly.
-              </p>
-              
-              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                <p style="margin: 0; color: #6b7280;"><strong>Configuration:</strong> ${targetConfig.configName}</p>
-                <p style="margin: 5px 0 0 0; color: #6b7280;"><strong>Sender:</strong> ${targetConfig.senderName} &lt;${targetConfig.senderEmail}&gt;</p>
-                <p style="margin: 5px 0 0 0; color: #6b7280;"><strong>Test Time:</strong> ${new Date().toLocaleString()}</p>
+      // Send test email using direct Resend API with the specific configuration
+      const { Resend } = await import('resend');
+      const testResend = new Resend(targetConfig.resendApiKey);
+      
+      try {
+        const result = await testResend.emails.send({
+          from: `${targetConfig.senderName} <${targetConfig.senderEmail}>`,
+          to: [testEmail],
+          subject: 'Test Email from Banking System',
+          html: `
+            <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="background-color: #EC0000; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+                <h1 style="margin: 0; font-size: 24px;">Banking System Test Email</h1>
               </div>
               
-              <p style="color: #374151; margin: 20px 0 0 0;">
-                If you received this email, your configuration is working properly!
-              </p>
+              <div style="background-color: #f8f9fa; padding: 20px; border-radius: 0 0 8px 8px;">
+                <h2 style="color: #111827; margin: 0 0 20px 0;">Email Configuration Test</h2>
+                
+                <p style="color: #374151; margin: 0 0 15px 0;">
+                  This is a test email to verify your email configuration is working correctly.
+                </p>
+                
+                <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                  <p style="margin: 0; color: #6b7280;"><strong>Configuration:</strong> ${targetConfig.configName}</p>
+                  <p style="margin: 5px 0 0 0; color: #6b7280;"><strong>Sender:</strong> ${targetConfig.senderName} &lt;${targetConfig.senderEmail}&gt;</p>
+                  <p style="margin: 5px 0 0 0; color: #6b7280;"><strong>Test Time:</strong> ${new Date().toLocaleString()}</p>
+                </div>
+                
+                <p style="color: #374151; margin: 20px 0 0 0;">
+                  If you received this email, your configuration is working properly!
+                </p>
+              </div>
             </div>
-          </div>
-        `,
-        templateData: {
-          configName: targetConfig.configName,
-          senderName: targetConfig.senderName,
-          senderEmail: targetConfig.senderEmail,
-          testTime: new Date().toLocaleString()
-        }
-      });
+          `,
+        });
 
-      if (testSuccess) {
+        if (result.error) {
+          throw new Error(`Resend API error: ${result.error.message || JSON.stringify(result.error)}`);
+        }
+        
         res.json({ message: "Test email sent successfully" });
-      } else {
-        res.status(500).json({ message: "Failed to send test email" });
+      } catch (testError) {
+        console.error("Test email error:", testError);
+        res.status(500).json({ message: `Failed to send test email: ${testError.message}` });
       }
     } catch (error) {
       console.error("Error sending test email:", error);
