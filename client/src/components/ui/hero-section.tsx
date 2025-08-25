@@ -59,15 +59,15 @@ export default function HeroSection() {
 
       {/* Content */}
       <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4">
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 animate-fade-in leading-tight">
           {heroSlides[currentSlide].title}
         </h1>
-        <p className="text-xl md:text-2xl mb-8 animate-slide-up">
+        <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 animate-slide-up px-2">
           {heroSlides[currentSlide].subtitle}
         </p>
         <Button 
           size="lg"
-          className="bg-finora-primary text-white hover:bg-finora-dark px-12 py-4 text-lg font-semibold transform hover:scale-105 transition-transform duration-200"
+          className="bg-finora-primary text-white hover:bg-finora-dark px-6 sm:px-8 md:px-12 py-3 sm:py-4 text-sm sm:text-base md:text-lg font-semibold transform hover:scale-105 transition-transform duration-200"
           data-testid="button-hero-cta"
         >
           {heroSlides[currentSlide].cta} →

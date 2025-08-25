@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Home, Search, User, Lock, X } from "lucide-react";
+import { Home, Search, User, Lock, X, Menu } from "lucide-react";
 import { useState } from "react";
 
 interface NavbarProps {
@@ -14,6 +14,7 @@ export default function Navbar({ showLogin }: NavbarProps) {
   const [showSearch, setShowSearch] = useState(false);
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -49,15 +50,16 @@ export default function Navbar({ showLogin }: NavbarProps) {
 
   return (
     <header className="bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         <div className="flex justify-between items-center py-3">
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-2">
             <Link href="/" className="flex items-center text-gray-600 hover:text-finora-primary transition-colors duration-200">
               <Home className="w-5 h-5" />
             </Link>
           </div>
           
-          <nav className="hidden md:flex items-center space-x-8">
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-8">
             <Link href="/products" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium">Products</Link>
             <Link href="/promotions" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium">Promotions</Link>
             <Link href="/services" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium">Services</Link>
@@ -70,38 +72,47 @@ export default function Navbar({ showLogin }: NavbarProps) {
             </button>
           </nav>
           
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-1 sm:space-x-3">
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 rounded-md text-gray-600 hover:text-finora-primary hover:bg-gray-100"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+            
             {showLogin && !isAuthenticated && (
               <>
                 <Button 
                   variant="outline"
                   onClick={handleOpenAccount}
-                  className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white text-xs font-medium px-4 py-2 flex items-center gap-2"
+                  className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white text-xs font-medium px-2 sm:px-4 py-2 flex items-center gap-1 sm:gap-2"
                   data-testid="button-open-account"
                 >
-                  <User className="w-4 h-4" />
-                  OPEN AN ACCOUNT
+                  <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">OPEN AN ACCOUNT</span>
+                  <span className="sm:hidden">OPEN</span>
                 </Button>
                 <Button 
                   onClick={handleLogin}
-                  className="bg-green-700 text-white hover:bg-green-800 text-xs font-medium px-6 py-2 flex items-center gap-2"
+                  className="bg-green-700 text-white hover:bg-green-800 text-xs font-medium px-3 sm:px-6 py-2 flex items-center gap-1 sm:gap-2"
                   data-testid="button-login"
                 >
-                  <Lock className="w-4 h-4" />
+                  <Lock className="w-3 h-3 sm:w-4 sm:h-4" />
                   LOGIN
                 </Button>
               </>
             )}
             
             {isAuthenticated && user && (
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-700 text-sm">
+              <div className="flex items-center space-x-2 sm:space-x-4">
+                <span className="text-gray-700 text-xs sm:text-sm hidden sm:block">
                   Hello, {user.firstName || 'User'}
                 </span>
                 <Button 
                   onClick={handleLogout}
                   variant="outline"
-                  className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white"
+                  className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
                   data-testid="button-logout"
                 >
                   Logout
@@ -111,6 +122,59 @@ export default function Navbar({ showLogin }: NavbarProps) {
             
           </div>
         </div>
+        
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden border-t border-gray-200">
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-white">
+              <Link 
+                href="/products" 
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Products
+              </Link>
+              <Link 
+                href="/promotions" 
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Promotions
+              </Link>
+              <Link 
+                href="/services" 
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Services
+              </Link>
+              <Link 
+                href="/help" 
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Help
+              </Link>
+              <button 
+                onClick={() => {
+                  setShowSearch(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-2"
+              >
+                <Search className="w-4 h-4" />
+                Search
+              </button>
+              {isAuthenticated && user && (
+                <div className="border-t border-gray-200 pt-2 mt-2">
+                  <div className="px-3 py-2 text-sm text-gray-600">
+                    Hello, {user.firstName || 'User'}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Search Modal */}

@@ -124,16 +124,16 @@ export default function AccountOverview() {
       {/* Total Balance Summary */}
       <Card className="border-l-4 border-l-finora-primary">
         <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Balance</p>
-              <p className="text-3xl font-bold text-gray-900" data-testid="text-total-balance">
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900" data-testid="text-total-balance">
                 ${calculateTotalBalance()}
               </p>
             </div>
-            <div className="text-right">
+            <div className="text-left sm:text-right">
               <p className="text-sm text-gray-600">Active Accounts</p>
-              <p className="text-xl font-semibold text-finora-primary">
+              <p className="text-lg sm:text-xl font-semibold text-finora-primary">
                 {accounts.filter((account: Account) => account.status === 'active').length}
               </p>
             </div>
@@ -194,10 +194,10 @@ export default function AccountOverview() {
             {accounts.map((account: Account) => (
               <Card key={account.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-0">
                     <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <h4 className="font-semibold text-lg capitalize">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-2 gap-1 sm:gap-0">
+                        <h4 className="font-semibold text-base sm:text-lg capitalize">
                           {account.accountType.replace('_', ' ')} Account
                         </h4>
                         <Badge className={getStatusColor(account.status)}>
@@ -205,7 +205,7 @@ export default function AccountOverview() {
                         </Badge>
                       </div>
                       
-                      <div className="space-y-1 text-sm text-gray-600">
+                      <div className="space-y-1 text-xs sm:text-sm text-gray-600">
                         <p data-testid={`text-account-number-${account.id}`}>
                           <span className="font-medium">Account Number:</span> ****{account.accountNumber.slice(-4)}
                         </p>
@@ -218,9 +218,9 @@ export default function AccountOverview() {
                       </div>
                     </div>
                     
-                    <div className="text-right">
+                    <div className="text-left lg:text-right">
                       <p className="text-sm font-medium text-gray-600">Available Balance</p>
-                      <p className="text-2xl font-bold text-gray-900" data-testid={`text-balance-${account.id}`}>
+                      <p className="text-xl sm:text-2xl font-bold text-gray-900" data-testid={`text-balance-${account.id}`}>
                         ${account.balance}
                       </p>
                       
@@ -249,7 +249,7 @@ export default function AccountOverview() {
       </div>
 
       {/* Customer Service & Mobile Banking Section */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -258,17 +258,17 @@ export default function AccountOverview() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
               <img 
                 src={bankingCustomerService} 
                 alt="Customer Service Representative" 
-                className="w-20 h-20 rounded-lg object-cover"
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover mx-auto sm:mx-0"
               />
-              <div>
-                <p className="text-sm text-gray-600 mb-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-gray-600 mb-2">
                   Need help with your account? Our customer service team is here to assist you.
                 </p>
-                <Button variant="outline" className="text-finora-primary border-finora-primary hover:bg-finora-primary hover:text-white">
+                <Button variant="outline" className="text-finora-primary border-finora-primary hover:bg-finora-primary hover:text-white text-xs sm:text-sm w-full sm:w-auto">
                   Contact Support
                 </Button>
               </div>
@@ -284,17 +284,17 @@ export default function AccountOverview() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
               <img 
                 src={mobileBankingApp} 
                 alt="Mobile Banking App" 
-                className="w-20 h-20 rounded-lg object-cover"
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover mx-auto sm:mx-0"
               />
-              <div>
-                <p className="text-sm text-gray-600 mb-2">
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-gray-600 mb-2">
                   Bank on the go with our secure mobile app. Available 24/7 for your convenience.
                 </p>
-                <Button variant="outline" className="text-finora-primary border-finora-primary hover:bg-finora-primary hover:text-white">
+                <Button variant="outline" className="text-finora-primary border-finora-primary hover:bg-finora-primary hover:text-white text-xs sm:text-sm w-full sm:w-auto">
                   Download App
                 </Button>
               </div>

@@ -29,36 +29,36 @@ export default function Landing() {
       {/* Service Icons Section */}
       <section className="py-16 bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-6 lg:gap-8 text-center">
             <div className="flex flex-col items-center group cursor-pointer" onClick={() => setLocation("/products?category=accounts-deposits")}>
-              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
-                <Building className="w-8 h-8 text-finora-primary" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2 sm:mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
+                <Building className="w-6 h-6 sm:w-8 sm:h-8 text-finora-primary" />
               </div>
-              <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Accounts & Deposits</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200 text-center leading-tight">Accounts & Deposits</span>
             </div>
             <div className="flex flex-col items-center group cursor-pointer" onClick={() => setLocation("/products?category=personal-loans")}>
-              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
-                <FileText className="w-8 h-8 text-finora-primary" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2 sm:mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
+                <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-finora-primary" />
               </div>
-              <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Personal Loans</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200 text-center leading-tight">Personal Loans</span>
             </div>
             <div className="flex flex-col items-center group cursor-pointer" onClick={() => setLocation("/investing")}>
-              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
-                <TrendingUp className="w-8 h-8 text-finora-primary" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2 sm:mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
+                <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-finora-primary" />
               </div>
-              <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Wealth</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200 text-center leading-tight">Wealth</span>
             </div>
             <div className="flex flex-col items-center group cursor-pointer" onClick={() => setLocation("/products?category=rewards")}>
-              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
-                <Award className="w-8 h-8 text-finora-primary" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2 sm:mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
+                <Award className="w-6 h-6 sm:w-8 sm:h-8 text-finora-primary" />
               </div>
-              <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Rewards</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200 text-center leading-tight">Rewards</span>
             </div>
             <div className="flex flex-col items-center group cursor-pointer" onClick={() => setLocation("/products?category=debit-cards")}>
-              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
-                <CreditCard className="w-8 h-8 text-finora-primary" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2 sm:mb-4 group-hover:bg-finora-primary group-hover:bg-opacity-10 transition-colors duration-200">
+                <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-finora-primary" />
               </div>
-              <span className="text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200">Debit Cards</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-finora-primary transition-colors duration-200 text-center leading-tight">Debit Cards</span>
             </div>
           </div>
         </div>
@@ -72,7 +72,7 @@ export default function Landing() {
             <p className="text-lg opacity-90">Bank anywhere, anytime with our award-winning mobile app</p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 items-center">
             <div className="text-white">
               <h3 className="text-2xl font-bold mb-6">Download our highly-rated app</h3>
               <p className="mb-6 opacity-90">4.7 out of 5 Rating. Based on 379k ratings on the App Store</p>

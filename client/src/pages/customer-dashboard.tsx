@@ -62,26 +62,26 @@ export default function CustomerDashboard() {
     <div className="min-h-screen bg-gray-50">
       <CustomerNavbar />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900" data-testid="text-customer-title">Welcome to Finora Bank</h1>
-          <p className="text-gray-600">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900" data-testid="text-customer-title">Welcome to Finora Bank</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
             Hello, {user.firstName} {user.lastName}
           </p>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-10">
-            <TabsTrigger value="overview" data-testid="tab-overview">Overview</TabsTrigger>
-            <TabsTrigger value="accounts" data-testid="tab-accounts">Accounts</TabsTrigger>
-            <TabsTrigger value="cards" data-testid="tab-cards">Cards</TabsTrigger>
-            <TabsTrigger value="transfers" data-testid="tab-transfers">Transfers</TabsTrigger>
-            <TabsTrigger value="bills" data-testid="tab-bills">Bill Pay</TabsTrigger>
-            <TabsTrigger value="investments" data-testid="tab-investments">Investments</TabsTrigger>
-            <TabsTrigger value="inheritance" data-testid="tab-inheritance">Inheritance</TabsTrigger>
-            <TabsTrigger value="notifications" data-testid="tab-notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="profile" data-testid="tab-profile">Profile</TabsTrigger>
-            <TabsTrigger value="support" data-testid="tab-support">Support</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-1">
+            <TabsTrigger value="overview" data-testid="tab-overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+            <TabsTrigger value="accounts" data-testid="tab-accounts" className="text-xs sm:text-sm">Accounts</TabsTrigger>
+            <TabsTrigger value="cards" data-testid="tab-cards" className="text-xs sm:text-sm">Cards</TabsTrigger>
+            <TabsTrigger value="transfers" data-testid="tab-transfers" className="text-xs sm:text-sm">Transfers</TabsTrigger>
+            <TabsTrigger value="bills" data-testid="tab-bills" className="text-xs sm:text-sm">Bill Pay</TabsTrigger>
+            <TabsTrigger value="investments" data-testid="tab-investments" className="text-xs sm:text-sm">Investments</TabsTrigger>
+            <TabsTrigger value="inheritance" data-testid="tab-inheritance" className="text-xs sm:text-sm">Inheritance</TabsTrigger>
+            <TabsTrigger value="notifications" data-testid="tab-notifications" className="text-xs sm:text-sm">Notifications</TabsTrigger>
+            <TabsTrigger value="profile" data-testid="tab-profile" className="text-xs sm:text-sm">Profile</TabsTrigger>
+            <TabsTrigger value="support" data-testid="tab-support" className="text-xs sm:text-sm">Support</TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview">
