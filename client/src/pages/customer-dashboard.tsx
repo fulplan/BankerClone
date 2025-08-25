@@ -19,22 +19,27 @@ export default function CustomerDashboard() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 500);
-      return;
-    }
-    
-    if (!isLoading && user && user.role === 'admin') {
-      window.location.href = "/admin";
-      return;
-    }
+    // Add small delay to prevent race condition with fresh logins
+    const timeoutId = setTimeout(() => {
+      if (!isLoading && !isAuthenticated) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 500);
+        return;
+      }
+      
+      if (!isLoading && user && user.role === 'admin') {
+        window.location.href = "/admin";
+        return;
+      }
+    }, 150);
+
+    return () => clearTimeout(timeoutId);
   }, [isAuthenticated, isLoading, user, toast]);
 
   if (isLoading) {

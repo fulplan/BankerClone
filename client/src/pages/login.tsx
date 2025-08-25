@@ -35,18 +35,23 @@ export default function Login() {
       return response.json();
     },
     onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      // Set user data directly in cache instead of invalidating to prevent race condition
+      queryClient.setQueryData(["/api/auth/user"], data.user);
+      
       toast({
         title: "Login successful",
         description: "Welcome back!",
       });
       
-      // Redirect based on user role
-      if (data.user?.role === 'admin') {
-        setLocation("/admin");
-      } else {
-        setLocation("/dashboard");
-      }
+      // Small delay to ensure cache is updated before redirect
+      setTimeout(() => {
+        // Redirect based on user role
+        if (data.user?.role === 'admin') {
+          setLocation("/admin");
+        } else {
+          setLocation("/dashboard");
+        }
+      }, 100);
     },
     onError: (error: any) => {
       toast({
