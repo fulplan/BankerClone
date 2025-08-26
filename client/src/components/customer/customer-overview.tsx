@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { 
   Send, 
@@ -13,7 +14,13 @@ import {
   CreditCard, 
   TrendingUp, 
   User, 
-  HeadphonesIcon 
+  HeadphonesIcon,
+  Plus,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Bell,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import type { Account, Transaction, Card as BankCard, Notification } from "@shared/schema";
 
@@ -41,8 +48,11 @@ interface ForexData {
 
 export default function CustomerOverview() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [location, setLocation] = useLocation();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showBalance, setShowBalance] = useState(true);
+  const [transactionFilter, setTransactionFilter] = useState('All');
 
   // Update time every second
   useEffect(() => {
@@ -122,311 +132,257 @@ export default function CustomerOverview() {
     });
   };
 
+  // Filter transactions based on selected filter
+  const filteredTransactions = transactions.filter(transaction => {
+    if (transactionFilter === 'Income') return transaction.type === 'credit';
+    if (transactionFilter === 'Expense') return transaction.type === 'debit';
+    return true; // 'All'
+  });
+
+  // Get primary account for balance display
+  const primaryAccount = accounts.find(acc => acc.accountType === 'checking') || accounts[0];
+  const primaryCard = cards.find(card => card.status === 'active') || cards[0];
+
   if (accountsLoading || transactionsLoading || cardsLoading || notificationsLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-finora-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Welcome Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-        <p className="text-gray-600">{formatTime(currentTime)}</p>
+      {/* Mobile Header with Profile */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+            <span className="text-white font-semibold text-sm">
+              {user?.firstName?.[0]?.toUpperCase()}{user?.lastName?.[0]?.toUpperCase()}
+            </span>
+          </div>
+          <div>
+            <p className="text-gray-900 font-medium">Hi, {user?.firstName} {user?.lastName}</p>
+            <p className="text-gray-500 text-sm">Welcome back!</p>
+          </div>
+        </div>
+        <button 
+          onClick={() => setLocation('/dashboard?view=notifications')}
+          className="relative p-2 text-gray-600 hover:text-gray-900"
+        >
+          <Bell className="w-6 h-6" />
+          {customerStats.unreadNotifications > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              {customerStats.unreadNotifications}
+            </span>
+          )}
+        </button>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">{formatCurrency(customerStats.totalBalance)}</p>
-              <p className="text-sm text-gray-600">Total Balance</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">{customerStats.totalAccounts}</p>
-              <p className="text-sm text-gray-600">Active Accounts</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">{customerStats.totalCards}</p>
-              <p className="text-sm text-gray-600">Active Cards</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-orange-600">{customerStats.recentTransactions}</p>
-              <p className="text-sm text-gray-600">Recent Transactions</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">{customerStats.unreadNotifications}</p>
-              <p className="text-sm text-gray-600">Unread Notifications</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-600">{formatCurrency(customerStats.monthlySpending)}</p>
-              <p className="text-sm text-gray-600">Monthly Spending</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Account Summary */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <i className="fas fa-university text-finora-primary"></i>
-              Account Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {accounts.slice(0, 3).map((account) => (
-                <div key={account.id} className="flex justify-between items-center p-3 border rounded">
-                  <div>
-                    <p className="font-medium">{account.accountType.charAt(0).toUpperCase() + account.accountType.slice(1)} Account</p>
-                    <p className="text-sm text-gray-600">****{account.accountNumber.slice(-4)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">{formatCurrency(account.balance)}</p>
-                    <Badge variant={account.status === 'active' ? 'default' : 'destructive'}>
-                      {account.status}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-              {accounts.length > 3 && (
-                <Button variant="outline" className="w-full">
-                  View All Accounts ({accounts.length})
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Real-Time Forex Rates */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <i className="fas fa-chart-line text-finora-primary"></i>
-              Live Forex Rates
-              <Badge variant="outline" className="ml-auto">
-                USD Base
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {forexLoading ? (
-              <div className="flex justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-finora-primary"></div>
+      {/* Balance Card */}
+      <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-white relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-blue-100 text-sm mb-1">Balance</p>
+              <div className="flex items-center space-x-2">
+                <h2 className="text-3xl font-bold">
+                  {showBalance ? formatCurrency(customerStats.totalBalance) : '••••••'}
+                </h2>
+                <button 
+                  onClick={() => setShowBalance(!showBalance)}
+                  className="text-blue-200 hover:text-white"
+                >
+                  {showBalance ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
-            ) : forexData ? (
-              <div className="space-y-2">
-                {forexData.rates.slice(0, 6).map((rate) => (
-                  <div key={rate.currency} className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{rate.currency}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-mono">{rate.rate.toFixed(4)}</span>
-                      <Badge
-                        variant={parseFloat(rate.change) >= 0 ? "default" : "destructive"}
-                        className="ml-2 text-xs"
-                      >
-                        {parseFloat(rate.change) >= 0 ? "+" : ""}{rate.changePercent}%
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-                <div className="text-xs text-gray-500 text-center pt-2">
-                  Last updated: {forexData.timestamp ? new Date(forexData.timestamp).toLocaleTimeString() : 'N/A'}
-                </div>
+            </div>
+            <div className="text-right">
+              <div className="w-12 h-8 bg-white bg-opacity-20 rounded flex items-center justify-center">
+                <span className="text-white font-bold text-xs">VISA</span>
               </div>
-            ) : (
-              <Alert>
-                <AlertDescription>Unable to load forex rates</AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Recent Transactions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <i className="fas fa-exchange-alt text-finora-primary"></i>
-              Recent Activity
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {transactions.slice(0, 5).map((transaction) => (
-                <div key={transaction.id} className="flex justify-between items-center p-2 border-b last:border-b-0">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${
-                      transaction.type === 'credit' ? 'bg-green-100 text-green-600' :
-                      transaction.type === 'debit' ? 'bg-red-100 text-red-600' :
-                      'bg-orange-100 text-orange-600'
-                    }`}>
-                      <i className={`fas ${
-                        transaction.type === 'credit' ? 'fa-arrow-down' :
-                        transaction.type === 'debit' ? 'fa-arrow-up' :
-                        'fa-receipt'
-                      } text-sm`}></i>
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">{transaction.description}</p>
-                      <p className="text-xs text-gray-500">
-                        {transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString() : 'N/A'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-semibold ${
-                      transaction.type === 'credit' ? 'text-green-600' :
-                      transaction.type === 'debit' ? 'text-red-600' :
-                      'text-orange-600'
-                    }`}>
-                      {transaction.type === 'credit' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {transactions.length === 0 && (
-                <p className="text-gray-500 text-center py-4">No recent transactions</p>
-              )}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Notifications */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <i className="fas fa-bell text-finora-primary"></i>
-              Recent Notifications
-              {customerStats.unreadNotifications > 0 && (
-                <Badge className="bg-red-500 text-white">
-                  {customerStats.unreadNotifications}
-                </Badge>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {notifications.slice(0, 4).map((notification) => (
-                <div key={notification.id} className={`p-3 border rounded ${
-                  notification.status === 'unread' ? 'bg-blue-50 border-blue-200' : ''
-                }`}>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{notification.title}</p>
-                      <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
-                    </div>
-                    <Badge variant={
-                      notification.type === 'fraud_alert' ? 'destructive' :
-                      notification.type === 'security' ? 'secondary' :
-                      'default'
-                    } className="text-xs">
-                      {notification.type.replace('_', ' ')}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    {notification.createdAt ? new Date(notification.createdAt).toLocaleString() : 'N/A'}
-                  </p>
-                </div>
-              ))}
-              {notifications.length === 0 && (
-                <p className="text-gray-500 text-center py-4">No notifications</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-blue-100 text-sm font-mono">
+              •••• •••• •••• {primaryCard?.cardNumber?.slice(-4) || primaryAccount?.accountNumber?.slice(-4) || '4312'}
+            </p>
+          </div>
+        </div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white bg-opacity-10 rounded-full -mr-16 -mt-16"></div>
+        <div className="absolute bottom-0 left-0 w-20 h-20 bg-white bg-opacity-10 rounded-full -ml-10 -mb-10"></div>
       </div>
 
       {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-            <Button 
-              variant="outline" 
-              className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-finora-primary hover:text-white transition-colors"
-              onClick={() => setLocation("/dashboard?tab=transfers")}
-            >
-              <Send className="w-4 h-4 sm:w-5 sm:h-5 text-finora-primary" />
-              <span className="text-xs sm:text-sm">Transfer Money</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-finora-primary hover:text-white transition-colors"
-              onClick={() => setLocation("/dashboard?tab=bills")}
-            >
-              <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-finora-primary" />
-              <span className="text-xs sm:text-sm">Pay Bills</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-finora-primary hover:text-white transition-colors"
-              onClick={() => setLocation("/dashboard?tab=cards")}
-            >
-              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-finora-primary" />
-              <span className="text-xs sm:text-sm">Manage Cards</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-finora-primary hover:text-white transition-colors"
-              onClick={() => setLocation("/dashboard?tab=investments")}
-            >
-              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-finora-primary" />
-              <span className="text-xs sm:text-sm">Investments</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-finora-primary hover:text-white transition-colors"
-              onClick={() => setLocation("/dashboard?tab=profile")}
-            >
-              <User className="w-4 h-4 sm:w-5 sm:h-5 text-finora-primary" />
-              <span className="text-xs sm:text-sm">Profile</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-finora-primary hover:text-white transition-colors"
-              onClick={() => setLocation("/dashboard?tab=support")}
-            >
-              <HeadphonesIcon className="w-4 h-4 sm:w-5 sm:h-5 text-finora-primary" />
-              <span className="text-xs sm:text-sm">Support</span>
-            </Button>
+      <div className="grid grid-cols-2 gap-4">
+        <button 
+          onClick={() => setLocation('/dashboard?view=accounts')}
+          className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
+        >
+          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+            <Plus className="w-5 h-5 text-blue-600" />
           </div>
-        </CardContent>
-      </Card>
+          <span className="font-medium text-gray-900">Add Money</span>
+        </button>
+        
+        <button 
+          onClick={() => setLocation('/dashboard?view=transfers')}
+          className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
+        >
+          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+            <Send className="w-5 h-5 text-green-600" />
+          </div>
+          <span className="font-medium text-gray-900">Send Money</span>
+        </button>
+        
+        <button 
+          onClick={() => setLocation('/dashboard?view=accounts')}
+          className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
+        >
+          <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+            <ArrowDownToLine className="w-5 h-5 text-purple-600" />
+          </div>
+          <span className="font-medium text-gray-900">Deposit</span>
+        </button>
+        
+        <button 
+          onClick={() => setLocation('/dashboard?view=accounts')}
+          className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
+        >
+          <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+            <ArrowUpFromLine className="w-5 h-5 text-orange-600" />
+          </div>
+          <span className="font-medium text-gray-900">Withdraw</span>
+        </button>
+      </div>
+
+      {/* Transaction History */}
+      <div className="bg-white rounded-xl border border-gray-200">
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-gray-900">Transaction History</h3>
+            <button className="text-blue-600 text-sm font-medium">See all</button>
+          </div>
+          
+          {/* Filter Tabs */}
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+            {['All', 'Income', 'Expense'].map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setTransactionFilter(filter)}
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  transactionFilter === filter
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="p-4">
+          <div className="space-y-4">
+            {filteredTransactions.slice(0, 5).map((transaction) => (
+              <div key={transaction.id} className="flex items-center space-x-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  transaction.type === 'credit' ? 'bg-green-100' :
+                  transaction.type === 'debit' ? 'bg-red-100' :
+                  'bg-orange-100'
+                }`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    transaction.type === 'credit' ? 'bg-green-500' :
+                    transaction.type === 'debit' ? 'bg-red-500' :
+                    'bg-orange-500'
+                  }`}>
+                    <span className="text-white text-xs">☕</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900 text-sm">{transaction.description}</p>
+                  <p className="text-gray-500 text-xs">
+                    {transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString() : 'N/A'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className={`font-semibold text-sm ${
+                    transaction.type === 'credit' ? 'text-green-600' :
+                    transaction.type === 'debit' ? 'text-red-600' :
+                    'text-orange-600'
+                  }`}>
+                    {transaction.type === 'credit' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {filteredTransactions.length === 0 && (
+              <p className="text-gray-500 text-center py-8">No transactions found</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Quick Actions - Hidden on mobile, shown on larger screens */}
+      <div className="hidden sm:block">
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+              <Button 
+                variant="outline" 
+                className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-blue-600 hover:text-white transition-colors"
+                onClick={() => setLocation("/dashboard?view=transfers")}
+              >
+                <Send className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <span className="text-xs sm:text-sm">Transfer Money</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-blue-600 hover:text-white transition-colors"
+                onClick={() => setLocation("/dashboard?view=bills")}
+              >
+                <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <span className="text-xs sm:text-sm">Pay Bills</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-blue-600 hover:text-white transition-colors"
+                onClick={() => setLocation("/dashboard?view=cards")}
+              >
+                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <span className="text-xs sm:text-sm">Manage Cards</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-blue-600 hover:text-white transition-colors"
+                onClick={() => setLocation("/dashboard?view=investments")}
+              >
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <span className="text-xs sm:text-sm">Investments</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-blue-600 hover:text-white transition-colors"
+                onClick={() => setLocation("/dashboard?view=profile")}
+              >
+                <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <span className="text-xs sm:text-sm">Profile</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 hover:bg-blue-600 hover:text-white transition-colors"
+                onClick={() => setLocation("/dashboard?view=support")}
+              >
+                <HeadphonesIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <span className="text-xs sm:text-sm">Support</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

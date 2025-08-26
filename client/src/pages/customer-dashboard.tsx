@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import CustomerNavbar from "@/components/ui/customer-navbar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CustomerOverview from "@/components/customer/customer-overview";
 import AccountOverview from "@/components/customer/account-overview";
 import CardManagement from "@/components/customer/card-management";
@@ -15,16 +14,17 @@ import CustomerSupport from "@/components/customer/customer-support";
 import NotificationsCenter from "@/components/notifications/notifications-center";
 import InheritanceManagement from "@/components/customer/inheritance-management";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { Home, Wallet, BarChart3, User } from "lucide-react";
 
 export default function CustomerDashboard() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
   
-  // Get active tab from URL query parameters
+  // Get active view from URL query parameters
   const urlParams = new URLSearchParams(window.location.search);
-  const activeTabFromUrl = urlParams.get('tab') || 'overview';
-  const [activeTab, setActiveTab] = useState(activeTabFromUrl);
+  const activeViewFromUrl = urlParams.get('view') || 'home';
+  const [activeView, setActiveView] = useState(activeViewFromUrl);
 
   useEffect(() => {
     // Add small delay to prevent race condition with fresh logins
@@ -65,94 +65,91 @@ export default function CustomerDashboard() {
     return null;
   }
 
+  const handleViewChange = (view: string) => {
+    setActiveView(view);
+    const url = new URL(window.location.href);
+    url.searchParams.set('view', view);
+    window.history.pushState({}, '', url.toString());
+  };
+
+  const renderActiveView = () => {
+    switch(activeView) {
+      case 'accounts':
+        return <AccountOverview />;
+      case 'cards':
+        return <CardManagement />;
+      case 'transfers':
+        return <TransferCenter />;
+      case 'bills':
+        return <BillPayments />;
+      case 'investments':
+        return <InvestmentDashboard />;
+      case 'inheritance':
+        return <InheritanceManagement />;
+      case 'notifications':
+        return <NotificationsCenter />;
+      case 'profile':
+        return <CustomerProfile />;
+      case 'support':
+        return <CustomerSupport />;
+      case 'home':
+      default:
+        return <CustomerOverview />;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20">
       <CustomerNavbar />
       
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900" data-testid="text-customer-title">Welcome to Finora Bank</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">
-            Hello, {user.firstName} {user.lastName}
-          </p>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Mobile: Horizontal scrollable tabs */}
-          <div className="sm:hidden">
-            <div className="overflow-x-auto scrollbar-hide">
-              <TabsList className="flex w-max min-w-full space-x-1 p-1">
-                <TabsTrigger value="overview" data-testid="tab-overview" className="text-xs whitespace-nowrap px-3 py-2 min-w-[80px]">Overview</TabsTrigger>
-                <TabsTrigger value="accounts" data-testid="tab-accounts" className="text-xs whitespace-nowrap px-3 py-2 min-w-[80px]">Accounts</TabsTrigger>
-                <TabsTrigger value="cards" data-testid="tab-cards" className="text-xs whitespace-nowrap px-3 py-2 min-w-[70px]">Cards</TabsTrigger>
-                <TabsTrigger value="transfers" data-testid="tab-transfers" className="text-xs whitespace-nowrap px-3 py-2 min-w-[80px]">Transfers</TabsTrigger>
-                <TabsTrigger value="bills" data-testid="tab-bills" className="text-xs whitespace-nowrap px-3 py-2 min-w-[70px]">Bill Pay</TabsTrigger>
-                <TabsTrigger value="investments" data-testid="tab-investments" className="text-xs whitespace-nowrap px-3 py-2 min-w-[90px]">Investments</TabsTrigger>
-                <TabsTrigger value="inheritance" data-testid="tab-inheritance" className="text-xs whitespace-nowrap px-3 py-2 min-w-[90px]">Inheritance</TabsTrigger>
-                <TabsTrigger value="notifications" data-testid="tab-notifications" className="text-xs whitespace-nowrap px-3 py-2 min-w-[100px]">Notifications</TabsTrigger>
-                <TabsTrigger value="profile" data-testid="tab-profile" className="text-xs whitespace-nowrap px-3 py-2 min-w-[70px]">Profile</TabsTrigger>
-                <TabsTrigger value="support" data-testid="tab-support" className="text-xs whitespace-nowrap px-3 py-2 min-w-[70px]">Support</TabsTrigger>
-              </TabsList>
-            </div>
-          </div>
-          
-          {/* Desktop: Grid layout */}
-          <div className="hidden sm:block">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-1">
-              <TabsTrigger value="overview" data-testid="tab-overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
-              <TabsTrigger value="accounts" data-testid="tab-accounts" className="text-xs sm:text-sm">Accounts</TabsTrigger>
-              <TabsTrigger value="cards" data-testid="tab-cards" className="text-xs sm:text-sm">Cards</TabsTrigger>
-              <TabsTrigger value="transfers" data-testid="tab-transfers" className="text-xs sm:text-sm">Transfers</TabsTrigger>
-              <TabsTrigger value="bills" data-testid="tab-bills" className="text-xs sm:text-sm">Bill Pay</TabsTrigger>
-              <TabsTrigger value="investments" data-testid="tab-investments" className="text-xs sm:text-sm">Investments</TabsTrigger>
-              <TabsTrigger value="inheritance" data-testid="tab-inheritance" className="text-xs sm:text-sm">Inheritance</TabsTrigger>
-              <TabsTrigger value="notifications" data-testid="tab-notifications" className="text-xs sm:text-sm">Notifications</TabsTrigger>
-              <TabsTrigger value="profile" data-testid="tab-profile" className="text-xs sm:text-sm">Profile</TabsTrigger>
-              <TabsTrigger value="support" data-testid="tab-support" className="text-xs sm:text-sm">Support</TabsTrigger>
-            </TabsList>
-          </div>
-          
-          <TabsContent value="overview">
-            <CustomerOverview />
-          </TabsContent>
-          
-          <TabsContent value="accounts">
-            <AccountOverview />
-          </TabsContent>
-          
-          <TabsContent value="cards">
-            <CardManagement />
-          </TabsContent>
-          
-          <TabsContent value="transfers">
-            <TransferCenter />
-          </TabsContent>
-          
-          <TabsContent value="bills">
-            <BillPayments />
-          </TabsContent>
-          
-          <TabsContent value="investments">
-            <InvestmentDashboard />
-          </TabsContent>
-          
-          <TabsContent value="inheritance">
-            <InheritanceManagement />
-          </TabsContent>
-          
-          <TabsContent value="notifications">
-            <NotificationsCenter />
-          </TabsContent>
-          
-          <TabsContent value="profile">
-            <CustomerProfile />
-          </TabsContent>
-          
-          <TabsContent value="support">
-            <CustomerSupport />
-          </TabsContent>
-        </Tabs>
+      <div className="max-w-md mx-auto px-4 py-6 sm:max-w-7xl sm:px-6 lg:px-8">
+        {renderActiveView()}
       </div>
+
+      {/* Bottom Navigation - Mobile Only */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 z-50 sm:hidden">
+        <div className="flex justify-around items-center max-w-md mx-auto">
+          <button
+            onClick={() => handleViewChange('home')}
+            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+              activeView === 'home' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
+            }`}
+          >
+            <Home className="w-5 h-5 mb-1" />
+            <span className="text-xs font-medium">Home</span>
+          </button>
+          
+          <button
+            onClick={() => handleViewChange('accounts')}
+            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+              activeView === 'accounts' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
+            }`}
+          >
+            <Wallet className="w-5 h-5 mb-1" />
+            <span className="text-xs font-medium">Wallet</span>
+          </button>
+          
+          <button
+            onClick={() => handleViewChange('investments')}
+            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+              activeView === 'investments' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
+            }`}
+          >
+            <BarChart3 className="w-5 h-5 mb-1" />
+            <span className="text-xs font-medium">Report</span>
+          </button>
+          
+          <button
+            onClick={() => handleViewChange('profile')}
+            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+              activeView === 'profile' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
+            }`}
+          >
+            <User className="w-5 h-5 mb-1" />
+            <span className="text-xs font-medium">Account</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }

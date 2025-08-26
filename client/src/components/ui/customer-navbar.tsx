@@ -49,30 +49,30 @@ export default function CustomerNavbar() {
           
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-4">
-            <Link href="/dashboard" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium flex items-center gap-1">
+            <Link href="/dashboard?view=home" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 text-sm font-medium flex items-center gap-1">
               <Home className="w-4 h-4" />
               Overview
             </Link>
-            <Link href="/dashboard?tab=accounts" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium flex items-center gap-1">
+            <Link href="/dashboard?view=accounts" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 text-sm font-medium flex items-center gap-1">
               <Wallet className="w-4 h-4" />
               Accounts
             </Link>
             <button 
-              onClick={() => setLocation("/dashboard?tab=transfers")} 
-              className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium flex items-center gap-1"
+              onClick={() => setLocation("/dashboard?view=transfers")} 
+              className="text-gray-700 hover:text-blue-600 transition-colors duration-200 text-sm font-medium flex items-center gap-1"
             >
               <Send className="w-4 h-4" />
               Transfer
             </button>
-            <Link href="/dashboard?tab=bills" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium flex items-center gap-1">
+            <Link href="/dashboard?view=bills" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 text-sm font-medium flex items-center gap-1">
               <Receipt className="w-4 h-4" />
               Bills
             </Link>
-            <Link href="/dashboard?tab=cards" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium flex items-center gap-1">
+            <Link href="/dashboard?view=cards" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 text-sm font-medium flex items-center gap-1">
               <CreditCard className="w-4 h-4" />
               Cards
             </Link>
-            <Link href="/dashboard?tab=investments" className="text-gray-700 hover:text-finora-primary transition-colors duration-200 text-sm font-medium flex items-center gap-1">
+            <Link href="/dashboard?view=investments" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 text-sm font-medium flex items-center gap-1">
               <TrendingUp className="w-4 h-4" />
               Investing
             </Link>
@@ -81,16 +81,16 @@ export default function CustomerNavbar() {
           <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Notifications Icon (Desktop) */}
             <Link 
-              href="/dashboard?tab=notifications" 
-              className="hidden lg:flex p-2 rounded-md text-gray-600 hover:text-finora-primary hover:bg-gray-100 relative"
+              href="/dashboard?view=notifications" 
+              className="hidden lg:flex p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 relative"
             >
               <Bell className="w-5 h-5" />
             </Link>
             
             {/* Profile Icon (Desktop) */}
             <Link 
-              href="/dashboard?tab=profile" 
-              className="hidden lg:flex p-2 rounded-md text-gray-600 hover:text-finora-primary hover:bg-gray-100"
+              href="/dashboard?view=profile" 
+              className="hidden lg:flex p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100"
             >
               <User className="w-5 h-5" />
             </Link>
@@ -109,7 +109,7 @@ export default function CustomerNavbar() {
             <Button 
               onClick={handleLogout}
               variant="outline"
-              className="border-finora-primary text-finora-primary hover:bg-finora-primary hover:text-white text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
+              className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
               data-testid="button-logout"
             >
               Logout
@@ -124,16 +124,16 @@ export default function CustomerNavbar() {
               {/* Primary Banking Actions */}
               <div className="space-y-1">
                 <Link 
-                  href="/dashboard" 
-                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"
+                  href="/dashboard?view=home" 
+                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md flex items-center gap-3"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Home className="w-5 h-5" />
                   Overview
                 </Link>
                 <Link 
-                  href="/dashboard?tab=accounts" 
-                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"
+                  href="/dashboard?view=accounts" 
+                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md flex items-center gap-3"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Wallet className="w-5 h-5" />
@@ -141,17 +141,17 @@ export default function CustomerNavbar() {
                 </Link>
                 <button 
                   onClick={() => {
-                    setLocation("/dashboard?tab=transfers");
+                    setLocation("/dashboard?view=transfers");
                     setIsMobileMenuOpen(false);
                   }}
-                  className="w-full text-left block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"
+                  className="w-full text-left block px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md flex items-center gap-3"
                 >
                   <Send className="w-5 h-5" />
                   Send Money
                 </button>
                 <Link 
-                  href="/dashboard?tab=bills" 
-                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"
+                  href="/dashboard?view=bills" 
+                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md flex items-center gap-3"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Receipt className="w-5 h-5" />
@@ -162,24 +162,24 @@ export default function CustomerNavbar() {
               {/* Secondary Services */}
               <div className="border-t border-gray-200 pt-2 space-y-1">
                 <Link 
-                  href="/dashboard?tab=cards" 
-                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"
+                  href="/dashboard?view=cards" 
+                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md flex items-center gap-3"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <CreditCard className="w-5 h-5" />
                   Cards & Banking
                 </Link>
                 <Link 
-                  href="/dashboard?tab=investments" 
-                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"
+                  href="/dashboard?view=investments" 
+                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md flex items-center gap-3"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <TrendingUp className="w-5 h-5" />
                   Investments
                 </Link>
                 <Link 
-                  href="/dashboard?tab=inheritance" 
-                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"
+                  href="/dashboard?view=inheritance" 
+                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md flex items-center gap-3"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Shield className="w-5 h-5" />
@@ -190,24 +190,24 @@ export default function CustomerNavbar() {
               {/* Account & Support */}
               <div className="border-t border-gray-200 pt-2 space-y-1">
                 <Link 
-                  href="/dashboard?tab=notifications" 
-                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"
+                  href="/dashboard?view=notifications" 
+                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md flex items-center gap-3"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Bell className="w-5 h-5" />
                   Notifications
                 </Link>
                 <Link 
-                  href="/dashboard?tab=profile" 
-                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"
+                  href="/dashboard?view=profile" 
+                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md flex items-center gap-3"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <User className="w-5 h-5" />
                   Profile & Settings
                 </Link>
                 <Link 
-                  href="/dashboard?tab=support" 
-                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-finora-primary hover:bg-gray-50 rounded-md flex items-center gap-3"
+                  href="/dashboard?view=support" 
+                  className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md flex items-center gap-3"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <HeadphonesIcon className="w-5 h-5" />
