@@ -170,7 +170,12 @@ export default function CustomerOverview() {
           </div>
         </div>
         <button 
-          onClick={() => setLocation('/dashboard?view=notifications')}
+          onClick={() => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('view', 'notifications');
+            window.history.pushState({}, '', url.toString());
+            window.location.reload();
+          }}
           className="relative p-2 text-gray-600 hover:text-gray-900"
         >
           <Bell className="w-6 h-6" />
@@ -219,7 +224,12 @@ export default function CustomerOverview() {
       {/* Quick Actions Grid */}
       <div className="grid grid-cols-2 gap-3">
         <button 
-          onClick={() => setLocation('/dashboard?view=transfers')}
+          onClick={() => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('view', 'transfers');
+            window.history.pushState({}, '', url.toString());
+            window.location.reload();
+          }}
           className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
         >
           <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -229,7 +239,12 @@ export default function CustomerOverview() {
         </button>
         
         <button 
-          onClick={() => setLocation('/dashboard?view=bills')}
+          onClick={() => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('view', 'bills');
+            window.history.pushState({}, '', url.toString());
+            window.location.reload();
+          }}
           className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
         >
           <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -239,7 +254,12 @@ export default function CustomerOverview() {
         </button>
         
         <button 
-          onClick={() => setLocation('/dashboard?view=cards')}
+          onClick={() => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('view', 'cards');
+            window.history.pushState({}, '', url.toString());
+            window.location.reload();
+          }}
           className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
         >
           <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
@@ -249,7 +269,12 @@ export default function CustomerOverview() {
         </button>
         
         <button 
-          onClick={() => setLocation('/dashboard?view=accounts')}
+          onClick={() => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('view', 'accounts');
+            window.history.pushState({}, '', url.toString());
+            window.location.reload();
+          }}
           className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
         >
           <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
@@ -264,7 +289,12 @@ export default function CustomerOverview() {
         <h3 className="font-semibold text-gray-900 mb-4">More Services</h3>
         <div className="grid grid-cols-3 gap-4">
           <button 
-            onClick={() => setLocation('/dashboard?view=investments')}
+            onClick={() => {
+              const url = new URL(window.location.href);
+              url.searchParams.set('view', 'investments');
+              window.history.pushState({}, '', url.toString());
+              window.location.reload();
+            }}
             className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center mb-2">
@@ -274,7 +304,12 @@ export default function CustomerOverview() {
           </button>
           
           <button 
-            onClick={() => setLocation('/dashboard?view=inheritance')}
+            onClick={() => {
+              const url = new URL(window.location.href);
+              url.searchParams.set('view', 'inheritance');
+              window.history.pushState({}, '', url.toString());
+              window.location.reload();
+            }}
             className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mb-2">
@@ -284,7 +319,12 @@ export default function CustomerOverview() {
           </button>
           
           <button 
-            onClick={() => setLocation('/dashboard?view=support')}
+            onClick={() => {
+              const url = new URL(window.location.href);
+              url.searchParams.set('view', 'support');
+              window.history.pushState({}, '', url.toString());
+              window.location.reload();
+            }}
             className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center mb-2">
@@ -297,7 +337,12 @@ export default function CustomerOverview() {
         {/* Second row of services */}
         <div className="grid grid-cols-3 gap-4 mt-4">
           <button 
-            onClick={() => setLocation('/dashboard?view=notifications')}
+            onClick={() => {
+              const url = new URL(window.location.href);
+              url.searchParams.set('view', 'notifications');
+              window.history.pushState({}, '', url.toString());
+              window.location.reload();
+            }}
             className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors relative"
           >
             <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mb-2 relative">
@@ -321,7 +366,12 @@ export default function CustomerOverview() {
           </button>
           
           <button 
-            onClick={() => setLocation('/dashboard?view=accounts')}
+            onClick={() => {
+              const url = new URL(window.location.href);
+              url.searchParams.set('view', 'accounts');
+              window.history.pushState({}, '', url.toString());
+              window.location.reload();
+            }}
             className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center mb-2">
