@@ -114,26 +114,6 @@ export default function CustomerDashboard() {
     <div className="min-h-screen bg-gray-50 pb-20">
       <CustomerNavbar />
       
-      {/* Mobile-only top header with notifications and logout */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40 sm:hidden">
-        <div className="flex justify-end items-center px-4 py-3 space-x-2">
-          <Link 
-            href="/dashboard?view=notifications" 
-            className="p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 relative"
-          >
-            <Bell className="w-5 h-5" />
-          </Link>
-          <Button 
-            onClick={handleLogout}
-            variant="outline"
-            className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white text-xs px-2 py-1"
-            data-testid="button-logout-mobile"
-          >
-            Logout
-          </Button>
-        </div>
-      </header>
-      
       <div className="max-w-md mx-auto px-4 py-6 sm:max-w-7xl sm:px-6 lg:px-8">
         {renderActiveView()}
       </div>

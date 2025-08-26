@@ -169,22 +169,41 @@ export default function CustomerOverview() {
             <p className="text-gray-500 text-sm">Welcome back!</p>
           </div>
         </div>
-        <button 
-          onClick={() => {
-            const url = new URL(window.location.href);
-            url.searchParams.set('view', 'notifications');
-            window.history.pushState({}, '', url.toString());
-            window.location.reload();
-          }}
-          className="relative p-2 text-gray-600 hover:text-gray-900"
-        >
-          <Bell className="w-6 h-6" />
-          {customerStats.unreadNotifications > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              {customerStats.unreadNotifications}
-            </span>
-          )}
-        </button>
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => {
+              const url = new URL(window.location.href);
+              url.searchParams.set('view', 'notifications');
+              window.history.pushState({}, '', url.toString());
+              window.location.reload();
+            }}
+            className="relative p-2 text-gray-600 hover:text-gray-900"
+          >
+            <Bell className="w-6 h-6" />
+            {customerStats.unreadNotifications > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {customerStats.unreadNotifications}
+              </span>
+            )}
+          </button>
+          <Button 
+            onClick={async () => {
+              try {
+                await fetch("/api/logout", { method: "POST" });
+                window.location.href = "/";
+              } catch (error) {
+                console.error("Logout failed:", error);
+                window.location.href = "/";
+              }
+            }}
+            variant="outline"
+            size="sm"
+            className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white text-xs px-3 py-1"
+            data-testid="button-logout-header"
+          >
+            Logout
+          </Button>
+        </div>
       </div>
 
       {/* Balance Card */}
