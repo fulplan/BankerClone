@@ -271,13 +271,14 @@ export default function InheritanceManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="text-center sm:text-left">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center justify-center sm:justify-start gap-2">
             <Crown className="h-6 w-6 text-purple-600" />
             Inheritance Management
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-gray-600 text-sm sm:text-base">
             Manage inheritance processes, documentation, and beneficiary claims
           </p>
         </div>

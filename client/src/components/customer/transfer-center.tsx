@@ -157,12 +157,14 @@ export default function TransferCenter() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="text-center sm:text-left">
           <h2 className="text-2xl font-bold text-gray-900">Transfer Center</h2>
-          <p className="text-gray-600">Send money, manage transfers, and set up recurring payments</p>
+          <p className="text-gray-600 text-sm sm:text-base">Send money, manage transfers, and set up recurring payments</p>
         </div>
-        <Dialog open={isStandingOrderDialogOpen} onOpenChange={setIsStandingOrderDialogOpen}>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Dialog open={isStandingOrderDialogOpen} onOpenChange={setIsStandingOrderDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-finora-primary hover:bg-finora-primary/90">
               <i className="fas fa-plus mr-2"></i>
@@ -286,8 +288,10 @@ export default function TransferCenter() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
+      {/* Tabs Section */}
       <Tabs defaultValue="send" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="send">Send Money</TabsTrigger>

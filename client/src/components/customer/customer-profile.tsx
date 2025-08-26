@@ -220,10 +220,11 @@ export default function CustomerProfile() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Customer Profile</h2>
-          <p className="text-gray-600">Manage your personal information and verification status</p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="text-center sm:text-left">
+          <h2 className="text-2xl font-bold text-gray-900">My Profile</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Manage your personal information and verification status</p>
         </div>
         <div className="flex gap-2">
           <Dialog open={isDocumentDialogOpen} onOpenChange={setIsDocumentDialogOpen}>

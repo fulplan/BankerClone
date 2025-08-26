@@ -193,10 +193,11 @@ export default function BillPayments() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="text-center sm:text-left">
           <h2 className="text-2xl font-bold text-gray-900">Bill Payments</h2>
-          <p className="text-gray-600">Pay your bills quickly and set up recurring payments</p>
+          <p className="text-gray-600 text-sm sm:text-base">Pay your bills quickly and set up recurring payments</p>
         </div>
         <Dialog open={isPayBillDialogOpen} onOpenChange={setIsPayBillDialogOpen}>
           <DialogTrigger asChild>

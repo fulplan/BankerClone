@@ -102,6 +102,12 @@ export default function AccountOverview() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center sm:text-left">
+        <h2 className="text-2xl font-bold text-gray-900">My Accounts</h2>
+        <p className="text-gray-600 text-sm sm:text-base">View and manage your bank accounts</p>
+      </div>
+
       {/* Account Status Warnings */}
       {frozenAccounts.length > 0 && (
         <Alert variant="destructive">
