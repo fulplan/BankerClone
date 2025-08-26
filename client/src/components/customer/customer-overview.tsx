@@ -20,7 +20,10 @@ import {
   ArrowUpFromLine,
   Bell,
   Eye,
-  EyeOff
+  EyeOff,
+  Shield,
+  QrCode,
+  Banknote
 } from "lucide-react";
 import type { Account, Transaction, Card as BankCard, Notification } from "@shared/schema";
 
@@ -213,36 +216,36 @@ export default function CustomerOverview() {
         <div className="absolute bottom-0 left-0 w-20 h-20 bg-white bg-opacity-10 rounded-full -ml-10 -mb-10"></div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-4">
-        <button 
-          onClick={() => setLocation('/dashboard?view=accounts')}
-          className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
-        >
-          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-            <Plus className="w-5 h-5 text-blue-600" />
-          </div>
-          <span className="font-medium text-gray-900">Add Money</span>
-        </button>
-        
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-2 gap-3">
         <button 
           onClick={() => setLocation('/dashboard?view=transfers')}
           className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
         >
-          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-            <Send className="w-5 h-5 text-green-600" />
+          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+            <Send className="w-5 h-5 text-blue-600" />
           </div>
           <span className="font-medium text-gray-900">Send Money</span>
         </button>
         
         <button 
-          onClick={() => setLocation('/dashboard?view=accounts')}
+          onClick={() => setLocation('/dashboard?view=bills')}
+          className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
+        >
+          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+            <Receipt className="w-5 h-5 text-green-600" />
+          </div>
+          <span className="font-medium text-gray-900">Pay Bills</span>
+        </button>
+        
+        <button 
+          onClick={() => setLocation('/dashboard?view=cards')}
           className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
         >
           <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-            <ArrowDownToLine className="w-5 h-5 text-purple-600" />
+            <CreditCard className="w-5 h-5 text-purple-600" />
           </div>
-          <span className="font-medium text-gray-900">Deposit</span>
+          <span className="font-medium text-gray-900">Cards</span>
         </button>
         
         <button 
@@ -250,10 +253,83 @@ export default function CustomerOverview() {
           className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
         >
           <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-            <ArrowUpFromLine className="w-5 h-5 text-orange-600" />
+            <Banknote className="w-5 h-5 text-orange-600" />
           </div>
-          <span className="font-medium text-gray-900">Withdraw</span>
+          <span className="font-medium text-gray-900">Accounts</span>
         </button>
+      </div>
+
+      {/* More Services */}
+      <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <h3 className="font-semibold text-gray-900 mb-4">More Services</h3>
+        <div className="grid grid-cols-3 gap-4">
+          <button 
+            onClick={() => setLocation('/dashboard?view=investments')}
+            className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center mb-2">
+              <TrendingUp className="w-5 h-5 text-indigo-600" />
+            </div>
+            <span className="text-xs font-medium text-gray-900 text-center">Investments</span>
+          </button>
+          
+          <button 
+            onClick={() => setLocation('/dashboard?view=inheritance')}
+            className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mb-2">
+              <Shield className="w-5 h-5 text-amber-600" />
+            </div>
+            <span className="text-xs font-medium text-gray-900 text-center">Inheritance</span>
+          </button>
+          
+          <button 
+            onClick={() => setLocation('/dashboard?view=support')}
+            className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center mb-2">
+              <HeadphonesIcon className="w-5 h-5 text-rose-600" />
+            </div>
+            <span className="text-xs font-medium text-gray-900 text-center">Support</span>
+          </button>
+        </div>
+        
+        {/* Second row of services */}
+        <div className="grid grid-cols-3 gap-4 mt-4">
+          <button 
+            onClick={() => setLocation('/dashboard?view=notifications')}
+            className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors relative"
+          >
+            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mb-2 relative">
+              <Bell className="w-5 h-5 text-red-600" />
+              {customerStats.unreadNotifications > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {customerStats.unreadNotifications}
+                </span>
+              )}
+            </div>
+            <span className="text-xs font-medium text-gray-900 text-center">Alerts</span>
+          </button>
+          
+          <button 
+            className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center mb-2">
+              <QrCode className="w-5 h-5 text-teal-600" />
+            </div>
+            <span className="text-xs font-medium text-gray-900 text-center">QR Pay</span>
+          </button>
+          
+          <button 
+            onClick={() => setLocation('/dashboard?view=accounts')}
+            className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center mb-2">
+              <Plus className="w-5 h-5 text-cyan-600" />
+            </div>
+            <span className="text-xs font-medium text-gray-900 text-center">Add Money</span>
+          </button>
+        </div>
       </div>
 
       {/* Transaction History */}

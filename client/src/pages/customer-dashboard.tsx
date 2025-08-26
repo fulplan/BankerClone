@@ -14,7 +14,7 @@ import CustomerSupport from "@/components/customer/customer-support";
 import NotificationsCenter from "@/components/notifications/notifications-center";
 import InheritanceManagement from "@/components/customer/inheritance-management";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Home, Wallet, BarChart3, User } from "lucide-react";
+import { Home, Wallet, BarChart3, User, Send } from "lucide-react";
 
 export default function CustomerDashboard() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -107,11 +107,11 @@ export default function CustomerDashboard() {
       </div>
 
       {/* Bottom Navigation - Mobile Only */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 z-50 sm:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-2 z-50 sm:hidden">
         <div className="flex justify-around items-center max-w-md mx-auto">
           <button
             onClick={() => handleViewChange('home')}
-            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+            className={`flex flex-col items-center p-1.5 rounded-lg transition-colors ${
               activeView === 'home' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
             }`}
           >
@@ -121,7 +121,7 @@ export default function CustomerDashboard() {
           
           <button
             onClick={() => handleViewChange('accounts')}
-            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+            className={`flex flex-col items-center p-1.5 rounded-lg transition-colors ${
               activeView === 'accounts' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
             }`}
           >
@@ -130,8 +130,18 @@ export default function CustomerDashboard() {
           </button>
           
           <button
+            onClick={() => handleViewChange('transfers')}
+            className={`flex flex-col items-center p-1.5 rounded-lg transition-colors ${
+              activeView === 'transfers' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
+            }`}
+          >
+            <Send className="w-5 h-5 mb-1" />
+            <span className="text-xs font-medium">Transfer</span>
+          </button>
+          
+          <button
             onClick={() => handleViewChange('investments')}
-            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+            className={`flex flex-col items-center p-1.5 rounded-lg transition-colors ${
               activeView === 'investments' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
             }`}
           >
@@ -141,7 +151,7 @@ export default function CustomerDashboard() {
           
           <button
             onClick={() => handleViewChange('profile')}
-            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+            className={`flex flex-col items-center p-1.5 rounded-lg transition-colors ${
               activeView === 'profile' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
             }`}
           >
