@@ -313,18 +313,38 @@ export default function TransferCenter() {
 
       {/* Tabs Section */}
       <Tabs defaultValue="send" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="send">Send Money</TabsTrigger>
-          <TabsTrigger value="history">Transfer History</TabsTrigger>
-          <TabsTrigger value="standing">Standing Orders ({standingOrders.length})</TabsTrigger>
-          <TabsTrigger value="transactions">All Transactions</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+          <TabsTrigger value="send" className="text-xs sm:text-sm p-2 sm:p-3">
+            <div className="flex flex-col sm:flex-row items-center gap-1">
+              <i className="fas fa-paper-plane text-xs"></i>
+              <span>Send Money</span>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger value="history" className="text-xs sm:text-sm p-2 sm:p-3">
+            <div className="flex flex-col sm:flex-row items-center gap-1">
+              <i className="fas fa-history text-xs"></i>
+              <span>History</span>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger value="standing" className="text-xs sm:text-sm p-2 sm:p-3">
+            <div className="flex flex-col sm:flex-row items-center gap-1">
+              <i className="fas fa-calendar-check text-xs"></i>
+              <span>Orders ({standingOrders.length})</span>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger value="transactions" className="text-xs sm:text-sm p-2 sm:p-3">
+            <div className="flex flex-col sm:flex-row items-center gap-1">
+              <i className="fas fa-list text-xs"></i>
+              <span>All Transfers</span>
+            </div>
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="send">
+        <TabsContent value="send" className="mt-6">
           <TransferForm />
         </TabsContent>
 
-        <TabsContent value="history">
+        <TabsContent value="history" className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Transfer History</CardTitle>
@@ -335,10 +355,10 @@ export default function TransferCenter() {
                   <p className="text-gray-500 text-center py-8">No transfers found</p>
                 ) : (
                   transfers.map((transfer) => (
-                    <div key={transfer.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start">
+                    <div key={transfer.id} className="border rounded-lg p-4 sm:p-6 bg-white shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
+                          <div className="flex items-center gap-3 mb-3">
                             <div className="p-2 bg-blue-100 rounded-full">
                               <i className="fas fa-exchange-alt text-blue-600"></i>
                             </div>
@@ -354,8 +374,8 @@ export default function TransferCenter() {
                             {new Date(transfer.createdAt!).toLocaleString()}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-xl font-bold text-red-600 mb-1">
+                        <div className="text-center sm:text-right">
+                          <p className="text-lg sm:text-xl font-bold text-red-600 mb-2">
                             -{formatCurrency(transfer.amount)}
                           </p>
                           <Badge className={getStatusColor(transfer.status)}>
@@ -376,7 +396,7 @@ export default function TransferCenter() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="standing">
+        <TabsContent value="standing" className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Standing Orders</CardTitle>
@@ -394,10 +414,10 @@ export default function TransferCenter() {
                   </div>
                 ) : (
                   standingOrders.map((order) => (
-                    <div key={order.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start">
+                    <div key={order.id} className="border rounded-lg p-4 sm:p-6 bg-white shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
+                          <div className="flex items-center gap-3 mb-3">
                             <div className="p-2 bg-green-100 rounded-full">
                               <i className="fas fa-calendar-check text-green-600"></i>
                             </div>
@@ -418,8 +438,8 @@ export default function TransferCenter() {
                             </p>
                           )}
                         </div>
-                        <div className="text-right">
-                          <p className="text-xl font-bold text-blue-600 mb-2">
+                        <div className="text-center sm:text-right">
+                          <p className="text-lg sm:text-xl font-bold text-blue-600 mb-2">
                             {formatCurrency(order.amount)}
                           </p>
                           <Badge className={order.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
@@ -447,7 +467,7 @@ export default function TransferCenter() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="transactions">
+        <TabsContent value="transactions" className="mt-6">
           <TransactionHistory />
         </TabsContent>
       </Tabs>
