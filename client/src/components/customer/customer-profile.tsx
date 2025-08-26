@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import type { User, CustomerProfile } from "@shared/schema";
 
@@ -52,6 +53,13 @@ const usStates = [
 export default function CustomerProfile() {
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  const handleBack = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('view', 'home');
+    window.history.pushState({}, '', url.toString());
+    window.location.reload();
+  };
   const queryClient = useQueryClient();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isDocumentDialogOpen, setIsDocumentDialogOpen] = useState(false);
@@ -220,6 +228,18 @@ export default function CustomerProfile() {
 
   return (
     <div className="space-y-6">
+      {/* Back Navigation */}
+      <div className="flex items-center space-x-3">
+        <Button
+          onClick={handleBack}
+          variant="ghost"
+          size="sm"
+          className="text-gray-600 hover:text-gray-900 p-2"
+        >
+          <ArrowLeft className="w-5 h-5 mr-1" />
+          Back to Home
+        </Button>
+      </div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="text-center sm:text-left">

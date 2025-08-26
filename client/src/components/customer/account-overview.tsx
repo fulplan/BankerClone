@@ -9,12 +9,20 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { ArrowLeft } from "lucide-react";
 import type { Account } from "@shared/schema";
 import bankingCustomerService from "@assets/generated_images/diverse_customer_service_banking_professional_b409fbf2.png";
 import mobileBankingApp from "@assets/generated_images/professional_mobile_banking_usage_904a481c.png";
 
 export default function AccountOverview() {
   const { toast } = useToast();
+  
+  const handleBack = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('view', 'home');
+    window.history.pushState({}, '', url.toString());
+    window.location.reload();
+  };
   const queryClient = useQueryClient();
   const [newAccountType, setNewAccountType] = useState("");
 
@@ -102,6 +110,19 @@ export default function AccountOverview() {
 
   return (
     <div className="space-y-6">
+      {/* Back Navigation */}
+      <div className="flex items-center space-x-3">
+        <Button
+          onClick={handleBack}
+          variant="ghost"
+          size="sm"
+          className="text-gray-600 hover:text-gray-900 p-2"
+        >
+          <ArrowLeft className="w-5 h-5 mr-1" />
+          Back to Home
+        </Button>
+      </div>
+      
       {/* Header */}
       <div className="text-center sm:text-left">
         <h2 className="text-2xl font-bold text-gray-900">My Accounts</h2>

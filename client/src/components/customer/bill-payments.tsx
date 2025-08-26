@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { ArrowLeft } from "lucide-react";
 import type { Account, BillPayment } from "@shared/schema";
 
 interface BillPaymentForm {
@@ -40,6 +41,13 @@ const billTypes = [
 
 export default function BillPayments() {
   const { toast } = useToast();
+  
+  const handleBack = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('view', 'home');
+    window.history.pushState({}, '', url.toString());
+    window.location.reload();
+  };
   const queryClient = useQueryClient();
   const [isPayBillDialogOpen, setIsPayBillDialogOpen] = useState(false);
   const [selectedBillType, setSelectedBillType] = useState('');
@@ -193,6 +201,18 @@ export default function BillPayments() {
 
   return (
     <div className="space-y-6">
+      {/* Back Navigation */}
+      <div className="flex items-center space-x-3">
+        <Button
+          onClick={handleBack}
+          variant="ghost"
+          size="sm"
+          className="text-gray-600 hover:text-gray-900 p-2"
+        >
+          <ArrowLeft className="w-5 h-5 mr-1" />
+          Back to Home
+        </Button>
+      </div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="text-center sm:text-left">
